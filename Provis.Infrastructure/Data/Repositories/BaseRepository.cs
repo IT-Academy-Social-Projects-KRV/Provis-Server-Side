@@ -25,9 +25,9 @@ namespace Provis.Infrastructure.Data.Repositories
             return await _dbSet.ToListAsync();
         }
 
-        public async Task<TEntity> GetByIdAsync(int id)
+        public async Task<TEntity> GetByKeyAsync<TKey>(TKey key)
         {
-            return await _dbSet.FindAsync(id);
+            return await _dbSet.FindAsync(key);
         }
 
         public async Task<TEntity> AddAsync(TEntity entity)

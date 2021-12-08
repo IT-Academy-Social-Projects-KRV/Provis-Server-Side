@@ -10,7 +10,7 @@ namespace Provis.Core.Interfaces.Repositories
     {
         Task<TEntity> AddAsync(TEntity entity);
         Task<IEnumerable<TEntity>> GetAllAsync();
-        Task<TEntity> GetByIdAsync(int id);
+        Task<TEntity> GetByKeyAsync<TKey>(TKey key);
         Task UpdateAsync(TEntity entity);
         Task DeleteAsync(TEntity entity);
         IQueryable<TEntity> Query(params Expression<Func<TEntity, object>>[] includes);
