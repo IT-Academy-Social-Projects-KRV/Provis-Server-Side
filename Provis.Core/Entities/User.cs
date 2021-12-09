@@ -8,6 +8,6 @@ namespace Provis.Core.Entities
     {
         public string Surname { get; set; }
 
-        public DateTime CreateDate { get; set; }
+        public DateTime CreateDate { get; set; } // DateTime UTC
     }
 }
