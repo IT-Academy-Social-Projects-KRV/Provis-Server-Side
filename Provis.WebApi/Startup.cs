@@ -37,8 +37,7 @@ namespace Provis.WebApi
             });
 
             services.AddRepositories();
-
-            services.AddDbContext<ProvisDbContext>(x => x.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext(Configuration.GetConnectionString("DefaultConnection"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
