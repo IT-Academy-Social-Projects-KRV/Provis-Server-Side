@@ -32,11 +32,17 @@ namespace Provis.Core.Services
         public async Task<string> LoginAsync(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
+
+            if(user == null)
+            {
+                throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Incorrect email!");
+            }
+
             var result = await _signInManager.PasswordSignInAsync(user.UserName, password, false, false);
 
             if (!result.Succeeded)
             {
-                throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Can not authorize because of invalid data!");
+                throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
 
             return GenerateWebToken(user);
