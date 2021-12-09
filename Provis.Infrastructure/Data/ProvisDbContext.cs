@@ -81,7 +81,7 @@ namespace Provis.Infrastructure.Data
 
         public DbSet<Task> Tasks { get; set; }
         public DbSet<Workspace> Workspaces { get; set; }
-        public DbSet<Role> Roles { get; set; }
+        public DbSet<Role> WorkspaceRoles { get; set; }
         public DbSet<Status> Statuses { get; set; }
         public DbSet<InviteUser> InviteUsers { get; set; }
         public DbSet<StatusHistory> StatusHistories { get; set; }

@@ -10,7 +10,7 @@ using Provis.Infrastructure.Data;
 namespace Provis.Infrastructure.Migrations
 {
     [DbContext(typeof(ProvisDbContext))]
-    [Migration("20211209143211_Initial")]
+    [Migration("20211209145617_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -228,7 +228,7 @@ namespace Provis.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("WorkspaceRoles");
                 });
 
             modelBuilder.Entity("Provis.Core.Entities.Status", b =>

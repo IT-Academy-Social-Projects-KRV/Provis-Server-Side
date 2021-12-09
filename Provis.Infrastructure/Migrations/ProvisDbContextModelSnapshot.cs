@@ -226,7 +226,7 @@ namespace Provis.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles");
+                    b.ToTable("WorkspaceRoles");
                 });
 
             modelBuilder.Entity("Provis.Core.Entities.Status", b =>
