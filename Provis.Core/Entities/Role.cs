@@ -3,5 +3,5 @@ using Provis.Core.Interfaces;
 
 namespace Provis.Core.Entities
 {
-    public class Role : IdentityRole ,IBaseEntity { }
+    public class Role : IdentityRole, IBaseEntity { }
 }

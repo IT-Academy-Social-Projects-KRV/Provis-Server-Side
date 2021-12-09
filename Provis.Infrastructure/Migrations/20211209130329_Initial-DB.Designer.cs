@@ -10,8 +10,8 @@ using Provis.Infrastructure.Data;
 namespace Provis.Infrastructure.Migrations
 {
     [DbContext(typeof(ProvisDbContext))]
-    [Migration("20211209115306_Initial")]
-    partial class Initial
+    [Migration("20211209130329_Initial-DB")]
+    partial class InitialDB
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -371,6 +371,26 @@ namespace Provis.Infrastructure.Migrations
                     b.ToTable("Tasks");
                 });
 
+            modelBuilder.Entity("Provis.Core.Entities.UserWorkspace", b =>
+                {
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("WorkspaceId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RoleId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserId", "WorkspaceId");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("WorkspaceId");
+
+                    b.ToTable("UserWorkspaces");
+                });
+
             modelBuilder.Entity("Provis.Core.Entities.Workspace", b =>
                 {
                     b.Property<int>("Id")
@@ -405,21 +425,6 @@ namespace Provis.Infrastructure.Migrations
                     b.HasIndex("UsersId");
 
                     b.ToTable("TaskUser");
-                });
-
-            modelBuilder.Entity("UserWorkspace", b =>
-                {
-                    b.Property<string>("UsersId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("WorkspacesId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UsersId", "WorkspacesId");
-
-                    b.HasIndex("WorkspacesId");
-
-                    b.ToTable("UserWorkspace");
                 });
 
             modelBuilder.Entity("Provis.Core.Entities.Role", b =>
@@ -580,6 +585,31 @@ namespace Provis.Infrastructure.Migrations
                     b.Navigation("Workspace");
                 });
 
+            modelBuilder.Entity("Provis.Core.Entities.UserWorkspace", b =>
+                {
+                    b.HasOne("Provis.Core.Entities.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId");
+
+                    b.HasOne("Provis.Core.Entities.User", "User")
+                        .WithMany("UserWorkspaces")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Provis.Core.Entities.Workspace", "Workspace")
+                        .WithMany("UserWorkspaces")
+                        .HasForeignKey("WorkspaceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
+
+                    b.Navigation("Workspace");
+                });
+
             modelBuilder.Entity("TaskUser", b =>
                 {
                     b.HasOne("Provis.Core.Entities.Task", null)
@@ -595,19 +625,14 @@ namespace Provis.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("UserWorkspace", b =>
+            modelBuilder.Entity("Provis.Core.Entities.Workspace", b =>
                 {
-                    b.HasOne("Provis.Core.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UsersId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.Navigation("UserWorkspaces");
+                });
 
-                    b.HasOne("Provis.Core.Entities.Workspace", null)
-                        .WithMany()
-                        .HasForeignKey("WorkspacesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+            modelBuilder.Entity("Provis.Core.Entities.User", b =>
+                {
+                    b.Navigation("UserWorkspaces");
                 });
 #pragma warning restore 612, 618
         }

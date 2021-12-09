@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Provis.Infrastructure.Migrations
 {
-    public partial class Initial : Migration
+    public partial class InitialDB : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -257,24 +257,31 @@ namespace Provis.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "UserWorkspace",
+                name: "UserWorkspaces",
                 columns: table => new
                 {
-                    UsersId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    WorkspacesId = table.Column<int>(type: "int", nullable: false)
+                    WorkspaceId = table.Column<int>(type: "int", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_UserWorkspace", x => new { x.UsersId, x.WorkspacesId });
+                    table.PrimaryKey("PK_UserWorkspaces", x => new { x.UserId, x.WorkspaceId });
                     table.ForeignKey(
-                        name: "FK_UserWorkspace_AspNetUsers_UsersId",
-                        column: x => x.UsersId,
+                        name: "FK_UserWorkspaces_AspNetRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "AspNetRoles",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_UserWorkspaces_AspNetUsers_UserId",
+                        column: x => x.UserId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_UserWorkspace_Workspaces_WorkspacesId",
-                        column: x => x.WorkspacesId,
+                        name: "FK_UserWorkspaces_Workspaces_WorkspaceId",
+                        column: x => x.WorkspaceId,
                         principalTable: "Workspaces",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -456,9 +463,14 @@ namespace Provis.Infrastructure.Migrations
                 column: "UsersId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_UserWorkspace_WorkspacesId",
-                table: "UserWorkspace",
-                column: "WorkspacesId");
+                name: "IX_UserWorkspaces_RoleId",
+                table: "UserWorkspaces",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserWorkspaces_WorkspaceId",
+                table: "UserWorkspaces",
+                column: "WorkspaceId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -491,13 +503,13 @@ namespace Provis.Infrastructure.Migrations
                 name: "TaskUser");
 
             migrationBuilder.DropTable(
-                name: "UserWorkspace");
-
-            migrationBuilder.DropTable(
-                name: "AspNetRoles");
+                name: "UserWorkspaces");
 
             migrationBuilder.DropTable(
                 name: "Tasks");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

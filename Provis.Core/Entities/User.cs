@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Provis.Core.Interfaces;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
 namespace Provis.Core.Entities
 {
@@ -16,5 +14,7 @@ namespace Provis.Core.Entities
         public List<Task> Tasks { get; set; } = new List<Task>();
 
         public List<Workspace> Workspaces { get; set; } = new List<Workspace>();
+
+        public List<UserWorkspace> UserWorkspaces { get; set; } = new List<UserWorkspace>();
     }
 }

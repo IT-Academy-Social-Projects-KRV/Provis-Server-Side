@@ -12,7 +12,7 @@ namespace Provis.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Invite UserForeign Key 
+            // Invite User Foreign Key 
             modelBuilder.Entity<InviteUser>()
                 .HasOne(r => r.FromUser)
                 .WithMany()
@@ -53,6 +53,24 @@ namespace Provis.Infrastructure.Data
             modelBuilder.Entity<Task>()
                 .HasMany(t => t.Users)
                 .WithMany(u => u.Tasks);
+
+            // Add UserWorkspace table
+            modelBuilder.Entity<Workspace>()
+                    .HasMany(u => u.Users)
+                    .WithMany(w => w.Workspaces)
+                    .UsingEntity<UserWorkspace>(
+                j => j
+                    .HasOne(ut => ut.User)
+                    .WithMany(t => t.UserWorkspaces)
+                    .HasForeignKey(ut => ut.UserId),
+                j => j
+                    .HasOne(ut => ut.Workspace)
+                    .WithMany(t => t.UserWorkspaces)
+                    .HasForeignKey(ut => ut.WorkspaceId),
+                j =>
+                {
+                    j.ToTable("UserWorkspaces");
+                });
         }
 
         public DbSet<User> Users { get; set; }
