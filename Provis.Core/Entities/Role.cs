@@ -1,11 +1,7 @@
-﻿using Provis.Core.Interfaces;
+﻿using Microsoft.AspNetCore.Identity;
+using Provis.Core.Interfaces;
 
 namespace Provis.Core.Entities
 {
-    public class Role : IBaseEntity
-    {
-        public int Id { get; set; }
-
-        public string RoleName { get; set; }
-    }
+    public class Role : IdentityRole ,IBaseEntity { }
 }

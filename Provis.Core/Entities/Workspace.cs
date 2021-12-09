@@ -2,11 +2,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Provis.Core.Entities
 {
     public class Workspace : IBaseEntity
     {
+        [Key]
         public int Id { get; set; }
 
         public string Name { get; set; }
@@ -15,14 +17,6 @@ namespace Provis.Core.Entities
 
         public DateTime DateOfCreate { get; set; }
 
-        public ICollection Users { get; set; }
-
-        public ICollection Roles { get; set; }
-
-        public Workspace()
-        {
-            Users = new List<User>();
-            Roles = new List<Role>();
-        }
+        public List<User> Users { get; set; } = new List<User>();
     }
 }

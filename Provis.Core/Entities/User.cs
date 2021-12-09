@@ -3,6 +3,7 @@ using Provis.Core.Interfaces;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Provis.Core.Entities
 {
@@ -12,14 +13,8 @@ namespace Provis.Core.Entities
 
         public DateTime CreateDate { get; set; } // DateTime UTC
 
-        public ICollection Workspaces { get; set; }
+        public List<Task> Tasks { get; set; } = new List<Task>();
 
-        public ICollection Roles { get; set; }
-
-        public User()
-        {
-            Workspaces = new List<Workspace>();
-            Roles = new List<Role>();
-        }
+        public List<Workspace> Workspaces { get; set; } = new List<Workspace>();
     }
 }
