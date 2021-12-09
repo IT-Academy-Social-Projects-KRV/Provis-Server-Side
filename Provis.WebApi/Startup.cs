@@ -17,6 +17,12 @@ using System.Threading.Tasks;
 using FluentValidation.Results;
 using FluentValidation.AspNetCore;
 using Provis.WebApi.Middleweres;
+using Provis.Core;
+using Provis.Core.Helpers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Provis.WebApi.Middlwares;
 
 namespace Provis.WebApi
 {
@@ -42,6 +48,25 @@ namespace Provis.WebApi
             services.AddRepositories();
             services.AddDbContext(Configuration.GetConnectionString("DefaultConnection"));
             services.AddFluentValidation();
+            services.AddCustomServices();
+
+            var jwtOptions = Configuration.GetSection(nameof(JwtOptions)).Get<JwtOptions>();
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(jwt =>
+            {                
+                jwt.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtOptions.Issuer,
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
+                };
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -61,6 +86,9 @@ namespace Provis.WebApi
             app.UseRouting();
 
             app.UseAuthorization();
+            app.UseAuthentication();
+
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseEndpoints(endpoints =>
             {
