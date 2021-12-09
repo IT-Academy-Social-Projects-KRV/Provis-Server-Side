@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Provis.Infrastructure.Migrations
 {
-    public partial class InitialDB : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -193,8 +193,8 @@ namespace Provis.Infrastructure.Migrations
                     Date = table.Column<DateTime>(type: "datetime2", nullable: false),
                     IsConfirm = table.Column<bool>(type: "bit", nullable: false),
                     WorkspaceId = table.Column<int>(type: "int", nullable: false),
-                    FromUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    ToUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    FromUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ToUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -231,7 +231,7 @@ namespace Provis.Infrastructure.Migrations
                     DateOfEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
                     StatusId = table.Column<int>(type: "int", nullable: false),
                     WorkspaceId = table.Column<int>(type: "int", nullable: false),
-                    TaskCreaterId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    TaskCreaterId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -262,7 +262,7 @@ namespace Provis.Infrastructure.Migrations
                 {
                     WorkspaceId = table.Column<int>(type: "int", nullable: false),
                     UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -272,7 +272,7 @@ namespace Provis.Infrastructure.Migrations
                         column: x => x.RoleId,
                         principalTable: "AspNetRoles",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_UserWorkspaces_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -296,7 +296,7 @@ namespace Provis.Infrastructure.Migrations
                     CommentText = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     DateOfCreate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     TaskId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -343,7 +343,7 @@ namespace Provis.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TaskUser",
+                name: "UsersTasks",
                 columns: table => new
                 {
                     TasksId = table.Column<int>(type: "int", nullable: false),
@@ -351,15 +351,15 @@ namespace Provis.Infrastructure.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TaskUser", x => new { x.TasksId, x.UsersId });
+                    table.PrimaryKey("PK_UsersTasks", x => new { x.TasksId, x.UsersId });
                     table.ForeignKey(
-                        name: "FK_TaskUser_AspNetUsers_UsersId",
+                        name: "FK_UsersTasks_AspNetUsers_UsersId",
                         column: x => x.UsersId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_TaskUser_Tasks_TasksId",
+                        name: "FK_UsersTasks_Tasks_TasksId",
                         column: x => x.TasksId,
                         principalTable: "Tasks",
                         principalColumn: "Id",
@@ -449,8 +449,7 @@ namespace Provis.Infrastructure.Migrations
                 name: "IX_Tasks_TaskCreaterId",
                 table: "Tasks",
                 column: "TaskCreaterId",
-                unique: true,
-                filter: "[TaskCreaterId] IS NOT NULL");
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tasks_WorkspaceId",
@@ -458,8 +457,8 @@ namespace Provis.Infrastructure.Migrations
                 column: "WorkspaceId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_TaskUser_UsersId",
-                table: "TaskUser",
+                name: "IX_UsersTasks_UsersId",
+                table: "UsersTasks",
                 column: "UsersId");
 
             migrationBuilder.CreateIndex(
@@ -500,7 +499,7 @@ namespace Provis.Infrastructure.Migrations
                 name: "StatusHistories");
 
             migrationBuilder.DropTable(
-                name: "TaskUser");
+                name: "UsersTasks");
 
             migrationBuilder.DropTable(
                 name: "UserWorkspaces");

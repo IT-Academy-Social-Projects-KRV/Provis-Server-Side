@@ -16,11 +16,13 @@ namespace Provis.Infrastructure.Data
             modelBuilder.Entity<InviteUser>()
                 .HasOne(r => r.FromUser)
                 .WithMany()
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<InviteUser>()
                 .HasOne(r => r.ToUser)
                 .WithMany()
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Status History Foreign Key 
@@ -43,16 +45,20 @@ namespace Provis.Infrastructure.Data
             modelBuilder.Entity<Comment>()
                 .HasOne(r => r.User)
                 .WithMany()
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Task Foreign Key
             modelBuilder.Entity<Task>()
                 .HasOne(u => u.UserCreator)
-                .WithOne();
+                .WithOne()
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Task>()
                 .HasMany(t => t.Users)
-                .WithMany(u => u.Tasks);
+                .WithMany(u => u.Tasks)
+                .UsingEntity(j => j.ToTable("UsersTasks"));
 
             // Add UserWorkspace table
             modelBuilder.Entity<Workspace>()

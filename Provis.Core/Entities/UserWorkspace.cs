@@ -1,4 +1,5 @@
 ﻿using Provis.Core.Interfaces;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Provis.Core.Entities
@@ -13,6 +14,7 @@ namespace Provis.Core.Entities
 
         public User User { get; set; }
 
+        [Required]
         public string RoleId { get; set; }
 
         [ForeignKey(nameof(RoleId))]
