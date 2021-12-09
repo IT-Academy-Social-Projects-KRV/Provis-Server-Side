@@ -4,7 +4,7 @@ using Provis.Core.Entities;
 
 namespace Provis.Infrastructure.Data
 {
-    public class ProvisDbContext: IdentityDbContext
+    public class ProvisDbContext: IdentityDbContext<User>
     {
         public ProvisDbContext(DbContextOptions<ProvisDbContext> options): base(options) { }
 
@@ -79,7 +79,6 @@ namespace Provis.Infrastructure.Data
                 });
         }
 
-        public DbSet<User> Users { get; set; }
         public DbSet<Task> Tasks { get; set; }
         public DbSet<Workspace> Workspaces { get; set; }
         public DbSet<Role> Roles { get; set; }

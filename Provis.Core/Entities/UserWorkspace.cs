@@ -15,7 +15,7 @@ namespace Provis.Core.Entities
         public User User { get; set; }
 
         [Required]
-        public string RoleId { get; set; }
+        public int RoleId { get; set; }
 
         [ForeignKey(nameof(RoleId))]
         public Role Role { get; set; }
