@@ -13,7 +13,6 @@ using Provis.Core.Helpers;
 using Provis.Core.Entities;
 using Task = System.Threading.Tasks.Task;
 
-
 namespace Provis.Core.Services
 {
     public class AuthenticationService : IAuthenticationService
