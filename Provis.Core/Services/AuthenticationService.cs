@@ -35,6 +35,7 @@ namespace Provis.Core.Services
 
             if (user == null)
             {
+
                 //throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
 
