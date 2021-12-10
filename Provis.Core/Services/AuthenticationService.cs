@@ -93,7 +93,7 @@ namespace Provis.Core.Services
             var token = new JwtSecurityToken(
                 issuer: _jwtOptions.Value.Issuer,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtOptions.Value.LifeTime),
+                expires: DateTime.UtcNow.AddHours(_jwtOptions.Value.LifeTime),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
