@@ -3,14 +3,15 @@ using Provis.Core.DTO.userDTO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using System.Threading;
+using Provis.Core.Entities;
 
 namespace Provis.Core.Validation
 {
     class UserRegistrationValidation : AbstractValidator<UserRegDTO>
     {
-        private static UserManager<IdentityUser> _userManager;
+        private static UserManager<User> _userManager;
 
-        public UserRegistrationValidation(UserManager<IdentityUser> manager)
+        public UserRegistrationValidation(UserManager<User> manager)
         {
             _userManager = manager;
 
