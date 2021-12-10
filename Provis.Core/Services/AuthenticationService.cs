@@ -38,7 +38,6 @@ namespace Provis.Core.Services
             if (user == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
-                //throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
 
             var result = await _signInManager.PasswordSignInAsync(user.UserName, password, false, false);
@@ -46,7 +45,6 @@ namespace Provis.Core.Services
             if (!result.Succeeded)
             {
                 throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
-                //throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
             return await GenerateWebToken(user);
         }
@@ -68,7 +66,6 @@ namespace Provis.Core.Services
                     errorMessage.Append(error.ToString() + " ");
                 }
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, errorMessage.ToString());
-                //throw new HttpStatusException(System.Net.HttpStatusCode.BadRequest, errorMessage.ToString());
             }
 
             var findRole = await _roleManager.FindByNameAsync(roleName);

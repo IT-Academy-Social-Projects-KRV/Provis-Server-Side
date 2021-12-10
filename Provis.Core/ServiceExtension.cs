@@ -19,7 +19,7 @@ namespace Provis.Core
             services.AddScoped<IAuthenticationService, AuthenticationService>();         
         }
 
-        public static void ConfigureJwtOptions(this IServiceCollection services)
+        public static void IdentityDbContext(this IServiceCollection services)
         {         
             //services.Configure<JwtOptions>(Configuration.GetSection("JwtOptions"))
         }

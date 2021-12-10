@@ -44,7 +44,9 @@ namespace Provis.WebApi
 
             services.AddRepositories();
             services.AddDbContext(Configuration.GetConnectionString("DefaultConnection"));
+            services.AddIdentityDbContext();
             services.AddFluentValidation();
+            
             services.AddCustomServices();
 
             services.Configure<JwtOptions>(Configuration.GetSection("JwtOptions"));
