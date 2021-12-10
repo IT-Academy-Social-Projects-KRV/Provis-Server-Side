@@ -16,6 +16,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FluentValidation.Results;
 using FluentValidation.AspNetCore;
+using Provis.WebApi.Middleweres;
 
 namespace Provis.WebApi
 {
@@ -54,6 +55,8 @@ namespace Provis.WebApi
             }
 
             app.UseHttpsRedirection();
+
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseRouting();
 
