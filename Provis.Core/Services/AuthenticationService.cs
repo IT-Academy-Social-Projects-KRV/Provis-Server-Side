@@ -12,6 +12,7 @@ using System.Security.Claims;
 using Provis.Core.Helpers;
 using Provis.Core.Entities;
 using Task = System.Threading.Tasks.Task;
+using Provis.Core.Exeptions;
 
 namespace Provis.Core.Services
 {
@@ -21,6 +22,7 @@ namespace Provis.Core.Services
         protected readonly SignInManager<User> _signInManager;
         protected readonly IOptions<JwtOptions> _jwtOptions;
         protected readonly RoleManager<IdentityRole> _roleManager;
+
         public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, IOptions<JwtOptions> jwtOptions, RoleManager<IdentityRole> roleManager)
         {
             _userManager = userManager;
@@ -35,7 +37,7 @@ namespace Provis.Core.Services
 
             if (user == null)
             {
-
+                throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
                 //throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
 
@@ -43,6 +45,7 @@ namespace Provis.Core.Services
 
             if (!result.Succeeded)
             {
+                throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
                 //throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
             return await GenerateWebToken(user);
@@ -64,6 +67,7 @@ namespace Provis.Core.Services
                 {
                     errorMessage.Append(error.ToString() + " ");
                 }
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, errorMessage.ToString());
                 //throw new HttpStatusException(System.Net.HttpStatusCode.BadRequest, errorMessage.ToString());
             }
 
