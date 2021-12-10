@@ -45,6 +45,7 @@ namespace Provis.Core.Services
 
             if (!result.Succeeded)
             {
+                throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
             return await GenerateWebToken(user);
         }
