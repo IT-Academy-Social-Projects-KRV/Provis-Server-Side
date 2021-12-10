@@ -14,12 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using FluentValidation.Results;
-using FluentValidation.AspNetCore;
-using Provis.WebApi.Middleweres;
-using Provis.Core;
-using Provis.Core.Helpers;
-using System.Text;
 
 namespace Provis.WebApi
 {
@@ -44,12 +38,6 @@ namespace Provis.WebApi
 
             services.AddRepositories();
             services.AddDbContext(Configuration.GetConnectionString("DefaultConnection"));
-            services.AddIdentityDbContext();
-            services.AddFluentValidation();
-            
-            services.AddCustomServices();
-
-            services.Configure<JwtOptions>(Configuration.GetSection("JwtOptions"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

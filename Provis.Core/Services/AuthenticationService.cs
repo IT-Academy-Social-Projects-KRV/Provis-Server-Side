@@ -14,6 +14,7 @@ using Provis.Core.Entities;
 using Task = System.Threading.Tasks.Task;
 using Provis.Core.Exeptions;
 
+
 namespace Provis.Core.Services
 {
     public class AuthenticationService : IAuthenticationService
@@ -44,7 +45,6 @@ namespace Provis.Core.Services
 
             if (!result.Succeeded)
             {
-                throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
             return await GenerateWebToken(user);
         }
@@ -65,7 +65,6 @@ namespace Provis.Core.Services
                 {
                     errorMessage.Append(error.ToString() + " ");
                 }
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, errorMessage.ToString());
             }
 
             var findRole = await _roleManager.FindByNameAsync(roleName);
@@ -95,7 +94,6 @@ namespace Provis.Core.Services
             var token = new JwtSecurityToken(
                 issuer: _jwtOptions.Value.Issuer,
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(_jwtOptions.Value.LifeTime),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
