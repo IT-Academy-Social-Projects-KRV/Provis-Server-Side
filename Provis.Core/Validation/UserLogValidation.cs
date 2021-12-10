@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Provis.Core.Validation
 {
-    class UserLogValidation : AbstractValidator<UserLogDTO>
+    public class UserLogValidation : AbstractValidator<UserLogDTO>
     {
         public UserLogValidation()
         {
