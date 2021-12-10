@@ -12,7 +12,7 @@ using System.Security.Claims;
 using Provis.Core.Helpers;
 using Provis.Core.Entities;
 using Task = System.Threading.Tasks.Task;
-using Provis.Core.Exceptions;
+
 
 namespace Provis.Core.Services
 {
@@ -21,31 +21,31 @@ namespace Provis.Core.Services
         protected readonly UserManager<User> _userManager;
         protected readonly SignInManager<User> _signInManager;
         protected readonly IOptions<JwtOptions> _jwtOptions;
-
-        public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, IOptions<JwtOptions> jwtOptions)
+        protected readonly RoleManager<IdentityRole> _roleManager;
+        public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, IOptions<JwtOptions> jwtOptions, RoleManager<IdentityRole> roleManager)
         {
-            this._userManager = userManager;
-            this._signInManager = signInManager;
-            this._jwtOptions = jwtOptions;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _jwtOptions = jwtOptions;
+            _roleManager = roleManager;
         }
 
         public async Task<string> LoginAsync(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
 
-            if(user == null)
+            if (user == null)
             {
-                throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Incorrect email!");
+                //throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
 
             var result = await _signInManager.PasswordSignInAsync(user.UserName, password, false, false);
 
             if (!result.Succeeded)
             {
-                throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
+                //throw new HttpStatusException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
-
-            return GenerateWebToken(user);
+            return await GenerateWebToken(user);
         }
 
         public async Task LogOutAsync()
@@ -53,9 +53,10 @@ namespace Provis.Core.Services
             await _signInManager.SignOutAsync();
         }
 
-        public async Task RegistrationAsync(User user, string password)
+        public async Task RegistrationAsync(User user, string password, string roleName)
         {
             var result = await _userManager.CreateAsync(user, password);
+
             if (!result.Succeeded)
             {
                 StringBuilder errorMessage = new StringBuilder();
@@ -63,29 +64,39 @@ namespace Provis.Core.Services
                 {
                     errorMessage.Append(error.ToString() + " ");
                 }
-                throw new HttpStatusException(System.Net.HttpStatusCode.BadRequest,errorMessage.ToString());
+                //throw new HttpStatusException(System.Net.HttpStatusCode.BadRequest, errorMessage.ToString());
             }
 
+            var findRole = await _roleManager.FindByNameAsync(roleName);
+
+            if (findRole == null)
+            {
+                await _roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+
+            await _userManager.AddToRoleAsync(user, roleName);
         }
 
-        private string GenerateWebToken(User user)
+        private async Task<string> GenerateWebToken(User user)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Value.Key));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            var claims = new[]
+            var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.UserName),
-                //new Claim(ClaimTypes.Role, "User"),//don't know what to do with roles
+                new Claim(ClaimTypes.Name, user.UserName),              
             };
+
+            var roles = await _userManager.GetRolesAsync(user);
+            claims.AddRange(roles.Select(role => new Claim(ClaimsIdentity.DefaultRoleClaimType, role)));
 
             var token = new JwtSecurityToken(
                 issuer: _jwtOptions.Value.Issuer,
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(_jwtOptions.Value.LifeTime),
                 signingCredentials: credentials);
-            
+
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
     }

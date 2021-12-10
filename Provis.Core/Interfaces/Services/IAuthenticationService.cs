@@ -10,7 +10,7 @@ namespace Provis.Core.Interfaces.Services
 {
     public interface IAuthenticationService
     {
-        Task RegistrationAsync(User user, string password);
+        Task RegistrationAsync(User user, string password, string roleName);
         Task<string> LoginAsync(string email, string password);
         Task LogOutAsync();
     }
