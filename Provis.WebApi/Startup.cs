@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Provis.WebApi.Middleweres;
 
 namespace Provis.WebApi
 {
@@ -51,6 +52,8 @@ namespace Provis.WebApi
             }
 
             app.UseHttpsRedirection();
+
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseRouting();
 
