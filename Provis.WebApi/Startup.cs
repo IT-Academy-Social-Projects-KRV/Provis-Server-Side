@@ -19,8 +19,6 @@ using FluentValidation.AspNetCore;
 using Provis.WebApi.Middleweres;
 using Provis.Core;
 using Provis.Core.Helpers;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 namespace Provis.WebApi
