@@ -10,7 +10,7 @@ using Provis.Infrastructure.Data;
 namespace Provis.Infrastructure.Migrations
 {
     [DbContext(typeof(ProvisDbContext))]
-    [Migration("20211209145617_Initial")]
+    [Migration("20211210194800_Initial")]
     partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -339,6 +339,9 @@ namespace Provis.Infrastructure.Migrations
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)

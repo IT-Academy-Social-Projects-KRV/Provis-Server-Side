@@ -7,6 +7,7 @@ namespace Provis.Core.Entities
 {
     public class User : IdentityUser, IBaseEntity
     {
+        public string Name { get; set; }
         public string Surname { get; set; }
 
         public DateTime CreateDate { get; set; } // DateTime UTC
