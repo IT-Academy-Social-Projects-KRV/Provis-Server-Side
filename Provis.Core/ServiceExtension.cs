@@ -9,15 +9,19 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+
 namespace Provis.Core
 {
-    public static class ServiceExtencion
+    public static class ServiceExtension
     {
         public static void AddCustomServices(this IServiceCollection services)
         {
-            services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IAuthenticationService, AuthenticationService>();         
+        }
 
-            
+        public static void ConfigureJwtOptions(this IServiceCollection services)
+        {         
+            //services.Configure<JwtOptions>(Configuration.GetSection("JwtOptions"))
         }
     }
 }
