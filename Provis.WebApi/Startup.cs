@@ -27,6 +27,7 @@ namespace Provis.WebApi
             services.AddControllers();
             services.AddSwagger();
             services.AddJwtAuthentication(Configuration);
+            services.AddCors();
 
             services.AddDbContext(Configuration.GetConnectionString("DefaultConnection"));
             services.AddIdentityDbContext();
@@ -52,6 +53,13 @@ namespace Provis.WebApi
             app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseRouting();
+
+            app.UseCors(c =>
+            {
+                c.AllowAnyOrigin();
+                c.AllowAnyHeader();
+                c.AllowAnyMethod();
+            });
 
             app.UseAuthorization();
             app.UseAuthentication();
