@@ -1,20 +1,14 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Provis.Core;
 using Provis.Infrastructure;
-using Provis.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Provis.WebApi.Middleweres;
+using Provis.WebApi.ServiceExtension;
 
 namespace Provis.WebApi
 {
@@ -30,15 +24,17 @@ namespace Provis.WebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Provis.WebApi", Version = "v1" });
-            });
+            services.AddSwagger();
+            services.AddJwtAuthentication(Configuration);
+
+            services.AddDbContext(Configuration.GetConnectionString("DefaultConnection"));
+            services.AddIdentityDbContext();
 
             services.AddRepositories();
-            services.AddDbContext(Configuration.GetConnectionString("DefaultConnection"));
+            services.AddCustomServices();
+            services.AddFluentValitation();
+            services.ConfigJwtOptions(Configuration.GetSection("JwtOptions"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
