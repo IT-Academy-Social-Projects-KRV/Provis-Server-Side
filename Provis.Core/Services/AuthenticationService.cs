@@ -57,6 +57,7 @@ namespace Provis.Core.Services
 
         public async Task RegistrationAsync(User user, string password, string roleName)
         {
+            user.CreateDate = DateTime.UtcNow;
             var result = await _userManager.CreateAsync(user, password);
 
             if (!result.Succeeded)
@@ -85,7 +86,7 @@ namespace Provis.Core.Services
 
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName),              
             };
 
@@ -95,6 +96,7 @@ namespace Provis.Core.Services
             var token = new JwtSecurityToken(
                 issuer: _jwtOptions.Value.Issuer,
                 claims: claims,
+                expires: DateTime.UtcNow.AddHours(_jwtOptions.Value.LifeTime),
                 signingCredentials: credentials);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
