@@ -5,6 +5,6 @@
         public static string Owner = "Owner";
         public static string Manager = "Manager";
         public static string Member = "Member";
-        public static string Viewer = "Viver";
+        public static string Viewer = "Viewer";
     }
 }
