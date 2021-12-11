@@ -2,10 +2,7 @@
 using Newtonsoft.Json;
 using Provis.Core.Exeptions;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Net;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Provis.WebApi.Middleweres
