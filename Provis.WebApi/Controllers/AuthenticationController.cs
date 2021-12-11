@@ -1,13 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Provis.Core.DTO.userDTO;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Entities;
 using Provis.Core.Roles;
-using Provis.Core.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Provis.WebApi.Controllers
@@ -34,17 +29,17 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Route("registration")]
-        public async Task<IActionResult> RegistrationAsyns([FromBody] UserRegDTO RegDTO)
+        public async Task<IActionResult> RegistrationAsync([FromBody] UserRegDTO regDTO)
         {
-            var User = new User()
+            var user = new User()
             {
-                UserName = RegDTO.Name,
-                Surname = RegDTO.Surname,
-                
-                Email = RegDTO.Email
+                UserName = regDTO.Username,
+                Surname = regDTO.Surname,
+                Name = regDTO.Name,
+                Email = regDTO.Email
             };
 
-            await authenticationService.RegistrationAsync(User, RegDTO.Password, SystemRoles.User);
+            await authenticationService.RegistrationAsync(user, regDTO.Password, SystemRoles.User);
 
             return Ok();
         }
