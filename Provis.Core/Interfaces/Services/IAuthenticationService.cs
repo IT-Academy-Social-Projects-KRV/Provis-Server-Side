@@ -1,4 +1,5 @@
-﻿using Provis.Core.Entities;
+﻿using Provis.Core.DTO.userDTO;
+using Provis.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace Provis.Core.Interfaces.Services
     public interface IAuthenticationService
     {
         Task RegistrationAsync(User user, string password, string roleName);
-        Task<string> LoginAsync(string email, string password);
-        Task LogOutAsync();
+        Task<UserTokensDTO> LoginAsync(string email, string password);
+        Task<UserTokensDTO> RefreshTokenAsync(UserTokensDTO userTokensDTO);
     }
 }
