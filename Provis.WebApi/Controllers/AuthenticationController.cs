@@ -20,11 +20,11 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> LoginAsyns([FromBody] UserLogDTO logDTO)
+        public async Task<IActionResult> LoginAsync([FromBody] UserLogDTO logDTO)
         {
-            var token = await authenticationService.LoginAsync(logDTO.Email, logDTO.Password);
+            var tokens = await authenticationService.LoginAsync(logDTO.Email, logDTO.Password);
 
-            return Ok(new { token = token });
+            return Ok(tokens);
         }
 
         [HttpPost]
@@ -42,6 +42,15 @@ namespace Provis.WebApi.Controllers
             await authenticationService.RegistrationAsync(user, regDTO.Password, SystemRoles.User);
 
             return Ok();
+        }
+
+        [HttpPost]
+        [Route("refreshToken")]
+        public async Task<IActionResult> RefreshTokenAsync([FromBody] UserTokensDTO userTokensDTO)
+        {
+            var tokens = await authenticationService.RefreshTokenAsync(userTokensDTO);
+
+            return Ok(tokens);
         }
     }
 }
