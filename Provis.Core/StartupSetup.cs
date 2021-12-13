@@ -13,7 +13,8 @@ namespace Provis.Core
     {
         public static void AddCustomServices(this IServiceCollection services)
         {
-            services.AddScoped<IAuthenticationService, AuthenticationService>();         
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IWorkspaceService, WorkspaceService>();
         }
 
         public static void AddFluentValitation(this IServiceCollection services)
