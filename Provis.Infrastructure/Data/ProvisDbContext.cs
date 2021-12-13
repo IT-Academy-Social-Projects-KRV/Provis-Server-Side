@@ -60,6 +60,12 @@ namespace Provis.Infrastructure.Data
                 .WithMany(u => u.Tasks)
                 .UsingEntity(j => j.ToTable("UsersTasks"));
 
+            // RefreshToken Foreign Key
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne(x => x.User)
+                .WithMany(x => x.RefreshTokens)
+                .HasForeignKey(x=>x.UserId);
+
             // Add UserWorkspace table
             modelBuilder.Entity<Workspace>()
                     .HasMany(u => u.Users)
@@ -86,5 +92,6 @@ namespace Provis.Infrastructure.Data
         public DbSet<InviteUser> InviteUsers { get; set; }
         public DbSet<StatusHistory> StatusHistories { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }
