@@ -60,7 +60,7 @@ namespace Provis.WebApi
                 c.AllowAnyHeader();
                 c.AllowAnyMethod();
             });
-
+            
             app.UseAuthorization();
             app.UseAuthentication();
 
