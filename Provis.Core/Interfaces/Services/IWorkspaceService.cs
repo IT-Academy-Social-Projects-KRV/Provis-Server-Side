@@ -11,6 +11,6 @@ namespace Provis.Core.Interfaces.Services
 {
     public interface IWorkspaceService 
     {
-        Task CreateWorkspase(WorkspaceCreateDTO workspaceDTO, string userid);
+        Task CreateWorkspace(WorkspaceCreateDTO workspaceDTO, string userid);
     }
 }
