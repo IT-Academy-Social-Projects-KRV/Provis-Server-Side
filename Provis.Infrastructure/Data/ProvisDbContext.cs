@@ -1,12 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Provis.Core.Entities;
+using Provis.Infrastructure.Data.SeedData;
 
 namespace Provis.Infrastructure.Data
 {
     public class ProvisDbContext: IdentityDbContext<User>
     {
-        public ProvisDbContext(DbContextOptions<ProvisDbContext> options): base(options) { }
+        public ProvisDbContext(DbContextOptions<ProvisDbContext> options): base(options) 
+        {
+            Database.EnsureCreated();
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -83,6 +87,8 @@ namespace Provis.Infrastructure.Data
                 {
                     j.ToTable("UserWorkspaces");
                 });
+
+            modelBuilder.Seed();
         }
 
         public DbSet<Task> Tasks { get; set; }
