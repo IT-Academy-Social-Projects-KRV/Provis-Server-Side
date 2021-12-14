@@ -16,23 +16,7 @@ namespace Provis.WebApi
     {
         public static void Main(string[] args)
         {
-            var host = CreateHostBuilder(args).Build();
-            using (var scope = host.Services.CreateScope())
-            {
-                var services = scope.ServiceProvider;
-                try
-                {
-                    var context = services.GetRequiredService<ProvisDbContext>();
-                    AddWorkspaceRoles.AddWorkspaceRole(context);
-                }
-                catch (Exception ex)
-                {
-                    var logger = services.GetRequiredService<ILogger<Program>>();
-                    logger.LogError(ex, "An error occured during migration");
-                }
-            }
-            host.Run();
-
+            var host = CreateHostBuilder(args).Build().Run;
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
