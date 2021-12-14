@@ -17,5 +17,7 @@ namespace Provis.Core.Entities
         public List<Workspace> Workspaces { get; set; } = new List<Workspace>();
 
         public List<UserWorkspace> UserWorkspaces { get; set; } = new List<UserWorkspace>();
+
+        public List<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
     }
 }

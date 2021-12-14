@@ -1,12 +1,16 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Provis.Core.Entities;
+using Provis.Infrastructure.Data.SeedData;
 
 namespace Provis.Infrastructure.Data
 {
     public class ProvisDbContext: IdentityDbContext<User>
     {
-        public ProvisDbContext(DbContextOptions<ProvisDbContext> options): base(options) { }
+        public ProvisDbContext(DbContextOptions<ProvisDbContext> options): base(options) 
+        {
+            Database.EnsureCreated();
+        }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -60,6 +64,12 @@ namespace Provis.Infrastructure.Data
                 .WithMany(u => u.Tasks)
                 .UsingEntity(j => j.ToTable("UsersTasks"));
 
+            // RefreshToken Foreign Key
+            modelBuilder.Entity<RefreshToken>()
+                .HasOne(x => x.User)
+                .WithMany(x => x.RefreshTokens)
+                .HasForeignKey(x=>x.UserId);
+
             // Add UserWorkspace table
             modelBuilder.Entity<Workspace>()
                     .HasMany(u => u.Users)
@@ -77,6 +87,8 @@ namespace Provis.Infrastructure.Data
                 {
                     j.ToTable("UserWorkspaces");
                 });
+
+            modelBuilder.Seed();
         }
 
         public DbSet<Task> Tasks { get; set; }
@@ -86,5 +98,6 @@ namespace Provis.Infrastructure.Data
         public DbSet<InviteUser> InviteUsers { get; set; }
         public DbSet<StatusHistory> StatusHistories { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<RefreshToken> RefreshTokens { get; set; }
     }
 }

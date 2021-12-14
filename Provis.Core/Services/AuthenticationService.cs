@@ -1,19 +1,14 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Options;
+using Microsoft.EntityFrameworkCore;
+using Provis.Core.DTO.userDTO;
+using Provis.Core.Entities;
+using Provis.Core.Exeptions;
+using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Security.Claims;
-using Provis.Core.Helpers;
-using Provis.Core.Entities;
 using Task = System.Threading.Tasks.Task;
-using Provis.Core.Exeptions;
-
 
 namespace Provis.Core.Services
 {
@@ -21,18 +16,25 @@ namespace Provis.Core.Services
     {
         protected readonly UserManager<User> _userManager;
         protected readonly SignInManager<User> _signInManager;
-        protected readonly IOptions<JwtOptions> _jwtOptions;
+        protected readonly IJwtService _jwtService;
         protected readonly RoleManager<IdentityRole> _roleManager;
+        protected readonly IRepository<RefreshToken> _refreshTokenRepository;
 
-        public AuthenticationService(UserManager<User> userManager, SignInManager<User> signInManager, IOptions<JwtOptions> jwtOptions, RoleManager<IdentityRole> roleManager)
+        public AuthenticationService(
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            IJwtService jwtService,
+            RoleManager<IdentityRole> roleManager,
+            IRepository<RefreshToken> refreshTokenRepository)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _jwtOptions = jwtOptions;
+            _jwtService = jwtService;
             _roleManager = roleManager;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
-        public async Task<string> LoginAsync(string email, string password)
+        public async Task<UserTokensDTO> LoginAsync(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
 
@@ -47,12 +49,38 @@ namespace Provis.Core.Services
             {
                 throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
-            return await GenerateWebToken(user);
-        }
 
-        public async Task LogOutAsync()
-        {
-            await _signInManager.SignOutAsync();
+            var claims = _jwtService.SetClaims(user);
+
+            var token = _jwtService.CreateToken(claims);
+            var refeshToken = _jwtService.CreateRefreshToken();
+
+            var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x => x.UserId == user.Id);
+            if (refeshTokenFromDb == null)
+            {
+                RefreshToken rt = new RefreshToken()
+                {
+                    Token = refeshToken,
+                    UserId = user.Id
+                };
+
+                await _refreshTokenRepository.AddAsync(rt);
+            }
+            else
+            {
+                refeshTokenFromDb.Token = refeshToken;
+                await _refreshTokenRepository.UpdateAsync(refeshTokenFromDb);
+            }
+
+            await _refreshTokenRepository.SaveChangesAsync();
+
+            var tokens = new UserTokensDTO()
+            {
+                Token = token,
+                RefreshToken = refeshToken
+            };
+            
+            return tokens;
         }
 
         public async Task RegistrationAsync(User user, string password, string roleName)
@@ -79,27 +107,43 @@ namespace Provis.Core.Services
             await _userManager.AddToRoleAsync(user, roleName);
         }
 
-        private async Task<string> GenerateWebToken(User user)
+        public async Task<UserTokensDTO> RefreshTokenAsync(UserTokensDTO userTokensDTO)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.Value.Key));
-            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x=>x.Token == userTokensDTO.RefreshToken);
 
-            var claims = new List<Claim>
+            if(refeshTokenFromDb == null)
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName),              
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Invalid refrash token");
+            }
+
+            var claims = _jwtService.GetClaimsFromExpiredToken(userTokensDTO.Token);
+            var newToken = _jwtService.CreateToken(claims);
+            var newRefreshToken = _jwtService.CreateRefreshToken();
+
+            refeshTokenFromDb.Token = newRefreshToken;
+            await _refreshTokenRepository.UpdateAsync(refeshTokenFromDb);
+            await _refreshTokenRepository.SaveChangesAsync();
+
+            var tokens = new UserTokensDTO()
+            { 
+                Token = newToken,
+                RefreshToken = newRefreshToken
             };
 
-            var roles = await _userManager.GetRolesAsync(user);
-            claims.AddRange(roles.Select(role => new Claim(ClaimsIdentity.DefaultRoleClaimType, role)));
+            return tokens;
+        }
 
-            var token = new JwtSecurityToken(
-                issuer: _jwtOptions.Value.Issuer,
-                claims: claims,
-                expires: DateTime.UtcNow.AddHours(_jwtOptions.Value.LifeTime),
-                signingCredentials: credentials);
+        public async Task LogoutAsync(UserTokensDTO userTokensDTO)
+        {
+            var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x => x.Token == userTokensDTO.RefreshToken);
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            if (refeshTokenFromDb == null)
+            {
+                return;
+            }
+
+            await _refreshTokenRepository.DeleteAsync(refeshTokenFromDb);
+            await _refreshTokenRepository.SaveChangesAsync();
         }
     }
 }
