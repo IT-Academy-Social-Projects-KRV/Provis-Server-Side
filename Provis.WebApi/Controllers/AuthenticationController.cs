@@ -52,5 +52,14 @@ namespace Provis.WebApi.Controllers
 
             return Ok(tokens);
         }
+
+        [HttpPost]
+        [Route("logout")]
+        public async Task<IActionResult> LogoutAsync([FromBody] UserTokensDTO userTokensDTO)
+        {
+            await authenticationService.LogoutAsync(userTokensDTO);
+
+            return NoContent();
+        }
     }
 }

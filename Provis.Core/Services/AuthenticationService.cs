@@ -132,5 +132,18 @@ namespace Provis.Core.Services
 
             return tokens;
         }
+
+        public async Task LogoutAsync(UserTokensDTO userTokensDTO)
+        {
+            var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x => x.Token == userTokensDTO.RefreshToken);
+
+            if (refeshTokenFromDb == null)
+            {
+                return;
+            }
+
+            await _refreshTokenRepository.DeleteAsync(refeshTokenFromDb);
+            await _refreshTokenRepository.SaveChangesAsync();
+        }
     }
 }
