@@ -25,8 +25,6 @@ namespace Provis.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services.AddSwagger();
-            services.AddJwtAuthentication(Configuration);
             services.AddCors();
 
             services.AddDbContext(Configuration.GetConnectionString("DefaultConnection"));
@@ -36,6 +34,9 @@ namespace Provis.WebApi
             services.AddCustomServices();
             services.AddFluentValitation();
             services.ConfigJwtOptions(Configuration.GetSection("JwtOptions"));
+
+            services.AddSwagger();
+            services.AddJwtAuthentication(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -59,10 +60,10 @@ namespace Provis.WebApi
                 c.AllowAnyOrigin();
                 c.AllowAnyHeader();
                 c.AllowAnyMethod();
-            });
+            });           
             
-            app.UseAuthorization();
             app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
