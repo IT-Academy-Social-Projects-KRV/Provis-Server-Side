@@ -4,6 +4,9 @@ using System;
 using Provis.Core.Entities;
 using Task = System.Threading.Tasks.Task;
 using Provis.Core.Interfaces.Repositories;
+using Provis.Core.DTO.workspaceDTO;
+using Provis.Core.Exeptions;
+using Provis.Core.Roles;
 
 namespace Provis.Core.Services
 {
@@ -18,25 +21,29 @@ namespace Provis.Core.Services
             _workspace = workspace;
             _userWorkspace = userWorkspace;
         }
-        public async Task CreateWorkspase(string userid)
+        public async Task CreateWorkspase(WorkspaceCreateDTO workspaceDTO, string userid)
         {
-            //all roles must already be in the database!!
             var user = await _userManager.FindByIdAsync(userid);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
 
             Workspace workspace = new Workspace()
             {
                 DateOfCreate = DateTime.UtcNow,
-                Name = "New Workspace",
-                Description = "Description"
+                Name = workspaceDTO.Name,
+                Description = workspaceDTO.Description
             };
             await _workspace.AddAsync(workspace);
             await _workspace.SaveChangesAsync();
 
             UserWorkspace userWorkspace = new UserWorkspace()
             {
-                UserId = userid,
+                UserId = user.Id,
                 WorkspaceId = workspace.Id,
-                RoleId = 1
+                RoleId = WorkSpaceRoles.OwnerId
             };
             await _userWorkspace.AddAsync(userWorkspace);
             await _userWorkspace.SaveChangesAsync();

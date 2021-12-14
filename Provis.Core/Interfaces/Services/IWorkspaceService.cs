@@ -1,4 +1,5 @@
-﻿using Provis.Core.Entities;
+﻿using Provis.Core.DTO.workspaceDTO;
+using Provis.Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,6 @@ namespace Provis.Core.Interfaces.Services
 {
     public interface IWorkspaceService 
     {
-        Task CreateWorkspase(string userid);
+        Task CreateWorkspase(WorkspaceCreateDTO workspaceDTO, string userid);
     }
 }

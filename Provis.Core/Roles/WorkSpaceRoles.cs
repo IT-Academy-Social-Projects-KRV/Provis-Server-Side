@@ -2,9 +2,9 @@
 {
     public class WorkSpaceRoles
     {
-        public static string Owner = "Owner";
-        public static string Manager = "Manager";
-        public static string Member = "Member";
-        public static string Viewer = "Viewer";
+        public static int OwnerId = 1;
+        public static int ManagerId = 2;
+        public static int MemberId = 3;
+        public static int ViewerId = 4;
     }
 }
