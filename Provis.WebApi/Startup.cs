@@ -25,7 +25,6 @@ namespace Provis.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-
             services.AddDbContext(Configuration.GetConnectionString("DefaultConnection"));
             services.AddIdentityDbContext();
 
@@ -36,7 +35,6 @@ namespace Provis.WebApi
 
             services.AddSwagger();
             services.AddJwtAuthentication(Configuration);
-
             services.AddCors();
         }
 

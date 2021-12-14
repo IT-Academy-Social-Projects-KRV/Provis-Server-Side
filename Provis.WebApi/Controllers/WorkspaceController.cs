@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Provis.Core.DTO.workspaceDTO;
+using Provis.Core.Interfaces.Services;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Provis.WebApi.Controllers
@@ -11,5 +11,22 @@ namespace Provis.WebApi.Controllers
     [ApiController]
     public class WorkspaceController : ControllerBase
     {
+        protected readonly IWorkspaceService _workspaceService;
+        private string UserId => User.FindFirst(ClaimTypes.NameIdentifier).Value;
+
+        public WorkspaceController(IWorkspaceService workspaceService)
+        {
+            _workspaceService = workspaceService;
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("addworkspace")]
+        public async Task<IActionResult> AddWorkspaceAsync([FromBody] WorkspaceCreateDTO createDTO)
+        {
+            await _workspaceService.CreateWorkspace(createDTO, UserId);
+
+            return Ok();
+        }
     }
 }
