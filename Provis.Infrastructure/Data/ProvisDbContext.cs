@@ -9,7 +9,7 @@ namespace Provis.Infrastructure.Data
     {
         public ProvisDbContext(DbContextOptions<ProvisDbContext> options): base(options) 
         {
-            Database.EnsureCreated();
+            //Database.EnsureCreated();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
