@@ -12,11 +12,13 @@ namespace Provis.WebApi.Controllers
     public class WorkspaceController : ControllerBase
     {
         protected readonly IWorkspaceService _workspaceService;
+        protected readonly IEmailSenderService _emailSenderService;
         private string UserId => User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-        public WorkspaceController(IWorkspaceService workspaceService)
+        public WorkspaceController(IWorkspaceService workspaceService, IEmailSenderService emailSenderService)
         {
             _workspaceService = workspaceService;
+            _emailSenderService = emailSenderService;
         }
 
         [Authorize]
@@ -25,6 +27,14 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> AddWorkspaceAsync([FromBody] WorkspaceCreateDTO createDTO)
         {
             await _workspaceService.CreateWorkspace(createDTO, UserId);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        public IActionResult SendMessage()
+        {
+            _emailSenderService.Send("gorix2019@gmail.com", "Hello from Provis", "herakros");
 
             return Ok();
         }
