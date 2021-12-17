@@ -7,6 +7,7 @@ using Provis.Core.Interfaces.Repositories;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Exeptions;
 using Provis.Core.Roles;
+using AutoMapper;
 
 namespace Provis.Core.Services
 {
@@ -15,11 +16,16 @@ namespace Provis.Core.Services
         protected readonly UserManager<User> _userManager;
         protected readonly IRepository<Workspace> _workspace;
         protected readonly IRepository<UserWorkspace> _userWorkspace;
-        public WorkspaceService(UserManager<User> userManager, IRepository<Workspace> workspace, IRepository<UserWorkspace> userWorkspace)
+        protected readonly IMapper _mapper;
+        public WorkspaceService(UserManager<User> userManager,
+            IRepository<Workspace> workspace,
+            IRepository<UserWorkspace> userWorkspace,
+            IMapper mapper)
         {
             _userManager = userManager;
             _workspace = workspace;
             _userWorkspace = userWorkspace;
+            _mapper = mapper;
         }
         public async Task CreateWorkspace(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -30,12 +36,9 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            Workspace workspace = new Workspace()
-            {
-                DateOfCreate = DateTime.UtcNow,
-                Name = workspaceDTO.Name,
-                Description = workspaceDTO.Description
-            };
+            var workspace = _mapper.Map<Workspace>(workspaceDTO);
+            workspace.DateOfCreate = DateTime.UtcNow;
+
             await _workspace.AddAsync(workspace);
             await _workspace.SaveChangesAsync();
 

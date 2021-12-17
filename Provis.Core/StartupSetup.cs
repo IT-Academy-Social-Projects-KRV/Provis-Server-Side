@@ -1,4 +1,5 @@
-﻿using FluentValidation.AspNetCore;
+﻿using AutoMapper;
+using FluentValidation.AspNetCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Provis.Core.Helpers;
@@ -26,6 +27,17 @@ namespace Provis.Core
         public static void ConfigJwtOptions(this IServiceCollection services, IConfiguration config)
         {
             services.Configure<JwtOptions>(config);
+        }
+
+        public static void AddAutoMapper(this IServiceCollection services)
+        {
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new ApplicationProfile());
+            });
+
+            IMapper mapper = mapperConfig.CreateMapper();
+            services.AddSingleton(mapper);
         }
     }
 }
