@@ -13,7 +13,7 @@ namespace Provis.WebApi.Controllers
     {
         protected readonly IWorkspaceService _workspaceService;
         private string UserId => User.FindFirst(ClaimTypes.NameIdentifier).Value;
-
+        
         public WorkspaceController(IWorkspaceService workspaceService)
         {
             _workspaceService = workspaceService;
@@ -25,6 +25,16 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> AddWorkspaceAsync([FromBody] WorkspaceCreateDTO createDTO)
         {
             await _workspaceService.CreateWorkspace(createDTO, UserId);
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpPut]
+        [Route("acceptinvitation")]
+        public async Task<IActionResult> AcceptInvitationAsync()
+        {
+            await _workspaceService.AcceptInvitation(UserId);
 
             return Ok();
         }

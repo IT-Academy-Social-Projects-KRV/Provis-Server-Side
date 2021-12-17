@@ -21,6 +21,22 @@ namespace Provis.Core.Services
             _workspace = workspace;
             _userWorkspace = userWorkspace;
         }
+
+        public async Task AcceptInvitation(string userid)
+        {
+            var user = await _userManager.FindByIdAsync(userid);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            InviteUser inviteUser = new InviteUser()
+            {
+                IsConfirm = true
+            };
+        }
+
         public async Task CreateWorkspace(WorkspaceCreateDTO workspaceDTO, string userid)
         {
             var user = await _userManager.FindByIdAsync(userid);
