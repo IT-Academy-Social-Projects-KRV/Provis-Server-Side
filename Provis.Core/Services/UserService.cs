@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Provis.Core.DTO.userDTO;
 using Provis.Core.Entities;
 using Provis.Core.Exeptions;
@@ -16,12 +17,15 @@ namespace Provis.Core.Services
     {
         protected readonly UserManager<User> _userManager;
         protected readonly IRepository<User> _userRepository;
+        protected readonly IMapper _mapper;
 
         public UserService(UserManager<User> userManager,
-            IRepository<User> userRepository)
+            IRepository<User> userRepository,
+            IMapper mapper)
         {
             _userManager = userManager;
             _userRepository = userRepository;
+            _mapper = mapper;
         }
 
         public async Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId)
@@ -33,14 +37,15 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            var userPersonalInfo = new UserPersonalInfoDTO()
+            /*var userPersonalInfo = new UserPersonalInfoDTO()
             {
                 Name = user.Name,
                 Email = user.Email,
                 Surname = user.Surname,
                 Username = user.UserName
-            };
-
+            };*/
+            
+            var userPersonalInfo = _mapper.Map<UserPersonalInfoDTO>(user);
             return userPersonalInfo;
         }
     }
