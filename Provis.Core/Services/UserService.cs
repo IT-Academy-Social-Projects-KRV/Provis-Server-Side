@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Provis.Core.DTO.userDTO;
 using Provis.Core.Entities;
@@ -36,6 +36,8 @@ namespace Provis.Core.Services
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
+
+            var userPersonalInfo = _mapper.Map<UserPersonalInfoDTO>(user);
 
             return userPersonalInfo;
         }
