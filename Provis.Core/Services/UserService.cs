@@ -37,14 +37,6 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            /*var userPersonalInfo = new UserPersonalInfoDTO()
-            {
-                Name = user.Name,
-                Email = user.Email,
-                Surname = user.Surname,
-                Username = user.UserName
-            };*/
-            
             var userPersonalInfo = _mapper.Map<UserPersonalInfoDTO>(user);
             return userPersonalInfo;
         }
