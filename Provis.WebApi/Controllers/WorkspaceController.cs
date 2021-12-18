@@ -12,14 +12,11 @@ namespace Provis.WebApi.Controllers
     public class WorkspaceController : ControllerBase
     {
         protected readonly IWorkspaceService _workspaceService;
-        protected readonly IInviteUserService _inviteUserService;
         private string UserId => User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
-        public WorkspaceController(IWorkspaceService workspaceService, 
-            IInviteUserService inviteUserService)
+        public WorkspaceController(IWorkspaceService workspaceService)
         {
             _workspaceService = workspaceService;
-            _inviteUserService = inviteUserService;
         }
 
         [Authorize]
@@ -37,7 +34,7 @@ namespace Provis.WebApi.Controllers
         [Route("inviteuser")]
         public async Task<IActionResult> SendInviteToUser([FromBody] InviteUserDTO inviteUser)
         {
-            await _inviteUserService.SendInviteAsync(inviteUser, UserId);
+            await _workspaceService.SendInviteAsync(inviteUser, UserId);
 
             return Ok();
         }
