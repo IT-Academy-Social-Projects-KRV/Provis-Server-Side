@@ -60,14 +60,14 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-        public async Task SendInviteAsync(InviteUserDTO inviteUser, string userId)
+        public async Task SendInviteAsync(InviteUserDTO inviteUser, string ownerId)
         {
-            var invitingUser = await _userManager.FindByEmailAsync(inviteUser.UserEmail);
-            var owner = await _userManager.FindByIdAsync(userId);
+            var invitedUser = await _userManager.FindByEmailAsync(inviteUser.UserEmail);
+            var owner = await _userManager.FindByIdAsync(ownerId);
 
-            if (invitingUser == null)
+            if (invitedUser == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Email not exist");
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Email not exist");
             }
 
             var workspace = await _workspaceRepository.GetByKeyAsync(inviteUser.WorkspaceId);
@@ -78,8 +78,8 @@ namespace Provis.Core.Services
             }
 
             var inviteUserColumn = await _inviteUserRepository.Query().FirstOrDefaultAsync(x =>
-            x.FromUserId == userId &&
-            x.ToUserId == invitingUser.Id &&
+            x.FromUserId == ownerId &&
+            x.ToUserId == invitedUser.Id &&
             x.WorkspaceId == workspace.Id);
 
             if (inviteUserColumn != null)
@@ -91,14 +91,14 @@ namespace Provis.Core.Services
             {
                 Date = DateTime.UtcNow,
                 FromUser = owner,
-                ToUser = invitingUser,
+                ToUser = invitedUser,
                 Workspace = workspace
             };
 
             await _inviteUserRepository.AddAsync(user);
             await _inviteUserRepository.SaveChangesAsync();
 
-            await _emailSendService.SendAsync(invitingUser.Email, $"Owner: {owner.UserName} - Welcome to my Workspace");
+            await _emailSendService.SendAsync(invitedUser.Email, $"Owner: {owner.UserName} - Welcome to my Workspace");
 
             await Task.CompletedTask;
         }
