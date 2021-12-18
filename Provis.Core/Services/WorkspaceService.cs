@@ -88,8 +88,6 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.Conflict, "This user already have invite, wait for a answer");
             }
 
-
-
             InviteUser user = new InviteUser
             {
                 Date = DateTime.UtcNow,
