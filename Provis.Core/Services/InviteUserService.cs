@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Entities;
 using Provis.Core.Exeptions;
@@ -13,8 +14,8 @@ namespace Provis.Core.Services
     {
         protected readonly IEmailSenderService _emailSendService;
         protected readonly UserManager<User> _userManager;
-        protected readonly IRepository<InviteUser> _inviteUser;
-        protected readonly IRepository<Workspace> _workspaceRepository;
+        protected readonly IRepository<InviteUser> _inviteUserRepository;
+        protected readonly IRepository<Workspace> _workspaceRepositoryRepository;
 
         public InviteUserService(IEmailSenderService emailSenderService, 
             UserManager<User> userManager, 
@@ -23,8 +24,8 @@ namespace Provis.Core.Services
         {
             _emailSendService = emailSenderService;
             _userManager = userManager;
-            _inviteUser = inviteUser;
-            _workspaceRepository = workspaceRepository;
+            _inviteUserRepository = inviteUser;
+            _workspaceRepositoryRepository = workspaceRepository;
         }
 
         public async Task SendInviteAsync(InviteUserDTO inviteUser, string userId)
@@ -37,11 +38,21 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Email not exist");
             }
 
-            var workspace = await _workspaceRepository.GetByKeyAsync(inviteUser.WorkspaceId);
+            var workspace = await _workspaceRepositoryRepository.GetByKeyAsync(inviteUser.WorkspaceId);
 
             if(workspace == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "Not found this workspace");
+            }
+
+            var inviteUserColumn = await _inviteUserRepository.Query().FirstOrDefaultAsync(x => 
+            x.FromUserId == userId &&
+            x.ToUserId == invitingUser.Id &&
+            x.WorkspaceId == workspace.Id);
+
+            if(inviteUserColumn != null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Conflict, "This user already have invite, wait for a answer");
             }
 
             InviteUser user = new InviteUser
@@ -52,12 +63,10 @@ namespace Provis.Core.Services
                 Workspace = workspace
             };
 
-            await _inviteUser.AddAsync(user);
-            await _inviteUser.SaveChangesAsync();
+            await _inviteUserRepository.AddAsync(user);
+            await _inviteUserRepository.SaveChangesAsync();
 
             await _emailSendService.SendAsync(invitingUser.Email, $"Owner: {owner.UserName} - Welcome to my Workspace");
-
-            //TODO: throw exception if user already have invite to this workspace
 
             await Task.CompletedTask;
         }

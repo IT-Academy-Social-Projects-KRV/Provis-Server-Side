@@ -19,7 +19,7 @@ namespace Provis.Core.Services
 
             using(SmtpClient client = new SmtpClient("smtp.gmail.com"))
             {
-                client.Credentials = new NetworkCredential("herakrosisnews@gmail.com", "MyPassword_1");
+                client.Credentials = new NetworkCredential("herakrosisnews@gmail.com", "");
                 client.Port = 587;
                 client.EnableSsl = true;
                 client.Send(mailMessage);
