@@ -1,13 +1,13 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Provis.Core.Interfaces.Services;
-using System;
-using Provis.Core.Entities;
-using Task = System.Threading.Tasks.Task;
-using Provis.Core.Interfaces.Repositories;
-using Provis.Core.DTO.workspaceDTO;
-using Provis.Core.Exeptions;
-using Provis.Core.Roles;
 using Microsoft.EntityFrameworkCore;
+using Provis.Core.DTO.workspaceDTO;
+using Provis.Core.Entities;
+using Provis.Core.Exeptions;
+using Provis.Core.Interfaces.Repositories;
+using Provis.Core.Interfaces.Services;
+using Provis.Core.Roles;
+using System;
+using Task = System.Threading.Tasks.Task;
 
 namespace Provis.Core.Services
 {
@@ -18,6 +18,7 @@ namespace Provis.Core.Services
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
         protected readonly IRepository<InviteUser> _inviteUserRepository;
+
         public WorkspaceService(UserManager<User> userManager, 
             IRepository<Workspace> workspace, 
             IRepository<UserWorkspace> userWorkspace,

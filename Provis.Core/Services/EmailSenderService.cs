@@ -1,5 +1,4 @@
 ﻿using Provis.Core.Interfaces.Services;
-using System.Net;
 using System.Net.Mail;
 using Task = System.Threading.Tasks.Task;
 
@@ -7,7 +6,13 @@ namespace Provis.Core.Services
 {
     public class EmailSenderService : IEmailSenderService
     {
-        public Task SendAsync(string emailAddress, string message)
+        private readonly ISmtpService _smtpService;
+        public EmailSenderService(ISmtpService smtpService)
+        {
+            _smtpService = smtpService;
+        }
+
+        public async Task SendAsync(string emailAddress, string message)
         {
             MailMessage mailMessage = new MailMessage();
 
@@ -17,15 +22,7 @@ namespace Provis.Core.Services
             mailMessage.Subject = "Weclom to Provis";
             mailMessage.Body = $"<div style=\"color: green;\">{message}</div>";
 
-            using(SmtpClient client = new SmtpClient("smtp.gmail.com"))
-            {
-                client.Credentials = new NetworkCredential("herakrosisnews@gmail.com", "");
-                client.Port = 587;
-                client.EnableSsl = true;
-                client.Send(mailMessage);
-            }
-
-            return Task.CompletedTask;
+            await _smtpService.ConnectAsync(mailMessage);
         }
     }
 }
