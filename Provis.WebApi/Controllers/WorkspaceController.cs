@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Provis.Core.DTO.inviteUserDTO;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Interfaces.Services;
 using System.Security.Claims;
@@ -25,6 +26,16 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> AddWorkspaceAsync([FromBody] WorkspaceCreateDTO createDTO)
         {
             await _workspaceService.CreateWorkspace(createDTO, UserId);
+
+            return Ok();
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("denyinvitation")]
+        public async Task<IActionResult> DenyInviteUserAsync([FromBody] InviteUserDTO inviteUserDenyDTO)
+        {
+            await _workspaceService.DenyInviteAsync(inviteUserDenyDTO, UserId);
 
             return Ok();
         }

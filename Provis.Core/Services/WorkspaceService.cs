@@ -8,6 +8,7 @@ using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Exeptions;
 using Provis.Core.Roles;
 using AutoMapper;
+using Provis.Core.DTO.inviteUserDTO;
 
 namespace Provis.Core.Services
 {
@@ -16,15 +17,18 @@ namespace Provis.Core.Services
         protected readonly UserManager<User> _userManager;
         protected readonly IRepository<Workspace> _workspace;
         protected readonly IRepository<UserWorkspace> _userWorkspace;
+        protected readonly IRepository<InviteUser> _inviteUser;
         protected readonly IMapper _mapper;
         public WorkspaceService(UserManager<User> userManager,
             IRepository<Workspace> workspace,
             IRepository<UserWorkspace> userWorkspace,
+            IRepository<InviteUser> inviteUser,
             IMapper mapper)
         {
             _userManager = userManager;
             _workspace = workspace;
             _userWorkspace = userWorkspace;
+            _inviteUser = inviteUser;
             _mapper = mapper;
         }
         public async Task CreateWorkspace(WorkspaceCreateDTO workspaceDTO, string userid)
@@ -52,6 +56,26 @@ namespace Provis.Core.Services
             await _userWorkspace.SaveChangesAsync();
 
             await Task.CompletedTask;
+        }
+
+        public async Task DenyInviteAsync(InviteUserDTO inviteUserDTO, string userid)
+        {
+            var user = await _userManager.FindByIdAsync(userid);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+            var inviteUserRec = await _inviteUser.GetByKeyAsync(inviteUserDTO.Id);
+            if (inviteUserRec == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Invite with with Id not found");
+            }
+            inviteUserRec.IsConfirm = false;
+            await _inviteUser.SaveChangesAsync();
+
+            await Task.CompletedTask;
+
         }
     }
 }
