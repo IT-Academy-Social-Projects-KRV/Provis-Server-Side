@@ -8,6 +8,8 @@ using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Exeptions;
 using Provis.Core.Roles;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace Provis.Core.Services
 {
@@ -52,6 +54,38 @@ namespace Provis.Core.Services
             await _userWorkspace.SaveChangesAsync();
 
             await Task.CompletedTask;
+        }
+
+        //public async Task<WorkspaceListDTO> GetWorkspaceList(string userid)
+        //{
+        //    var user = await _userManager.FindByIdAsync(userid);
+
+        //    if (user == null)
+        //    {
+        //        throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+        //    }
+
+        //    var listWorkspace = _userWorkspace.Query().Include(x => x.WorkspaceId).Include(r => r.Role).Where(y => y.UserId == userid).ToListAsync();
+
+        //    var EntitysWorkspace = _mapper.Map<WorkspaceListDTO>(listWorkspace);
+
+        //    return EntitysWorkspace;
+        //}
+
+        async System.Threading.Tasks.Task<WorkspaceListDTO> IWorkspaceService.GetWorkspaceList(string userid)
+        {
+            var user = await _userManager.FindByIdAsync(userid);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            var listWorkspace = _userWorkspace.Query().Include(x => x.WorkspaceId).Include(r => r.Role).Where(y => y.UserId == userid).ToListAsync();
+
+            var EntitysWorkspace = _mapper.Map<WorkspaceListDTO>(listWorkspace);
+
+            return EntitysWorkspace;
         }
     }
 }
