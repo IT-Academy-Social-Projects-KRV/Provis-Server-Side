@@ -61,47 +61,64 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-        public async Task SendInviteAsync(InviteUserDTO inviteUser, string ownerId)
+        public async Task SendInviteAsync(InviteUserDTO inviteDTO, string ownerId)
         {
-            var invitedUser = await _userManager.FindByEmailAsync(inviteUser.UserEmail);
+            var inviteUser = await _userManager.FindByEmailAsync(inviteDTO.UserEmail);
             var owner = await _userManager.FindByIdAsync(ownerId);
 
-            if (invitedUser == null)
+            if (inviteUser == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Email not exist");
             }
 
-            var workspace = await _workspaceRepository.GetByKeyAsync(inviteUser.WorkspaceId);
+            var workspace = await _workspaceRepository.GetByKeyAsync(inviteDTO.WorkspaceId);
 
             if (workspace == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "Not found this workspace");
             }
 
-            var inviteUserColumn = await _inviteUserRepository.Query().FirstOrDefaultAsync(x =>
-            x.FromUserId == ownerId &&
-            x.ToUserId == invitedUser.Id &&
-            x.WorkspaceId == workspace.Id);
+            // Check privacy, temporary solution
 
-            if (inviteUserColumn != null)
+            var checkRole = await _userWorkspaceRepository.Query().FirstOrDefaultAsync(u => u.WorkspaceId == inviteDTO.WorkspaceId && u.UserId == ownerId);
+
+            if(checkRole == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.Conflict, "This user already have invite, wait for a answer");
+                throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "You don't have permissions!");
             }
-
-            InviteUser user = new InviteUser
+            else
             {
-                Date = DateTime.UtcNow,
-                FromUser = owner,
-                ToUser = invitedUser,
-                Workspace = workspace
-            };
 
-            await _inviteUserRepository.AddAsync(user);
-            await _inviteUserRepository.SaveChangesAsync();
+                if (checkRole.RoleId == WorkSpaceRoles.MemberId || checkRole.RoleId == WorkSpaceRoles.ViewerId)
+                {
+                    throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "You don't have permissions!");
+                }
 
-            await _emailSendService.SendAsync(invitedUser.Email, $"Owner: {owner.UserName} - Welcome to my Workspace");
+                var inviteUserColumn = await _inviteUserRepository.Query().FirstOrDefaultAsync(x =>
+                    x.FromUserId == ownerId &&
+                    x.ToUserId == inviteUser.Id &&
+                    x.WorkspaceId == workspace.Id);
 
-            await Task.CompletedTask;
+                if (inviteUserColumn != null)
+                {
+                    throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "This user already have invite, wait for a answer");
+                }
+
+                InviteUser user = new InviteUser
+                {
+                    Date = DateTime.UtcNow,
+                    FromUser = owner,
+                    ToUser = inviteUser,
+                    Workspace = workspace
+                };
+
+                await _inviteUserRepository.AddAsync(user);
+                await _inviteUserRepository.SaveChangesAsync();
+
+                await _emailSendService.SendAsync(inviteUser.Email, $"Owner: {owner.UserName} - Welcome to my Workspace {workspace.Name}");
+
+                await Task.CompletedTask;
+            }
         }
     }
 }
