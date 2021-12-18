@@ -8,6 +8,10 @@ using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Exeptions;
 using Provis.Core.Roles;
 using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Provis.Core.Services
 {
@@ -52,6 +56,22 @@ namespace Provis.Core.Services
             await _userWorkspace.SaveChangesAsync();
 
             await Task.CompletedTask;
+        }
+
+        public async Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid)
+        {
+            var user = await _userManager.FindByIdAsync(userid);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            var listWorkspace = await _userWorkspace.Query().Where(y => y.UserId == userid).Include(x => x.Workspace).Include(x => x.Role).ToListAsync();
+
+            var listWorkspaceToReturn = _mapper.Map<List<WorkspaceInfoDTO>>(listWorkspace);
+
+            return listWorkspaceToReturn;
         }
     }
 }
