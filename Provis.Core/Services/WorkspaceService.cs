@@ -9,7 +9,6 @@ using Provis.Core.Roles;
 using System;
 using Task = System.Threading.Tasks.Task;
 using AutoMapper;
-using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -51,17 +50,8 @@ namespace Provis.Core.Services
             var workspace = _mapper.Map<Workspace>(workspaceDTO);
             workspace.DateOfCreate = DateTime.UtcNow;
 
-            await _workspace.AddAsync(workspace);
-            await _workspace.SaveChangesAsync();
-
-            UserWorkspace userWorkspace = new UserWorkspace()
-            {
-                UserId = user.Id,
-                WorkspaceId = workspace.Id,
-                RoleId = WorkSpaceRoles.OwnerId
-            };
-            await _userWorkspaceRepository.AddAsync(userWorkspace);
-            await _userWorkspaceRepository.SaveChangesAsync();
+            await _workspaceRepository.AddAsync(workspace);
+            await _workspaceRepository.SaveChangesAsync();
 
             await Task.CompletedTask;
         }
@@ -87,7 +77,7 @@ namespace Provis.Core.Services
 
             var checkRole = await _userWorkspaceRepository.Query().FirstOrDefaultAsync(u => u.WorkspaceId == inviteDTO.WorkspaceId && u.UserId == ownerId);
 
-            if(checkRole == null)
+            if (checkRole == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "You don't have permissions!");
             }
@@ -99,12 +89,12 @@ namespace Provis.Core.Services
                     throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "You don't have permissions!");
                 }
 
-                var inviteUserColumn = await _inviteUserRepository.Query().FirstOrDefaultAsync(x =>
+                var inviteUserEntry = await _inviteUserRepository.Query().FirstOrDefaultAsync(x =>
                     x.FromUserId == ownerId &&
                     x.ToUserId == inviteUser.Id &&
                     x.WorkspaceId == workspace.Id);
 
-                if (inviteUserColumn != null)
+                if (inviteUserEntry != null)
                 {
                     throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "This user already have invite, wait for a answer");
                 }
@@ -122,7 +112,8 @@ namespace Provis.Core.Services
 
                 await _emailSendService.SendAsync(inviteUser.Email, $"Owner: {owner.UserName} - Welcome to my Workspace {workspace.Name}");
 
-            await Task.CompletedTask;
+                await Task.CompletedTask;
+            }
         }
 
         public async Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid)
@@ -134,7 +125,7 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            var listWorkspace = await _userWorkspace.Query().Where(y => y.UserId == userid).Include(x => x.Workspace).Include(x => x.Role).ToListAsync();
+            var listWorkspace = await _userWorkspaceRepository.Query().Where(y => y.UserId == userid).Include(x => x.Workspace).Include(x => x.Role).ToListAsync();
 
             var listWorkspaceToReturn = _mapper.Map<List<WorkspaceInfoDTO>>(listWorkspace);
 
