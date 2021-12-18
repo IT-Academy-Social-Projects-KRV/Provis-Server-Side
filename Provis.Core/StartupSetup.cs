@@ -17,6 +17,7 @@ namespace Provis.Core
             services.AddScoped<IWorkspaceService, WorkspaceService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IEmailSenderService, EmailSenderService>();
+            services.AddScoped<IInviteUserService, InviteUserService>();
         }
 
         public static void AddFluentValitation(this IServiceCollection services)

@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
 
 namespace Provis.Core.Interfaces.Services
 {
     public interface IEmailSenderService
     {
-        void Send(string emailAddress, string message, string userName);
+        Task SendAsync(string emailAddress, string message);
     }
 }
