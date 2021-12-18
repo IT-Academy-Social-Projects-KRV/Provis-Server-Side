@@ -29,13 +29,13 @@ namespace Provis.WebApi.Controllers
             return Ok();
         }
 
+        [Authorize]
         [HttpGet]
         [Route("getworlspacelist")]
-        public async Task<WorkspaceListDTO> GetWorkspaceAsync()
+        public async Task<IActionResult> GetWorkspaceAsync()
         {
-            var getList = await _workspaceService.GetWorkspaceList(UserId);
-
-            return getList;
+            var getList = await _workspaceService.GetWorkspaceListAsync(UserId);
+            return Ok(getList);
         }
     }
 }
