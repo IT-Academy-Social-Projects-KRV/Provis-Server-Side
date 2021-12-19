@@ -12,6 +12,7 @@ using AutoMapper;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Provis.Core.Helpers.Mails;
 
 namespace Provis.Core.Services
 {
@@ -110,7 +111,12 @@ namespace Provis.Core.Services
                 await _inviteUserRepository.AddAsync(user);
                 await _inviteUserRepository.SaveChangesAsync();
 
-                await _emailSendService.SendAsync(inviteUser.Email, $"Owner: {owner.UserName} - Welcome to my Workspace {workspace.Name}");
+                await _emailSendService.SendEmailAsync(new MailRequest 
+                { 
+                    ToEmail = inviteDTO.UserEmail, 
+                    Subject = "Provis", 
+                    Body = $"Owner: {owner.UserName} - Welcome to my Workspace {workspace.Name}"
+                });
 
                 await Task.CompletedTask;
             }
