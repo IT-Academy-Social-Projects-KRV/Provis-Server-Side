@@ -6,6 +6,6 @@ namespace Provis.Core.Interfaces.Services
 {
     public interface ISmtpService
     {
-        Task ConnectAsync(MailSettings mailSettings, MimeMessage email);
+        Task SendAsync(MailSettings mailSettings, MimeMessage email);
     }
 }

@@ -1,23 +1,27 @@
-﻿using Provis.Core.Interfaces.Services;
-using System.Net;
-using System.Net.Mail;
+﻿using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
+using Provis.Core.Helpers.Mails;
+using Provis.Core.Interfaces.Services;
 using System.Threading.Tasks;
 
 namespace Provis.Core.Services
 {
     public class SmtpService : ISmtpService
     {
-        public Task ConnectAsync(MailMessage mailMessage)
+        public async Task SendAsync(MailSettings mailSettings, MimeMessage email)
         {
-            using (SmtpClient client = new SmtpClient("smtp.gmail.com"))
+            using (var smtp = new SmtpClient())
             {
-                client.Credentials = new NetworkCredential("herakrosisnews@gmail.com", "MyPassword_1"); // radi boga ne trogaite mou poshty thank you :)
-                client.Port = 587;
-                client.EnableSsl = true;
-                client.Send(mailMessage);
-            }
+                smtp.CheckCertificateRevocation = false;
+                await smtp.ConnectAsync(mailSettings.Host, mailSettings.Port, SecureSocketOptions.StartTls);
+                //smtp.AuthenticationMechanisms.Remove("XOAUTH2");
+                smtp.Authenticate(mailSettings.Email, mailSettings.Password);
 
-            return Task.CompletedTask;
+                await smtp.SendAsync(email);
+
+                smtp.Disconnect(true);
+            }
         }
     }
 }
