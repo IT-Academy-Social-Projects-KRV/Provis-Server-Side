@@ -9,6 +9,10 @@ using Provis.Core.Exeptions;
 using Provis.Core.Roles;
 using AutoMapper;
 using Provis.Core.DTO.inviteUserDTO;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Provis.Core.Services
 {
@@ -58,14 +62,9 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
+
         public async Task DenyInviteAsync(InviteUserDTO inviteUserDTO, string userid)
         {
-            var user = await _userManager.FindByIdAsync(userid);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
-            }
             var inviteUserRec = await _inviteUser.GetByKeyAsync(inviteUserDTO.Id);
             if (inviteUserRec == null)
             {
@@ -74,8 +73,24 @@ namespace Provis.Core.Services
             inviteUserRec.IsConfirm = false;
             await _inviteUser.SaveChangesAsync();
 
-            await Task.CompletedTask;
+            await Task.CompletedTask;        
+        }
 
+        public async Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid)
+
+        {
+            var user = await _userManager.FindByIdAsync(userid);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            var listWorkspace = await _userWorkspace.Query().Where(y => y.UserId == userid).Include(x => x.Workspace).Include(x => x.Role).ToListAsync();
+
+            var listWorkspaceToReturn = _mapper.Map<List<WorkspaceInfoDTO>>(listWorkspace);
+
+            return listWorkspaceToReturn;
         }
     }
 }
