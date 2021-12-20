@@ -72,7 +72,7 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            var inviteUserRec = await _inviteUser.GetByKeyAsync(id);
+            var inviteUserRec = await _inviteUserRepository.GetByKeyAsync(id);
 
             if (inviteUserRec == null)
             {
@@ -80,7 +80,7 @@ namespace Provis.Core.Services
             }
             if(inviteUserRec.IsConfirm==null)
             inviteUserRec.IsConfirm = false;
-            await _inviteUser.SaveChangesAsync();
+            await _inviteUserRepository.SaveChangesAsync();
 
             await Task.CompletedTask;        
         }
