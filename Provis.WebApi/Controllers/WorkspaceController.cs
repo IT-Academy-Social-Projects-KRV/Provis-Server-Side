@@ -24,7 +24,7 @@ namespace Provis.WebApi.Controllers
         [Route("addworkspace")]
         public async Task<IActionResult> AddWorkspaceAsync([FromBody] WorkspaceCreateDTO createDTO)
         {
-            await _workspaceService.CreateWorkspace(createDTO, UserId);
+            await _workspaceService.CreateWorkspaceAsync(createDTO, UserId);
 
             return Ok();
         }

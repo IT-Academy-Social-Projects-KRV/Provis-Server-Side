@@ -7,7 +7,7 @@ namespace Provis.Core.Interfaces.Services
 {
     public interface IWorkspaceService 
     {
-        Task CreateWorkspace(WorkspaceCreateDTO workspaceDTO, string userid);
+        Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid);
       
         Task DenyInviteAsync(int id, string userid);
       

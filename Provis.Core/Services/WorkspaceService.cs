@@ -39,7 +39,7 @@ namespace Provis.Core.Services
             _inviteUserRepository = inviteUser;
             _mapper = mapper;
         }
-        public async Task CreateWorkspace(WorkspaceCreateDTO workspaceDTO, string userid)
+        public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
             var user = await _userManager.FindByIdAsync(userid);
 
@@ -48,11 +48,23 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            var workspace = _mapper.Map<Workspace>(workspaceDTO);
-            workspace.DateOfCreate = DateTime.UtcNow;
-
+            Workspace workspace = new Workspace()
+            {
+                DateOfCreate = DateTime.UtcNow,
+                Name = workspaceDTO.Name,
+                Description = workspaceDTO.Description
+            };
             await _workspaceRepository.AddAsync(workspace);
             await _workspaceRepository.SaveChangesAsync();
+
+            UserWorkspace userWorkspace = new UserWorkspace()
+            {
+                UserId = user.Id,
+                WorkspaceId = workspace.Id,
+                RoleId = WorkSpaceRoles.OwnerId
+            };
+            await _userWorkspaceRepository.AddAsync(userWorkspace);
+            await _userWorkspaceRepository.SaveChangesAsync();
 
             await Task.CompletedTask;
         }
