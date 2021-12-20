@@ -41,6 +41,16 @@ namespace Provis.WebApi.Controllers
         }
         
         [Authorize]
+        [HttpPost]
+        [Route("inviteuser")]
+        public async Task<IActionResult> SendInviteToUser([FromBody] InviteUserDTO inviteUser)
+        {
+            await _workspaceService.SendInviteAsync(inviteUser, UserId);
+
+            return Ok();
+        }
+
+        [Authorize]
         [HttpGet]
         [Route("getworlspacelist")]
         public async Task<IActionResult> GetWorkspaceAsync()

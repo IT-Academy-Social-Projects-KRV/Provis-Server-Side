@@ -32,6 +32,7 @@ namespace Provis.WebApi
             services.AddCustomServices();
             services.AddFluentValitation();
             services.ConfigJwtOptions(Configuration.GetSection("JwtOptions"));
+            services.ConfigureMailSettings(Configuration);
             services.AddAutoMapper();
 
             services.AddSwagger();

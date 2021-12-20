@@ -3,10 +3,10 @@ using FluentValidation.AspNetCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Provis.Core.Helpers;
+using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Services;
 using Provis.Core.Validation;
-using System;
 
 namespace Provis.Core
 {
@@ -17,6 +17,8 @@ namespace Provis.Core
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IWorkspaceService, WorkspaceService>();
             services.AddScoped<IJwtService, JwtService>();
+            services.AddTransient<IEmailSenderService, EmailSenderService>();
+            services.AddScoped<ISmtpService, SmtpService>();
             services.AddScoped<IUserService,UserService>();
         }
 
@@ -28,6 +30,11 @@ namespace Provis.Core
         public static void ConfigJwtOptions(this IServiceCollection services, IConfiguration config)
         {
             services.Configure<JwtOptions>(config);
+        }
+
+        public static void ConfigureMailSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<MailSettings>(configuration.GetSection("EmailSettings"));
         }
 
         public static void AddAutoMapper(this IServiceCollection services)
