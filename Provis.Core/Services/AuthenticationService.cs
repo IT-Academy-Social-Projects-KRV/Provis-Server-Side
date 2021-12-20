@@ -56,22 +56,14 @@ namespace Provis.Core.Services
             var refeshToken = _jwtService.CreateRefreshToken();
 
             var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x => x.UserId == user.Id);
-            if (refeshTokenFromDb == null)
-            {
-                RefreshToken rt = new RefreshToken()
-                {
-                    Token = refeshToken,
-                    UserId = user.Id
-                };
 
-                await _refreshTokenRepository.AddAsync(rt);
-            }
-            else
+            RefreshToken rt = new RefreshToken()
             {
-                refeshTokenFromDb.Token = refeshToken;
-                await _refreshTokenRepository.UpdateAsync(refeshTokenFromDb);
-            }
+                Token = refeshToken,
+                UserId = user.Id
+             };
 
+            await _refreshTokenRepository.AddAsync(rt);
             await _refreshTokenRepository.SaveChangesAsync();
 
             var tokens = new UserTokensDTO()
