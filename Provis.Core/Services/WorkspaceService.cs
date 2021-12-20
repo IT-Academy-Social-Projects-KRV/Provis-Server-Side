@@ -168,5 +168,33 @@ namespace Provis.Core.Services
 
             return listWorkspaceToReturn;
         }
+
+        public async Task AcceptInviteAsync(int id, string userid)
+        {
+            var user = await _userManager.FindByIdAsync(userid);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Id not exist");
+            }
+
+            var inviteUserRec = await _inviteUserRepository.GetByKeyAsync(id);
+
+            if (inviteUserRec == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Invite with this Id not found");
+            }
+
+            if (inviteUserRec.ToUserId != userid)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You can't accept this invite");
+            }
+
+            if (inviteUserRec.IsConfirm == null)
+                inviteUserRec.IsConfirm = true;
+            await _inviteUserRepository.SaveChangesAsync();
+
+            await Task.CompletedTask;
+        }
     }
 }
