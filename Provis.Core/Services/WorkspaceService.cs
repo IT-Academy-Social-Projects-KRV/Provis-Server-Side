@@ -9,8 +9,6 @@ using Provis.Core.Roles;
 using System;
 using Task = System.Threading.Tasks.Task;
 using AutoMapper;
-using Provis.Core.DTO.inviteUserDTO;
-using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -141,6 +139,12 @@ namespace Provis.Core.Services
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "Invite with with Id not found");
             }
+
+            if(inviteUserRec.ToUserId != userid)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You cannot deny this invite");
+            }
+
             if(inviteUserRec.IsConfirm==null)
             inviteUserRec.IsConfirm = false;
             await _inviteUserRepository.SaveChangesAsync();
