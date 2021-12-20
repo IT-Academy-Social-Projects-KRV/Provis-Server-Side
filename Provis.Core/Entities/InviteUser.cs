@@ -12,7 +12,7 @@ namespace Provis.Core.Entities
 
         public DateTime Date { get; set; }
 
-        public bool IsConfirm { get; set; }
+        public bool? IsConfirm { get; set; }
 
         public int WorkspaceId { get; set; }
 

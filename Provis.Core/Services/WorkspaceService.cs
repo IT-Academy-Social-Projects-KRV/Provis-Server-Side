@@ -105,7 +105,8 @@ namespace Provis.Core.Services
                     Date = DateTime.UtcNow,
                     FromUser = owner,
                     ToUser = inviteUser,
-                    Workspace = workspace
+                    Workspace = workspace,
+                    IsConfirm = null
                 };
 
                 await _inviteUserRepository.AddAsync(user);
