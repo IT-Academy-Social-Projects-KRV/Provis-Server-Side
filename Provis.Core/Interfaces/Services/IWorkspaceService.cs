@@ -12,7 +12,7 @@ namespace Provis.Core.Interfaces.Services
     {
         Task CreateWorkspace(WorkspaceCreateDTO workspaceDTO, string userid);
       
-        Task DenyInviteAsync(InviteUserDTO inviteUserDTO, string userid);
+        Task DenyInviteAsync(int id, string userid);
       
         Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid);
       

@@ -63,13 +63,22 @@ namespace Provis.Core.Services
         }
 
 
-        public async Task DenyInviteAsync(InviteUserDTO inviteUserDTO, string userid)
+        public async Task DenyInviteAsync(int id, string userid)
         {
-            var inviteUserRec = await _inviteUser.GetByKeyAsync(inviteUserDTO.Id);
+            var user = await _userManager.FindByIdAsync(userid);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            var inviteUserRec = await _inviteUser.GetByKeyAsync(id);
+
             if (inviteUserRec == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "Invite with with Id not found");
             }
+            if(inviteUserRec.IsConfirm==null)
             inviteUserRec.IsConfirm = false;
             await _inviteUser.SaveChangesAsync();
 

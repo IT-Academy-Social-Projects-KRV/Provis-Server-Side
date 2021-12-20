@@ -32,10 +32,10 @@ namespace Provis.WebApi.Controllers
         
         [HttpPut]
         [Authorize]
-        [Route("denyinvitation")]
-        public async Task<IActionResult> DenyInviteUserAsync([FromBody] InviteUserDTO inviteUserDenyDTO)
+        [Route("/invite/{id}/deny")]
+        public async Task<IActionResult> DenyInviteUserAsync(int id)
         {
-            await _workspaceService.DenyInviteAsync(inviteUserDenyDTO, UserId);
+            await _workspaceService.DenyInviteAsync(id, UserId);
 
             return Ok();
         }
