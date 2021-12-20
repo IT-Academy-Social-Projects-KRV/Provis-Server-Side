@@ -38,7 +38,17 @@ namespace Provis.WebApi.Controllers
 
             return Ok();
         }
-        
+
+        [HttpPut]
+        [Authorize]
+        [Route("/invite/{id}/accept")]
+        public async Task<IActionResult> AcceptInviteUserAsync(int id)
+        {
+            await _workspaceService.AcceptInviteAsync(id, UserId);
+
+            return Ok();
+        }
+
         [Authorize]
         [HttpPost]
         [Route("inviteuser")]
