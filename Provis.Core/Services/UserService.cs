@@ -5,11 +5,8 @@ using Provis.Core.Entities;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
 
 namespace Provis.Core.Services
 {
@@ -40,6 +37,57 @@ namespace Provis.Core.Services
             var userPersonalInfo = _mapper.Map<UserPersonalInfoDTO>(user);
 
             return userPersonalInfo;
+        }
+        public async Task ChangeNameAsync(string userId, UserChangeNameDTO userChangeNameDTO)
+        {
+            var user = await _userRepository.GetByKeyAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            user.Name = userChangeNameDTO.Name;
+
+            await _userRepository.UpdateAsync(user);
+
+            await _userRepository.SaveChangesAsync();
+
+            await Task.CompletedTask;
+        }
+        public async Task ChangeSurnameAsync(string userId, UserChangeSurnameDTO userChangeSurnameDTO)
+        {
+            var user = await _userRepository.GetByKeyAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            user.Surname = userChangeSurnameDTO.Surname;
+
+            await _userRepository.UpdateAsync(user);
+
+            await _userRepository.SaveChangesAsync();
+
+            await Task.CompletedTask;
+        }
+        public async Task ChangeUsernameAsync(string userId, UserChangeUsernameDTO userChangeUsernameDTO)
+        {
+            var user = await _userRepository.GetByKeyAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            user.UserName = userChangeUsernameDTO.Username;
+
+            await _userRepository.UpdateAsync(user);
+
+            await _userRepository.SaveChangesAsync();
+
+            await Task.CompletedTask;
         }
     }
 }
