@@ -38,7 +38,7 @@ namespace Provis.Core.Services
 
             return userPersonalInfo;
         }
-        public async Task ChangeNameAsync(string userId, UserChangeNameDTO userChangeNameDTO)
+        public async Task ChangeInfoAsync(string userId, UserChangeInfoDTO userChangeInfoDTO)
         {
             var user = await _userRepository.GetByKeyAsync(userId);
 
@@ -47,43 +47,15 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            user.Name = userChangeNameDTO.Name;
+            user.Name = userChangeInfoDTO.Name;
+
+            user.Surname = userChangeInfoDTO.Surname;
+
+            user.UserName = userChangeInfoDTO.Username;
 
             await _userRepository.UpdateAsync(user);
 
-            await _userRepository.SaveChangesAsync();
-
-            await Task.CompletedTask;
-        }
-        public async Task ChangeSurnameAsync(string userId, UserChangeSurnameDTO userChangeSurnameDTO)
-        {
-            var user = await _userRepository.GetByKeyAsync(userId);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
-            }
-
-            user.Surname = userChangeSurnameDTO.Surname;
-
-            await _userRepository.UpdateAsync(user);
-
-            await _userRepository.SaveChangesAsync();
-
-            await Task.CompletedTask;
-        }
-        public async Task ChangeUsernameAsync(string userId, UserChangeUsernameDTO userChangeUsernameDTO)
-        {
-            var user = await _userRepository.GetByKeyAsync(userId);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
-            }
-
-            user.UserName = userChangeUsernameDTO.Username;
-
-            await _userRepository.UpdateAsync(user);
+            await _userManager.UpdateNormalizedUserNameAsync(user);
 
             await _userRepository.SaveChangesAsync();
 

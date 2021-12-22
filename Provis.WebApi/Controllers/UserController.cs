@@ -30,27 +30,10 @@ namespace Provis.WebApi.Controllers
 
         [HttpPut]
         [Authorize]
-        [Route("changename")]
-        public async Task ChangeNameAsync([FromBody] UserChangeNameDTO userChangeNameDTO)
+        [Route("changeinfo")]
+        public async Task ChangeInfoAsync([FromBody] UserChangeInfoDTO userChangeInfoDTO)
         {
-            await _userService.ChangeNameAsync(UserId, userChangeNameDTO);
+            await _userService.ChangeInfoAsync(UserId, userChangeInfoDTO);
         }
-
-        [HttpPut]
-        [Authorize]
-        [Route("changesurname")]
-        public async Task ChangeSurnameAsync([FromBody] UserChangeSurnameDTO userChangeSurnameDTO)
-        {
-            await _userService.ChangeSurnameAsync(UserId, userChangeSurnameDTO);
-        }
-
-        [HttpPut]
-        [Authorize]
-        [Route("changeusername")]
-        public async Task ChangeUsernameAsync([FromBody] UserChangeUsernameDTO userChangeUsernameDTO)
-        {
-            await _userService.ChangeUsernameAsync(UserId, userChangeUsernameDTO);
-        }
-
     }
 }
