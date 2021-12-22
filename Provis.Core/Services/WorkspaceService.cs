@@ -217,6 +217,7 @@ namespace Provis.Core.Services
             };
 
             await _userWorkspaceRepository.AddAsync(userWorkspace);
+            await _userWorkspaceRepository.SaveChangesAsync();
             await _inviteUserRepository.SaveChangesAsync();
 
             await Task.CompletedTask;
