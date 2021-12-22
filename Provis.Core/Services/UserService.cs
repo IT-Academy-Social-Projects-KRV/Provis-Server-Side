@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace Provis.Core.Services
 {
@@ -17,14 +18,17 @@ namespace Provis.Core.Services
     {
         protected readonly UserManager<User> _userManager;
         protected readonly IRepository<User> _userRepository;
+        protected readonly IRepository<InviteUser> _inviteUserRepository;
         protected readonly IMapper _mapper;
 
         public UserService(UserManager<User> userManager,
             IRepository<User> userRepository,
+            IRepository<InviteUser> inviteUser,
             IMapper mapper)
         {
             _userManager = userManager;
             _userRepository = userRepository;
+            _inviteUserRepository = inviteUser;
             _mapper = mapper;
         }
 
@@ -40,6 +44,23 @@ namespace Provis.Core.Services
             var userPersonalInfo = _mapper.Map<UserPersonalInfoDTO>(user);
 
             return userPersonalInfo;
+        }
+
+        
+        public async Task<List<UserInviteInfoDTO>> GetUserInviteInfoListAsync(string userId)
+        {
+            var user = await _userRepository.GetByKeyAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            var inviteListInfo = await _inviteUserRepository.Query().Where(u => u.ToUserId == userId).ToListAsync();
+
+            var userInviteListInfoToReturn = _mapper.Map<List<UserInviteInfoDTO>>(inviteListInfo);
+            
+           return userInviteListInfoToReturn;
         }
     }
 }

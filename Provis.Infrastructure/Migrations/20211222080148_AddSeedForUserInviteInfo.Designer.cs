@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Provis.Infrastructure.Data;
 
 namespace Provis.Infrastructure.Migrations
 {
     [DbContext(typeof(ProvisDbContext))]
-    partial class ProvisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211222080148_AddSeedForUserInviteInfo")]
+    partial class AddSeedForUserInviteInfo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
