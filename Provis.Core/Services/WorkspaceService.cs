@@ -157,8 +157,8 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You cannot deny this invite");
             }
 
-            if (inviteUserRec.IsConfirm == null)
-                inviteUserRec.IsConfirm = false;
+            inviteUserRec.IsConfirm ??= false;
+
             await _inviteUserRepository.SaveChangesAsync();
 
             await Task.CompletedTask;        
