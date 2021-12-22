@@ -10,15 +10,24 @@ namespace Provis.Core.Helpers
         public ApplicationProfile()
         {
             CreateMap<WorkspaceCreateDTO, Workspace>();
+            
             CreateMap<User, UserPersonalInfoDTO>()
                 .ForMember(dest => dest.Email, act => act.MapFrom(src => src.Email))
                 .ForMember(dest => dest.Name, act => act.MapFrom(src => src.Name))
                 .ForMember(dest => dest.Surname, act => act.MapFrom(src => src.Surname))
                 .ForMember(dest => dest.Username, act => act.MapFrom(src => src.UserName));
+            
             CreateMap<UserWorkspace, WorkspaceInfoDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.WorkspaceId))
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Workspace.Name))
                 .ForMember(x => x.Role, act => act.MapFrom(srs => srs.Role.Name));
+            
+            CreateMap<InviteUser, UserInviteInfoDTO > ()
+                .ForMember(x => x.Date, act => act.MapFrom(srs => srs.Date))
+                .ForMember(x => x.IsConfirm, act => act.MapFrom(srs => srs.IsConfirm))
+                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
+                .ForMember(x => x.FromUserId, act => act.MapFrom(srs => srs.FromUserId))
+                .ForMember(x => x.ToUserId, act => act.MapFrom(srs => srs.ToUserId));
         }
     }
 }
