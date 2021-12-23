@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Provis.Core.Roles;
 using System;
 
 namespace Provis.WebApi.Policy
@@ -8,7 +9,8 @@ namespace Provis.WebApi.Policy
 
         const string POLICY_PREFIX = "WorkspaceRoles";
 
-        public WorkspaceRolesAttribute(int[] workspaceRolesId) => WorkspaceRolesId = workspaceRolesId;
+        public WorkspaceRolesAttribute(WorkSpaceRoles[] workspaceRolesId) 
+            => WorkspaceRolesId = Array.ConvertAll(workspaceRolesId, value => (int)value);
 
         public int[] WorkspaceRolesId
         {
