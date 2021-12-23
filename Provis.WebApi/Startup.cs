@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.OpenApi.Models;
 using Provis.Core;
 using Provis.Infrastructure;
 using Provis.WebApi.Middleweres;
@@ -36,8 +35,10 @@ namespace Provis.WebApi
             services.AddAutoMapper();
 
             services.AddSwagger();
+            services.AddPolicyServices();
             services.AddJwtAuthentication(Configuration);
             services.AddCors();
+           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -65,7 +66,7 @@ namespace Provis.WebApi
 
             app.UseAuthentication();
             app.UseAuthorization();
-            
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

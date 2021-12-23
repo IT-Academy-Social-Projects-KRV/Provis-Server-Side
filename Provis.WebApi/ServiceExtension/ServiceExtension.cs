@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Provis.Core.Helpers;
+using Provis.WebApi.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -36,7 +38,7 @@ namespace Provis.WebApi.ServiceExtension
                     OnAuthenticationFailed = context =>
                     {
                         if (context.Exception.GetType() == typeof(SecurityTokenExpiredException))
-                        {                                                      
+                        {
                             context.Response.Headers.Add("Token-Expired", "true");
                             context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
                             context.Response.Headers.Add("Access-Control-Expose-Headers", "Token-Expired");
@@ -80,6 +82,12 @@ namespace Provis.WebApi.ServiceExtension
 
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Provis.WebApi", Version = "v1" });
             });
+        }
+
+        public static void AddPolicyServices(this IServiceCollection services)
+        {
+            services.AddTransient<IAuthorizationPolicyProvider, WorkspaceRolesPolicyProvider>();
+            services.AddTransient<IAuthorizationHandler, WorkspaceRolesAuthorizationHandler>();
         }
     }
 }

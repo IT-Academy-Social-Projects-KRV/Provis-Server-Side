@@ -61,7 +61,7 @@ namespace Provis.Core.Services
             {
                 UserId = user.Id,
                 WorkspaceId = workspace.Id,
-                RoleId = WorkSpaceRoles.OwnerId
+                RoleId = (int)WorkSpaceRoles.OwnerId
             };
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _userWorkspaceRepository.SaveChangesAsync();
@@ -96,12 +96,6 @@ namespace Provis.Core.Services
             }
             else
             {
-
-                if (checkRole.RoleId == WorkSpaceRoles.MemberId || checkRole.RoleId == WorkSpaceRoles.ViewerId)
-                {
-                    throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "You don't have permissions!");
-                }
-
                 var inviteUserEntry = await _inviteUserRepository.Query().FirstOrDefaultAsync(x =>
                     x.FromUserId == ownerId &&
                     x.ToUserId == inviteUser.Id &&
