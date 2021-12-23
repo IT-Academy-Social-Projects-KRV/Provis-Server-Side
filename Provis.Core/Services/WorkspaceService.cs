@@ -61,7 +61,7 @@ namespace Provis.Core.Services
             {
                 UserId = user.Id,
                 WorkspaceId = workspace.Id,
-                RoleId = WorkSpaceRoles.OwnerId
+                RoleId = (int)WorkSpaceRoles.OwnerId
             };
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _userWorkspaceRepository.SaveChangesAsync();
@@ -71,8 +71,14 @@ namespace Provis.Core.Services
 
         public async Task SendInviteAsync(InviteUserDTO inviteDTO, string ownerId)
         {
-            var inviteUser = await _userManager.FindByEmailAsync(inviteDTO.UserEmail);
             var owner = await _userManager.FindByIdAsync(ownerId);
+
+            if(owner.Email == inviteDTO.UserEmail)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You cannot send invite to your account");
+            }
+
+            var inviteUser = await _userManager.FindByEmailAsync(inviteDTO.UserEmail);
 
             if (inviteUser == null)
             {
@@ -86,55 +92,45 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "Not found this workspace");
             }
 
-            // Check privacy, temporary solution
+            var inviteUserList = await _inviteUserRepository.Query().Where(x =>
+                x.FromUserId == ownerId &&
+                x.ToUserId == inviteUser.Id &&
+                x.WorkspaceId == workspace.Id).ToListAsync();
 
-            var checkRole = await _userWorkspaceRepository.Query().FirstOrDefaultAsync(u => u.WorkspaceId == inviteDTO.WorkspaceId && u.UserId == ownerId);
-
-            if (checkRole == null)
+            foreach(var invite in inviteUserList)
             {
-                throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "You don't have permissions!");
-            }
-            else
-            {
-
-                if (checkRole.RoleId == WorkSpaceRoles.MemberId || checkRole.RoleId == WorkSpaceRoles.ViewerId)
+                if (invite.IsConfirm == null)
                 {
-                    throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "You don't have permissions!");
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest, "User already has invite, wait for a answer");
                 }
 
-                var inviteUserEntry = await _inviteUserRepository.Query().FirstOrDefaultAsync(x =>
-                    x.FromUserId == ownerId &&
-                    x.ToUserId == inviteUser.Id &&
-                    x.WorkspaceId == workspace.Id);
-
-                if (inviteUserEntry != null)
+                if (invite.IsConfirm.Value == true)
                 {
-                    throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "This user already have invite, wait for a answer");
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest, "This user already accepted your invite");
                 }
-
-                InviteUser user = new InviteUser
-                {
-                    Date = DateTime.UtcNow,
-                    FromUser = owner,
-                    ToUser = inviteUser,
-                    Workspace = workspace,
-                    IsConfirm = null
-                };
-
-                await _inviteUserRepository.AddAsync(user);
-                await _inviteUserRepository.SaveChangesAsync();
-
-                await _emailSendService.SendEmailAsync(new MailRequest 
-                { 
-                    ToEmail = inviteDTO.UserEmail, 
-                    Subject = "Provis", 
-                    Body = $"Owner: {owner.UserName} - Welcome to my Workspace {workspace.Name}"
-                });
-
-                await Task.CompletedTask;
             }
+
+            InviteUser user = new InviteUser
+            {
+                Date = DateTime.UtcNow,
+                FromUser = owner,
+                ToUser = inviteUser,
+                Workspace = workspace,
+                IsConfirm = null
+            };
+
+            await _inviteUserRepository.AddAsync(user);
+            await _inviteUserRepository.SaveChangesAsync();
+
+            await _emailSendService.SendEmailAsync(new MailRequest 
+            { 
+                ToEmail = inviteDTO.UserEmail, 
+                Subject = "Provis", 
+                Body = $"Owner: {owner.UserName} - Welcome to my Workspace {workspace.Name}"
+            });
+
+            await Task.CompletedTask;
         }
-
 
         public async Task DenyInviteAsync(int id, string userid)
         {
@@ -157,8 +153,8 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You cannot deny this invite");
             }
 
-            if(inviteUserRec.IsConfirm==null)
-            inviteUserRec.IsConfirm = false;
+            inviteUserRec.IsConfirm ??= false;
+
             await _inviteUserRepository.SaveChangesAsync();
 
             await Task.CompletedTask;        
@@ -181,16 +177,16 @@ namespace Provis.Core.Services
             return listWorkspaceToReturn;
         }
 
-        public async Task AcceptInviteAsync(int id, string userid)
+        public async Task AcceptInviteAsync(int inviteId, string userid)
         {
             var user = await _userManager.FindByIdAsync(userid);
 
             if (user == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Id not exist");
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Id doesn't exist");
             }
 
-            var inviteUserRec = await _inviteUserRepository.GetByKeyAsync(id);
+            var inviteUserRec = await _inviteUserRepository.GetByKeyAsync(inviteId);
 
             if (inviteUserRec == null)
             {
@@ -199,11 +195,24 @@ namespace Provis.Core.Services
 
             if (inviteUserRec.ToUserId != userid)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You can't accept this invite");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "That's not yours invite!");
             }
 
-            if (inviteUserRec.IsConfirm == null)
-                inviteUserRec.IsConfirm = true;
+            if (inviteUserRec.IsConfirm == true)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You have already confirmed your invitation!");
+            }
+
+            inviteUserRec.IsConfirm = true;
+
+            UserWorkspace userWorkspace = new()
+            {
+                UserId = user.Id,
+                WorkspaceId = inviteUserRec.WorkspaceId,
+                RoleId = (int)WorkSpaceRoles.MemberId
+            };
+
+            await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _inviteUserRepository.SaveChangesAsync();
 
             await Task.CompletedTask;
