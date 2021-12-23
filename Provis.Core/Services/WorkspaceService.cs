@@ -101,11 +101,12 @@ namespace Provis.Core.Services
             {
                 if (invite.IsConfirm == null)
                 {
-                    throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "User already has invite, wait for a answer");
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest, "User already has invite, wait for a answer");
                 }
+
                 if (invite.IsConfirm.Value == true)
                 {
-                    throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "This user already accepted your invite");
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest, "This user already accepted your invite");
                 }
             }
 
