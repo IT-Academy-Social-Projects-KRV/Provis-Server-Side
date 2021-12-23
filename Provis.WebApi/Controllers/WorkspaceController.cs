@@ -53,7 +53,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new int[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
+        [WorkspaceRoles(new int[] { (int)WorkSpaceRoles.OwnerId, (int)WorkSpaceRoles.ManagerId })]
         [Route("inviteuser")]
         public async Task<IActionResult> SendInviteToUser([FromBody] InviteUserDTO inviteUser)
         {

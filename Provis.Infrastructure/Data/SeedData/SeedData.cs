@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Provis.Core.Entities;
 using Provis.Core.Roles;
 
@@ -16,22 +15,22 @@ namespace Provis.Infrastructure.Data.SeedData
             builder.Entity<Role>().HasData(
                 new Role()
                 {
-                    Id = WorkSpaceRoles.OwnerId,
+                    Id = (int)WorkSpaceRoles.OwnerId,
                     Name = "Owner",
                 },
                 new Role()
                 {
-                    Id = WorkSpaceRoles.ManagerId,
+                    Id = (int)WorkSpaceRoles.ManagerId,
                     Name = "Manager",
                 },
                 new Role()
                 {
-                    Id = WorkSpaceRoles.MemberId,
+                    Id = (int)WorkSpaceRoles.MemberId,
                     Name = "Member",
                 },
                 new Role()
                 {
-                    Id = WorkSpaceRoles.ViewerId,
+                    Id = (int)WorkSpaceRoles.ViewerId,
                     Name = "Viewer",
                 });
     }

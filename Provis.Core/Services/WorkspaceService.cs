@@ -61,7 +61,7 @@ namespace Provis.Core.Services
             {
                 UserId = user.Id,
                 WorkspaceId = workspace.Id,
-                RoleId = WorkSpaceRoles.OwnerId
+                RoleId = (int)WorkSpaceRoles.OwnerId
             };
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _userWorkspaceRepository.SaveChangesAsync();
@@ -97,7 +97,7 @@ namespace Provis.Core.Services
             else
             {
 
-                if (checkRole.RoleId == WorkSpaceRoles.MemberId || checkRole.RoleId == WorkSpaceRoles.ViewerId)
+                if (checkRole.RoleId == (int)WorkSpaceRoles.MemberId || checkRole.RoleId == (int)WorkSpaceRoles.ViewerId)
                 {
                     throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "You don't have permissions!");
                 }
