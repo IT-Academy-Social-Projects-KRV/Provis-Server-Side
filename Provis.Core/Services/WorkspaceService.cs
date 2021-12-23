@@ -209,7 +209,7 @@ namespace Provis.Core.Services
             {
                 UserId = user.Id,
                 WorkspaceId = inviteUserRec.WorkspaceId,
-                RoleId = WorkSpaceRoles.MemberId
+                RoleId = (int)WorkSpaceRoles.MemberId
             };
 
             await _userWorkspaceRepository.AddAsync(userWorkspace);
