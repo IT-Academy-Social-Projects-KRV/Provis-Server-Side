@@ -47,11 +47,7 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            user.Name = userChangeInfoDTO.Name;
-
-            user.Surname = userChangeInfoDTO.Surname;
-
-            user.UserName = userChangeInfoDTO.Username;
+            user = _mapper.Map<User>(userChangeInfoDTO);
 
             await _userRepository.UpdateAsync(user);
 
