@@ -96,12 +96,6 @@ namespace Provis.Core.Services
             }
             else
             {
-
-                if (checkRole.RoleId == (int)WorkSpaceRoles.MemberId || checkRole.RoleId == (int)WorkSpaceRoles.ViewerId)
-                {
-                    throw new HttpException(System.Net.HttpStatusCode.UnavailableForLegalReasons, "You don't have permissions!");
-                }
-
                 var inviteUserEntry = await _inviteUserRepository.Query().FirstOrDefaultAsync(x =>
                     x.FromUserId == ownerId &&
                     x.ToUserId == inviteUser.Id &&
