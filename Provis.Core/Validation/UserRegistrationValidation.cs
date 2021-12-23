@@ -47,21 +47,13 @@ namespace Provis.Core.Validation
         private async Task<bool> IsUniqueUserName(string username, CancellationToken cancellationToken)
         {
             var userObject = await _userManager.FindByNameAsync(username);
-            if (userObject != null)
-            {
-                return false;
-            }
-            return true;
+            return userObject == null;
         }
 
         private async Task<bool> IsUniqueUserEmail(string email, CancellationToken cancellationToken)
         {
             var userObject = await _userManager.FindByEmailAsync(email);
-            if (userObject != null)
-            {
-                return false;
-            }
-            return true;
+            return userObject == null;
         }
     }
 }
