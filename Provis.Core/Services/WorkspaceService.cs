@@ -157,8 +157,8 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You cannot deny this invite");
             }
 
-            if(inviteUserRec.IsConfirm==null)
-            inviteUserRec.IsConfirm = false;
+            inviteUserRec.IsConfirm ??= false;
+
             await _inviteUserRepository.SaveChangesAsync();
 
             await Task.CompletedTask;        
@@ -181,16 +181,16 @@ namespace Provis.Core.Services
             return listWorkspaceToReturn;
         }
 
-        public async Task AcceptInviteAsync(int id, string userid)
+        public async Task AcceptInviteAsync(int inviteId, string userid)
         {
             var user = await _userManager.FindByIdAsync(userid);
 
             if (user == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Id not exist");
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Id doesn't exist");
             }
 
-            var inviteUserRec = await _inviteUserRepository.GetByKeyAsync(id);
+            var inviteUserRec = await _inviteUserRepository.GetByKeyAsync(inviteId);
 
             if (inviteUserRec == null)
             {
@@ -199,11 +199,24 @@ namespace Provis.Core.Services
 
             if (inviteUserRec.ToUserId != userid)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You can't accept this invite");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "That's not yours invite!");
             }
 
-            if (inviteUserRec.IsConfirm == null)
-                inviteUserRec.IsConfirm = true;
+            if (inviteUserRec.IsConfirm == true)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You have already confirmed your invitation!");
+            }
+
+            inviteUserRec.IsConfirm = true;
+
+            UserWorkspace userWorkspace = new()
+            {
+                UserId = user.Id,
+                WorkspaceId = inviteUserRec.WorkspaceId,
+                RoleId = WorkSpaceRoles.MemberId
+            };
+
+            await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _inviteUserRepository.SaveChangesAsync();
 
             await Task.CompletedTask;
