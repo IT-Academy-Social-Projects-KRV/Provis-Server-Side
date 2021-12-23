@@ -56,7 +56,7 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            var inviteListInfo = await _inviteUserRepository.Query().Where(u => u.ToUserId == userId).ToListAsync();
+            var inviteListInfo = await _inviteUserRepository.Query().Where(u => u.ToUserId == userId).Include(w => w.Workspace).Include(u => u.FromUser).OrderBy(d => d.Date ).ToListAsync();
 
             var userInviteListInfoToReturn = _mapper.Map<List<UserInviteInfoDTO>>(inviteListInfo);
             

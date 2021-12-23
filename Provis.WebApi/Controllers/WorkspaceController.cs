@@ -33,7 +33,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPut]
         [Authorize]
-        [Route("/invite/{id}/deny")]
+        [Route("invite/{id}/deny")]
         public async Task<IActionResult> DenyInviteUserAsync(int id)
         {
             await _workspaceService.DenyInviteAsync(id, UserId);
@@ -43,7 +43,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPut]
         [Authorize]
-        [Route("/invite/{id}/accept")]
+        [Route("invite/{id}/accept")]
         public async Task<IActionResult> AcceptInviteUserAsync(int id)
         {
             await _workspaceService.AcceptInviteAsync(id, UserId);

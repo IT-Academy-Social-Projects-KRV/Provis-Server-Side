@@ -9,7 +9,7 @@ namespace Provis.Infrastructure.Data.SeedData
     {
         public static void Seed(this ModelBuilder builder)
         {
-            SeedWorkspaceRole(builder);            
+            SeedWorkspaceRole(builder);
         }
 
         public static void SeedWorkspaceRole(ModelBuilder builder) =>
