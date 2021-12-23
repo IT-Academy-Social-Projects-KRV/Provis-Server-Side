@@ -2,9 +2,9 @@
 {
     public class WorkSpaceRoles
     {
-        public static int OwnerId = 1;
-        public static int ManagerId = 2;
-        public static int MemberId = 3;
-        public static int ViewerId = 4;
+        public const int OwnerId = 1;
+        public const int ManagerId = 2;
+        public const int MemberId = 3;
+        public const int ViewerId = 4;
     }
 }
