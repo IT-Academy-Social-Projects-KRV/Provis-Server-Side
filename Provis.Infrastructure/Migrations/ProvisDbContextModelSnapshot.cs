@@ -212,34 +212,6 @@ namespace Provis.Infrastructure.Migrations
                     b.HasIndex("WorkspaceId");
 
                     b.ToTable("InviteUsers");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Date = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FromUserId = "e0baf8de-ed67-42c5-9760-4823dd664816",
-                            ToUserId = "baf4ff0f-ea04-443f-80b1-044046a5dc2e",
-                            WorkspaceId = 2
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Date = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FromUserId = "e0baf8de-ed67-42c5-9760-4823dd664816",
-                            IsConfirm = true,
-                            ToUserId = "9c03ecb6-a154-445d-a66b-9cdfa67ff03e",
-                            WorkspaceId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Date = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            FromUserId = "e0baf8de-ed67-42c5-9760-4823dd664816",
-                            IsConfirm = false,
-                            ToUserId = "baf4ff0f-ea04-443f-80b1-044046a5dc2e",
-                            WorkspaceId = 1
-                        });
                 });
 
             modelBuilder.Entity("Provis.Core.Entities.RefreshToken", b =>
@@ -493,29 +465,6 @@ namespace Provis.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Workspaces");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            DateOfCreate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "workspace1",
-                            Name = "workspace1"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            DateOfCreate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "workspace2",
-                            Name = "workspace2"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            DateOfCreate = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Description = "workspace3",
-                            Name = "workspace3"
-                        });
                 });
 
             modelBuilder.Entity("TaskUser", b =>
