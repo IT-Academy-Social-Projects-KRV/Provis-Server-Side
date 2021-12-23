@@ -62,5 +62,20 @@ namespace Provis.Core.Services
             
            return userInviteListInfoToReturn;
         }
+
+        public async Task<UserActiveInviteDTO> IsActiveInviteAsync(string userId)
+        {
+            var user = await _userRepository.GetByKeyAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+            var userActiveInviteDTO = new UserActiveInviteDTO();
+
+            userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.Query().AnyAsync(u => u.ToUserId == userId && u.IsConfirm == null);
+
+            return userActiveInviteDTO;
+        }
     }
 }

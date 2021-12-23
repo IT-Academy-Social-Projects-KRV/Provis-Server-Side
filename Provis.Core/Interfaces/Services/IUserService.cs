@@ -12,6 +12,7 @@ namespace Provis.Core.Interfaces.Services
     {
         Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId);
         Task<List<UserInviteInfoDTO>> GetUserInviteInfoListAsync(string userId);
+        Task<UserActiveInviteDTO> IsActiveInviteAsync(string userId);
     }
     
 }
