@@ -9,7 +9,7 @@ namespace Provis.Core.Validation
 {
     public class UserRegistrationValidation : AbstractValidator<UserRegDTO>
     {
-        private static UserManager<User> _userManager;
+        protected readonly UserManager<User> _userManager;
 
         public UserRegistrationValidation(UserManager<User> manager)
         {

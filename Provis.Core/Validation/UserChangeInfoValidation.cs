@@ -9,7 +9,7 @@ namespace Provis.Core.Validation
 {
     public class UserChangeInfoValidation : AbstractValidator<UserChangeInfoDTO>
     {
-        private static UserManager<User> _userManager;
+        protected readonly UserManager<User> _userManager;
         public UserChangeInfoValidation(UserManager<User> manager)
         {
             _userManager = manager;
