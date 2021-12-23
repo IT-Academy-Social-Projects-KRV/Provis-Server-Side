@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Interfaces.Services;
+using Provis.Core.Roles;
+using Provis.WebApi.Policy;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -28,10 +30,10 @@ namespace Provis.WebApi.Controllers
 
             return Ok();
         }
-        
+
         [HttpPut]
         [Authorize]
-        [Route("/invite/{id}/deny")]
+        [Route("invite/{id}/deny")]
         public async Task<IActionResult> DenyInviteUserAsync(int id)
         {
             await _workspaceService.DenyInviteAsync(id, UserId);
@@ -41,7 +43,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPut]
         [Authorize]
-        [Route("/invite/{id}/accept")]
+        [Route("invite/{id}/accept")]
         public async Task<IActionResult> AcceptInviteUserAsync(int id)
         {
             await _workspaceService.AcceptInviteAsync(id, UserId);
@@ -51,6 +53,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
         [Route("inviteuser")]
         public async Task<IActionResult> SendInviteToUser([FromBody] InviteUserDTO inviteUser)
         {

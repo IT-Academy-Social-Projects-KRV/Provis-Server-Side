@@ -56,11 +56,26 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            var inviteListInfo = await _inviteUserRepository.Query().Where(u => u.ToUserId == userId).ToListAsync();
+            var inviteListInfo = await _inviteUserRepository.Query().Where(u => u.ToUserId == userId).Include(w => w.Workspace).Include(u => u.FromUser).OrderBy(d => d.Date ).ToListAsync();
 
             var userInviteListInfoToReturn = _mapper.Map<List<UserInviteInfoDTO>>(inviteListInfo);
             
            return userInviteListInfoToReturn;
+        }
+
+        public async Task<UserActiveInviteDTO> IsActiveInviteAsync(string userId)
+        {
+            var user = await _userRepository.GetByKeyAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+            var userActiveInviteDTO = new UserActiveInviteDTO();
+
+            userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.Query().AnyAsync(u => u.ToUserId == userId && u.IsConfirm == null);
+
+            return userActiveInviteDTO;
         }
     }
 }

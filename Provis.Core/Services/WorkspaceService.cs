@@ -61,7 +61,7 @@ namespace Provis.Core.Services
             {
                 UserId = user.Id,
                 WorkspaceId = workspace.Id,
-                RoleId = WorkSpaceRoles.OwnerId
+                RoleId = (int)WorkSpaceRoles.OwnerId
             };
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _userWorkspaceRepository.SaveChangesAsync();
