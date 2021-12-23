@@ -73,7 +73,7 @@ namespace Provis.Core.Services
             }
             var userActiveInviteDTO = new UserActiveInviteDTO();
 
-            userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.Query().AnyAsync(u => u.ToUserId == userId && u.IsConfirm == false);
+            userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.Query().AnyAsync(u => u.ToUserId == userId && u.IsConfirm == null);
 
             return userActiveInviteDTO;
         }
