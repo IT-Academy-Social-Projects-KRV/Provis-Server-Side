@@ -1,8 +1,6 @@
 ﻿using FluentValidation;
 using Provis.Core.DTO.userDTO;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
-using System.Threading;
 using Provis.Core.Entities;
 
 namespace Provis.Core.Validation
@@ -24,13 +22,7 @@ namespace Provis.Core.Validation
 
             RuleFor(user => user.UserName)
                 .NotNull()
-                .Length(3, 50)
-                .MustAsync(IsUniqueUserName).WithMessage("{PropertyName} already exists.");
-        }
-        private async Task<bool> IsUniqueUserName(string username, CancellationToken cancellationToken)
-        {
-            var userObject = await _userManager.FindByNameAsync(username);
-            return userObject == null;
+                .Length(3, 50);
         }
     }
 }
