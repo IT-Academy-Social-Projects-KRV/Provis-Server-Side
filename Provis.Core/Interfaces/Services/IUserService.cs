@@ -1,6 +1,6 @@
 ﻿using Provis.Core.DTO.userDTO;
 using System.Threading.Tasks;
-
+using System.Collections.Generic;
 
 namespace Provis.Core.Interfaces.Services
 {
