@@ -5,12 +5,11 @@ using Provis.Core.Entities;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
-using System;
+using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
 
 namespace Provis.Core.Services
 {
@@ -46,6 +45,32 @@ namespace Provis.Core.Services
             return userPersonalInfo;
         }
 
+        public async Task ChangeInfoAsync(string userId, UserChangeInfoDTO userChangeInfoDTO)
+        {
+            var userObject = await _userManager.FindByNameAsync(userChangeInfoDTO.UserName);
+
+            if (userObject != null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "This username already exists");
+            }
+
+            var user = await _userRepository.GetByKeyAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+            
+            _mapper.Map(userChangeInfoDTO, user);
+
+            await _userRepository.UpdateAsync(user);
+
+            await _userManager.UpdateNormalizedUserNameAsync(user);
+
+            await _userRepository.SaveChangesAsync();
+
+            await Task.CompletedTask;
+        }
         
         public async Task<List<UserInviteInfoDTO>> GetUserInviteInfoListAsync(string userId)
         {

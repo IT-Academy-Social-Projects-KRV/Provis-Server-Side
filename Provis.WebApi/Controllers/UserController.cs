@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Provis.Core.DTO.userDTO;
 using Provis.Core.Interfaces.Services;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -27,6 +28,14 @@ namespace Provis.WebApi.Controllers
             return Ok(userInfo);
         }
 
+        [HttpPut]
+        [Authorize]
+        [Route("changeinfo")]
+        public async Task ChangeInfoAsync([FromBody] UserChangeInfoDTO userChangeInfoDTO)
+        {
+            await _userService.ChangeInfoAsync(UserId, userChangeInfoDTO);
+        }
+
         [HttpGet]
         [Authorize]
         [Route("invite")]
@@ -46,6 +55,5 @@ namespace Provis.WebApi.Controllers
 
             return Ok(activeInvite);
         }
-
     }
 }

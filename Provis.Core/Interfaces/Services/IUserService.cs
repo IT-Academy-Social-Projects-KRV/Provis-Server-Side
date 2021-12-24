@@ -1,16 +1,13 @@
 ﻿using Provis.Core.DTO.userDTO;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
+using System.Collections.Generic;
 
 namespace Provis.Core.Interfaces.Services
 {
     public interface IUserService
     {
         Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId);
+        Task ChangeInfoAsync(string userId, UserChangeInfoDTO userChangeInfoDTO);
         Task<List<UserInviteInfoDTO>> GetUserInviteInfoListAsync(string userId);
         Task<UserActiveInviteDTO> IsActiveInviteAsync(string userId);
     }
