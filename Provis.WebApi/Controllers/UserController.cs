@@ -35,5 +35,25 @@ namespace Provis.WebApi.Controllers
         {
             await _userService.ChangeInfoAsync(UserId, userChangeInfoDTO);
         }
+
+        [HttpGet]
+        [Authorize]
+        [Route("invite")]
+        public async Task<IActionResult> GetUserInviteInfoAsync()
+        {
+            var userInviteList = await _userService.GetUserInviteInfoListAsync(UserId);
+
+            return Ok(userInviteList);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("activeinvite")]
+        public async Task<IActionResult> GetUserActiveInviteAsync()
+        {
+            var activeInvite = await _userService.IsActiveInviteAsync(UserId);
+
+            return Ok(activeInvite);
+        }
     }
 }

@@ -7,6 +7,7 @@ using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
+using Microsoft.EntityFrameworkCore;
 
 namespace Provis.Core.Services
 {
@@ -14,14 +15,17 @@ namespace Provis.Core.Services
     {
         protected readonly UserManager<User> _userManager;
         protected readonly IRepository<User> _userRepository;
+        protected readonly IRepository<InviteUser> _inviteUserRepository;
         protected readonly IMapper _mapper;
 
         public UserService(UserManager<User> userManager,
             IRepository<User> userRepository,
+            IRepository<InviteUser> inviteUser,
             IMapper mapper)
         {
             _userManager = userManager;
             _userRepository = userRepository;
+            _inviteUserRepository = inviteUser;
             _mapper = mapper;
         }
 
@@ -38,6 +42,7 @@ namespace Provis.Core.Services
 
             return userPersonalInfo;
         }
+
         public async Task ChangeInfoAsync(string userId, UserChangeInfoDTO userChangeInfoDTO)
         {
             var user = await _userRepository.GetByKeyAsync(userId);
@@ -56,6 +61,37 @@ namespace Provis.Core.Services
             await _userRepository.SaveChangesAsync();
 
             await Task.CompletedTask;
+        }
+        
+        public async Task<List<UserInviteInfoDTO>> GetUserInviteInfoListAsync(string userId)
+        {
+            var user = await _userRepository.GetByKeyAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            var inviteListInfo = await _inviteUserRepository.Query().Where(u => u.ToUserId == userId).Include(w => w.Workspace).Include(u => u.FromUser).OrderBy(d => d.Date ).ToListAsync();
+
+            var userInviteListInfoToReturn = _mapper.Map<List<UserInviteInfoDTO>>(inviteListInfo);
+            
+           return userInviteListInfoToReturn;
+        }
+
+        public async Task<UserActiveInviteDTO> IsActiveInviteAsync(string userId)
+        {
+            var user = await _userRepository.GetByKeyAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+            var userActiveInviteDTO = new UserActiveInviteDTO();
+
+            userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.Query().AnyAsync(u => u.ToUserId == userId && u.IsConfirm == null);
+
+            return userActiveInviteDTO;
         }
     }
 }
