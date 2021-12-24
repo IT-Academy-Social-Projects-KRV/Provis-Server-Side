@@ -22,7 +22,7 @@ namespace Provis.Core.Validation
                 .NotNull()
                 .Length(3, 50);
 
-            RuleFor(user => user.Username)
+            RuleFor(user => user.UserName)
                 .NotNull()
                 .Length(3, 50)
                 .MustAsync(IsUniqueUserName).WithMessage("{PropertyName} already exists.");

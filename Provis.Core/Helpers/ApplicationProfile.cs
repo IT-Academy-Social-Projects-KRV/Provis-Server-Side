@@ -19,6 +19,7 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.WorkspaceId))
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Workspace.Name))
                 .ForMember(x => x.Role, act => act.MapFrom(srs => srs.Role.Name));
+            CreateMap<UserChangeInfoDTO, User>();
         }
     }
 }
