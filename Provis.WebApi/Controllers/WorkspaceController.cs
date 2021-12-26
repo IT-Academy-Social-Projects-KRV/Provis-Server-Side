@@ -70,5 +70,15 @@ namespace Provis.WebApi.Controllers
             var getList = await _workspaceService.GetWorkspaceListAsync(UserId);
             return Ok(getList);
         }
+
+        [Authorize]
+        [HttpPost]
+        [Route("addtask")]
+        public async Task<IActionResult> AddTaskAsync([FromBody] TaskCreateDTO createDTO)
+        {
+            await _workspaceService.CreateTaskAsync(createDTO, UserId);
+
+            return Ok();
+        }
     }
 }
