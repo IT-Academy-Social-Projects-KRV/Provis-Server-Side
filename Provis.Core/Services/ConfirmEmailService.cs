@@ -6,7 +6,6 @@ using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Services;
 using System;
 using System.Text;
-using System.Web;
 using Task = System.Threading.Tasks.Task;
 
 namespace Provis.Core.Services
@@ -23,6 +22,17 @@ namespace Provis.Core.Services
         public async Task SendConfirmMailAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
+
+            if(user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "This user not found");
+            }
+
+            if(user.EmailConfirmed)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You already confirmed your email address!");
+            }
+
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedCode = Convert.ToBase64String(Encoding.ASCII.GetBytes(token));
 
@@ -39,13 +49,24 @@ namespace Provis.Core.Services
         public async Task ConfirmEmailAsync(string userId, UserConfirmEmailDTO confirmEmailDTO)
         {
             var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "This user not found");
+            }
+
+            if (user.EmailConfirmed)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You already confirmed your email address!");
+            }
+
             var decodedCode = Encoding.ASCII.GetString(Convert.FromBase64String(confirmEmailDTO.ConfirmCode));
 
             var result = await _userManager.ConfirmEmailAsync(user, decodedCode);
 
             if(result.Succeeded != true)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NoContent, "Error");
+                throw new HttpException(System.Net.HttpStatusCode.NoContent, "Wrong code, try again!");
             }
 
             await Task.CompletedTask;
