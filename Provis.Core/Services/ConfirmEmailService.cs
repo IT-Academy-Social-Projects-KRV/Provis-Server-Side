@@ -14,6 +14,7 @@ namespace Provis.Core.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly IEmailSenderService _emailService;
+
         public ConfirmEmailService(UserManager<User> userManager, IEmailSenderService emailSender)
         {
             _userManager = userManager;
@@ -23,15 +24,7 @@ namespace Provis.Core.Services
         {
             var user = await _userManager.FindByIdAsync(userId);
 
-            if(user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "This user not found");
-            }
-
-            if(user.EmailConfirmed)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You already confirmed your email address!");
-            }
+            CheckUserAndEmailConfirmed(user);
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var encodedCode = Convert.ToBase64String(Encoding.ASCII.GetBytes(token));
@@ -50,6 +43,24 @@ namespace Provis.Core.Services
         {
             var user = await _userManager.FindByIdAsync(userId);
 
+            CheckUserAndEmailConfirmed(user);
+
+            var decodedCode = DecodeASCIIBase64(confirmEmailDTO.ConfirmCode);
+
+            var result = await _userManager.ConfirmEmailAsync(user, decodedCode);
+
+            if(result.Succeeded != true)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Wrong code or this code is deprecated, try again!");
+            }
+
+            await _userManager.UpdateSecurityStampAsync(user);
+
+            await Task.CompletedTask;
+        }
+
+        private void CheckUserAndEmailConfirmed(User user)
+        {
             if (user == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "This user not found");
@@ -59,17 +70,18 @@ namespace Provis.Core.Services
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You already confirmed your email address!");
             }
+        }
 
-            var decodedCode = Encoding.ASCII.GetString(Convert.FromBase64String(confirmEmailDTO.ConfirmCode));
+        private string DecodeASCIIBase64(string input)
+        {
+            var bytes = new Span<byte>(new byte[352]);
 
-            var result = await _userManager.ConfirmEmailAsync(user, decodedCode);
-
-            if(result.Succeeded != true)
+            if(!Convert.TryFromBase64String(input, bytes, out var bytesWritten))
             {
-                throw new HttpException(System.Net.HttpStatusCode.NoContent, "Wrong code, try again!");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Invalid code, try again!");
             }
 
-            await Task.CompletedTask;
+            return Encoding.ASCII.GetString(bytes.Slice(0, bytesWritten));
         }
     }
 }
