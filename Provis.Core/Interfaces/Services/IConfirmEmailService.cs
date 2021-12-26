@@ -1,4 +1,5 @@
-﻿using Task = System.Threading.Tasks.Task;
+﻿using Provis.Core.DTO.userDTO;
+using Task = System.Threading.Tasks.Task;
 
 namespace Provis.Core.Interfaces.Services
 {
@@ -6,6 +7,6 @@ namespace Provis.Core.Interfaces.Services
     {
         Task SendConfirmMailAsync(string userId);
 
-        Task ConfirmEmailAsync(string userId, string token);
+        Task ConfirmEmailAsync(string userId, UserConfirmEmailDTO confirmEmailDTO);
     }
 }

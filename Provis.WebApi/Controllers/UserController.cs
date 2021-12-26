@@ -71,9 +71,9 @@ namespace Provis.WebApi.Controllers
         [HttpPost]
         [Authorize]
         [Route("confirmemail")]
-        public async Task<IActionResult> ConfirmEmailAsync(string token)
+        public async Task<IActionResult> ConfirmEmailAsync([FromBody] UserConfirmEmailDTO confirmEmailDTO)
         {
-            await _confirmEmailService.ConfirmEmailAsync(UserId, token);
+            await _confirmEmailService.ConfirmEmailAsync(UserId, confirmEmailDTO);
 
             return Ok();
         }

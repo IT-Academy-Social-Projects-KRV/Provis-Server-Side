@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Provis.Core.DTO.userDTO;
 using Provis.Core.Entities;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers.Mails;
@@ -37,10 +38,10 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-        public async Task ConfirmEmailAsync(string userId, string token)
+        public async Task ConfirmEmailAsync(string userId, UserConfirmEmailDTO confirmEmailDTO)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            var decodedCode = HttpUtility.UrlDecode(token);
+            var decodedCode = HttpUtility.UrlDecode(confirmEmailDTO.ConfirmCode);
 
             var result = await _userManager.ConfirmEmailAsync(user, decodedCode);
 
