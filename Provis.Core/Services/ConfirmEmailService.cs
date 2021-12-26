@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Provis.Core.Entities;
+using Provis.Core.Exeptions;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Services;
 using System;
@@ -23,8 +24,8 @@ namespace Provis.Core.Services
         public async Task SendConfirmMailAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var encodedCode = HttpUtility.UrlEncode(code);
+            var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedCode = HttpUtility.UrlEncode(token);
 
             await _emailService.SendEmailAsync(new MailRequest()
             {
@@ -36,10 +37,20 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-        public async Task ConfirmEmailAsync()
+        public async Task ConfirmEmailAsync(string userId, string token)
         {
+            var user = await _userManager.FindByIdAsync(userId);
+            var decodedCode = HttpUtility.UrlDecode(token);
+
+            var result = await _userManager.ConfirmEmailAsync(user, decodedCode);
+
+            if(result.Succeeded != true)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NoContent, "Error");
+            }
 
             await Task.CompletedTask;
+
         }
     }
 }
