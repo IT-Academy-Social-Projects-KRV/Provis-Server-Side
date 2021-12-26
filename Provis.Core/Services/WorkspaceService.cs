@@ -23,12 +23,14 @@ namespace Provis.Core.Services
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
         protected readonly IRepository<InviteUser> _inviteUserRepository;
+        protected readonly IRepository<Entities.Task> _taskRepository;
         protected readonly IMapper _mapper;
 
         public WorkspaceService(UserManager<User> userManager, 
             IRepository<Workspace> workspace, 
             IRepository<UserWorkspace> userWorkspace,
             IRepository<InviteUser> inviteUser,
+            IRepository<Entities.Task> createTask,
             IEmailSenderService emailSenderService,
             IMapper mapper)
         {
@@ -37,6 +39,7 @@ namespace Provis.Core.Services
             _userWorkspaceRepository = userWorkspace;
             _emailSendService = emailSenderService;
             _inviteUserRepository = inviteUser;
+            _taskRepository = createTask;
             _mapper = mapper;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
@@ -215,6 +218,40 @@ namespace Provis.Core.Services
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _inviteUserRepository.SaveChangesAsync();
 
+            await Task.CompletedTask;
+        }
+
+        public async Task CreateTaskAsync(TaskCreateDTO taskCreateDTO, string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            var workspace = await _workspaceRepository.GetByKeyAsync(taskCreateDTO.WorkspaceID);
+
+            if (workspace == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Not found this workspace");
+            }
+
+
+            Entities.Task task = new Entities.Task()
+            {
+                Name = taskCreateDTO.Name,
+                Description = taskCreateDTO.Description,
+                DateOfCreate = DateTime.UtcNow,
+                DateOfEnd = taskCreateDTO.DateOfEnd,
+                StatusId = taskCreateDTO.StatusID,
+                WorkspaceId = taskCreateDTO.WorkspaceID,
+                TaskCreaterId = user.Id
+            };
+            await _taskRepository.AddAsync(task);
+            await _taskRepository.SaveChangesAsync();
+
+            
             await Task.CompletedTask;
         }
     }
