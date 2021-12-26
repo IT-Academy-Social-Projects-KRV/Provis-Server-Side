@@ -12,10 +12,12 @@ namespace Provis.WebApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IConfirmEmailService _confirmEmailService;
         private string UserId => User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IConfirmEmailService confirmEmailService)
         {
             _userService = userService;
+            _confirmEmailService = confirmEmailService;
         }
 
         [HttpGet]
@@ -54,6 +56,16 @@ namespace Provis.WebApi.Controllers
             var activeInvite = await _userService.IsActiveInviteAsync(UserId);
 
             return Ok(activeInvite);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("sendconfirmmail")]
+        public async Task<IActionResult> ConfirmEmail()
+        {
+            await _confirmEmailService.SendConfirmMailAsync(UserId);
+
+            return Ok();
         }
     }
 }

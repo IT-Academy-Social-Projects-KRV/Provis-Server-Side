@@ -19,8 +19,9 @@ namespace Provis.Core.Services
             _userManager = userManager;
             _emailService = emailSender;
         }
-        public async Task SendConfirmMailAsync(User user)
+        public async Task SendConfirmMailAsync(string userId)
         {
+            var user = await _userManager.FindByIdAsync(userId);
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
             await _emailService.SendEmailAsync(new MailRequest()
