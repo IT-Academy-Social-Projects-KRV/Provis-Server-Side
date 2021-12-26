@@ -5,8 +5,6 @@ using Provis.Core.Exeptions;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Services;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Web;
 using Task = System.Threading.Tasks.Task;
@@ -26,7 +24,7 @@ namespace Provis.Core.Services
         {
             var user = await _userManager.FindByIdAsync(userId);
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var encodedCode = HttpUtility.UrlEncode(token);
+            var encodedCode = Convert.ToBase64String(Encoding.ASCII.GetBytes(token));
 
             await _emailService.SendEmailAsync(new MailRequest()
             {
@@ -41,7 +39,7 @@ namespace Provis.Core.Services
         public async Task ConfirmEmailAsync(string userId, UserConfirmEmailDTO confirmEmailDTO)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            var decodedCode = HttpUtility.UrlDecode(confirmEmailDTO.ConfirmCode);
+            var decodedCode = Encoding.ASCII.GetString(Convert.FromBase64String(confirmEmailDTO.ConfirmCode));
 
             var result = await _userManager.ConfirmEmailAsync(user, decodedCode);
 
@@ -51,7 +49,6 @@ namespace Provis.Core.Services
             }
 
             await Task.CompletedTask;
-
         }
     }
 }
