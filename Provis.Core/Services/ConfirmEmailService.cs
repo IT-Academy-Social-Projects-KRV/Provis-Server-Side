@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Web;
 using Task = System.Threading.Tasks.Task;
 
 namespace Provis.Core.Services
@@ -23,13 +24,20 @@ namespace Provis.Core.Services
         {
             var user = await _userManager.FindByIdAsync(userId);
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var encodedCode = HttpUtility.UrlEncode(code);
 
             await _emailService.SendEmailAsync(new MailRequest()
             {
                 ToEmail = user.Email,
                 Subject = "Provis Confirm Email",
-                Body = $"Your code: {code}"
+                Body = $"Your code: {encodedCode}"
             });
+
+            await Task.CompletedTask;
+        }
+
+        public async Task ConfirmEmailAsync()
+        {
 
             await Task.CompletedTask;
         }
