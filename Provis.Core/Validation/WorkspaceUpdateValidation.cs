@@ -11,12 +11,14 @@ namespace Provis.Core.Validation
                 .NotEmpty()
                 .NotNull()
                 .Length(1, 50)
-                .Matches("^[^£# “”]*$").WithMessage("{PropertyName} must not contain the following characters £ # “” or spaces.");
+                .Matches("^[^£# “”]*$")
+                .WithMessage("{PropertyName} must not contain the following characters £ # “” or spaces.");
 
             RuleFor(workspace => workspace.Description)
                 .NotNull()
-                .Length(0, 100)
-                .Matches("^[^£# “”]*$").WithMessage("{PropertyName} must not contain the following characters £ # “” or spaces.");
+                .Length(0, 50)
+                .Matches("^[^£# “”]*$")
+                .WithMessage("{PropertyName} must not contain the following characters £ # “” or spaces.");
         }
     }
 }
