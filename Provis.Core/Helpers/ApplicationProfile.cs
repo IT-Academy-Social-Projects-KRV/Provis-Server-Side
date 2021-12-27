@@ -10,7 +10,9 @@ namespace Provis.Core.Helpers
         public ApplicationProfile()
         {
             CreateMap<WorkspaceCreateDTO, Workspace>();
-            
+
+            CreateMap<WorkspaceUpdateDTO, Workspace>();
+
             CreateMap<User, UserPersonalInfoDTO>()
                 .ForMember(dest => dest.Email, act => act.MapFrom(src => src.Email))
                 .ForMember(dest => dest.Name, act => act.MapFrom(src => src.Name))
