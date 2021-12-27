@@ -224,18 +224,24 @@ namespace Provis.Core.Services
             
             if (user == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                    "User with Id not exist");
             }
 
-            var userworkspace = _userWorkspaceRepository.Query().Where(x => x.WorkspaceId == workspId && x.UserId == userId)
-                .Include(x => x.Workspace).Include(x => x.Role).FirstOrDefault();
+            var userWorkspace = _userWorkspaceRepository
+                .Query()
+                .Where(x => x.WorkspaceId == workspId && x.UserId == userId)
+                .Include(x => x.Workspace)
+                .Include(x => x.Role)
+                .FirstOrDefault();
 
-            if (userworkspace == null)
+            if (userWorkspace == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Workspace with this Id doesn't exist or you hasn't permissions");
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                    "Workspace with this Id doesn't exist or you hasn't permissions");
             }
 
-            var workspace = _mapper.Map<WorkspaceInfoDTO>(userworkspace);
+            var workspace = _mapper.Map<WorkspaceInfoDTO>(userWorkspace);
 
             return workspace;
         }
