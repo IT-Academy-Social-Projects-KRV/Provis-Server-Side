@@ -81,17 +81,5 @@ namespace Provis.WebApi.Controllers
 
             return Ok(workspInfo);
         }
-
-        [Authorize]
-        [HttpDelete]
-        [WorkspaceRoles (new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
-        [Route("{workspaceId}/user")]
-        //TODO: [FromBody] string deleteUserEmail
-        public async Task<IActionResult> DeleteFromWorkspace(int workspaceId, [FromBody] DeleteUserDTO deleteUserDTO)
-        {
-            await _workspaceService.DeletefromWorkspaceAsync(workspaceId, deleteUserDTO);
-
-            return Ok();
-        }
     }
 }

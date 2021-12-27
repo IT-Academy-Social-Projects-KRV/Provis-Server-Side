@@ -18,7 +18,5 @@ namespace Provis.Core.Interfaces.Services
         Task SendInviteAsync(InviteUserDTO inviteUser, string userId);
 
         Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int id, string userEmail);
-
-        Task DeletefromWorkspaceAsync(int id, DeleteUserDTO deleteUserDTO);
     }
 }
