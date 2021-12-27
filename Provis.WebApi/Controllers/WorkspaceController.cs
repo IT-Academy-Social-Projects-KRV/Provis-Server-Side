@@ -68,6 +68,7 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> GetWorkspaceAsync()
         {
             var getList = await _workspaceService.GetWorkspaceListAsync(UserId);
+
             return Ok(getList);
         }
 
@@ -79,6 +80,18 @@ namespace Provis.WebApi.Controllers
             var workspInfo = await _workspaceService.GetWorkspaceInfoAsync(id, UserId);
 
             return Ok(workspInfo);
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [WorkspaceRoles (new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
+        [Route("{workspaceId}/user")]
+        //TODO: [FromBody] string deleteUserEmail
+        public async Task<IActionResult> DeleteFromWorkspace(int workspaceId, [FromBody] DeleteUserDTO deleteUserDTO)
+        {
+            await _workspaceService.DeletefromWorkspaceAsync(workspaceId, deleteUserDTO);
+
+            return Ok();
         }
     }
 }
