@@ -72,11 +72,13 @@ namespace Provis.Core.Services
         {
             var user = await _userManager.FindByIdAsync(userId);
 
-            _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "User with Id not exist");
             
             var workspaceRec = await _workspaceRepository.GetByKeyAsync(workspaceUpdateDTO.WorkspaceId);
 
-            _ = workspaceRec ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Workspace with with Id not found");
+            _ = workspaceRec ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Workspace with with Id not found");
             
             _mapper.Map(workspaceUpdateDTO, workspaceRec);
 
