@@ -5,8 +5,6 @@
         ToDoId = 1,
         InProgressId = 2,
         InReviewId = 3,
-        OnHoldId = 4,
-        CompleatedId = 5,
-        ClosedId = 6
+        CompleatedId = 4
     }
 }
