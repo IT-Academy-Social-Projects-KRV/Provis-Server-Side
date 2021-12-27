@@ -11,7 +11,6 @@ namespace Provis.Core.DTO.workspaceDTO
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime DateOfEnd { get; set; }
-        public int StatusID { get; set; }
         public int WorkspaceID { get; set; }
         //public string TaskCreaterId { get; set; }
     }
