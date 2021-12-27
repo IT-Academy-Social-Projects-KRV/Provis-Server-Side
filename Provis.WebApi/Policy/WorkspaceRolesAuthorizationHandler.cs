@@ -47,7 +47,7 @@ namespace Provis.WebApi.Policy
                     bodyStr = reader.ReadToEnd();
 
                     JObject jObj = JObject.Parse(bodyStr);
-                    workspaceId = (int?)jObj["workspaceId"];
+                    workspaceId = (int)jObj["workspaceId"];
 
                     httpContextAccessor.HttpContext.Request.Body.Position = 0;
                 }

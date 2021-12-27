@@ -17,6 +17,6 @@ namespace Provis.Core.Interfaces.Services
 
         Task SendInviteAsync(InviteUserDTO inviteUser, string userId);
 
-        Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceDTO, string userid);
+        Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceDTO, string userId);
     }
 }

@@ -68,9 +68,9 @@ namespace Provis.Core.Services
 
             await Task.CompletedTask;
         }
-        public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userid)
+        public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
         {
-            var user = await _userManager.FindByIdAsync(userid);
+            var user = await _userManager.FindByIdAsync(userId);
 
             _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             
