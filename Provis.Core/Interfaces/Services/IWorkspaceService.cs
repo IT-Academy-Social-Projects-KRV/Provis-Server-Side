@@ -19,6 +19,8 @@ namespace Provis.Core.Interfaces.Services
 
         Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceDTO, string userId);
 
+        Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId);
+
         Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int id, string userEmail);
 
     }
