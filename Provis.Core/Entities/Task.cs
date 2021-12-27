@@ -29,9 +29,9 @@ namespace Provis.Core.Entities
         [ForeignKey("WorkspaceId")]
         public Workspace Workspace { get; set; }
 
-        public string TaskCreaterId { get; set; }
+        public string TaskCreatorId { get; set; }
 
-        [ForeignKey("TaskCreaterId")]
+        [ForeignKey("TaskCreatorId")]
         public User UserCreator { get; set; }
 
         public List<User> Users { get; set; } = new List<User>();
