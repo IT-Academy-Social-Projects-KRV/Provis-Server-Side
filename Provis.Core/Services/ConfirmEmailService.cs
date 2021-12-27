@@ -20,6 +20,7 @@ namespace Provis.Core.Services
             _userManager = userManager;
             _emailService = emailSender;
         }
+
         public async Task SendConfirmMailAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -27,7 +28,7 @@ namespace Provis.Core.Services
             CheckUserAndEmailConfirmed(user);
 
             var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-            var encodedCode = Convert.ToBase64String(Encoding.ASCII.GetBytes(token));
+            var encodedCode = Convert.ToBase64String(Encoding.Unicode.GetBytes(token));
 
             await _emailService.SendEmailAsync(new MailRequest()
             {
@@ -45,11 +46,11 @@ namespace Provis.Core.Services
 
             CheckUserAndEmailConfirmed(user);
 
-            var decodedCode = DecodeASCIIBase64(confirmEmailDTO.ConfirmCode);
+            var decodedCode = DecodeUnicodeBase64(confirmEmailDTO.ConfirmCode);
 
             var result = await _userManager.ConfirmEmailAsync(user, decodedCode);
 
-            if(result.Succeeded != true)
+            if(!result.Succeeded)
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Wrong code or this code is deprecated, try again!");
             }
@@ -72,16 +73,16 @@ namespace Provis.Core.Services
             }
         }
 
-        private string DecodeASCIIBase64(string input)
+        private string DecodeUnicodeBase64(string input)
         {
-            var bytes = new Span<byte>(new byte[352]);
+            var bytes = new Span<byte>(new byte[input.Length]);
 
             if(!Convert.TryFromBase64String(input, bytes, out var bytesWritten))
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Invalid code, try again!");
             }
 
-            return Encoding.ASCII.GetString(bytes.Slice(0, bytesWritten));
+            return Encoding.Unicode.GetString(bytes.Slice(0, bytesWritten));
         }
     }
 }

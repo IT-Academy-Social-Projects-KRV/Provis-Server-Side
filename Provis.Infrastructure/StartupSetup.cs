@@ -22,7 +22,8 @@ namespace Provis.Infrastructure
 
         public static void AddIdentityDbContext(this IServiceCollection services)
         {
-            services.AddIdentity<User, IdentityRole>().AddEntityFrameworkStores<ProvisDbContext>().AddDefaultTokenProviders();
+            services.AddIdentity<User, 
+                IdentityRole>().AddEntityFrameworkStores<ProvisDbContext>().AddDefaultTokenProviders();
         }
     }
 }

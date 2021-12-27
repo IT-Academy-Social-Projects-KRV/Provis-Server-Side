@@ -20,10 +20,10 @@ namespace Provis.Core.Services
         public async Task SendEmailAsync(MailRequest mailRequest)
         {
             var email = new MimeMessage();
-            email.From.Add(new MailboxAddress("Project Provis", "admin@provis.com"));
+            email.From.Add(new MailboxAddress(_mailSettings.FromName, _mailSettings.FromAddress));
             email.To.Add(MailboxAddress.Parse(mailRequest.ToEmail));
             email.Subject = mailRequest.Subject;
-            email.Body = new TextPart(MimeKit.Text.TextFormat.Html);
+            email.Body = new TextPart(_mailSettings.TextFormat);
 
             var builder = new BodyBuilder();
             if (mailRequest.Attachments != null)
