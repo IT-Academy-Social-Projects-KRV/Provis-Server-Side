@@ -217,5 +217,22 @@ namespace Provis.Core.Services
 
             await Task.CompletedTask;
         }
+        
+        public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
+        {
+            var workspaceMembers = await _userWorkspaceRepository.Query()
+                .Where(u => u.WorkspaceId == workspaceId)
+                .Include(u => u.User)
+                .Include(u => u.Role)
+                .Select(o => new WorkspaceMemberDTO 
+                { 
+                    Id = o.UserId, 
+                    Role = o.Role.Name,
+                    UserName = o.User.Name 
+                })
+                .ToListAsync();
+
+            return workspaceMembers;
+        }
     }
 }
