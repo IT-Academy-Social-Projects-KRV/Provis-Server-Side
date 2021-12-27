@@ -237,7 +237,6 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "Not found this workspace");
             }
 
-
             Entities.Task task = new Entities.Task()
             {
                 Name = taskCreateDTO.Name,
@@ -251,7 +250,6 @@ namespace Provis.Core.Services
             await _taskRepository.AddAsync(task);
             await _taskRepository.SaveChangesAsync();
 
-            
             await Task.CompletedTask;
         }
     }
