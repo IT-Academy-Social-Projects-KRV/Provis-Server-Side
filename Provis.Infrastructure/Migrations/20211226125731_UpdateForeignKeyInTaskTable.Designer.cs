@@ -335,7 +335,7 @@ namespace Provis.Infrastructure.Migrations
                     b.Property<int>("StatusId")
                         .HasColumnType("int");
 
-                    b.Property<string>("TaskCreaterId")
+                    b.Property<string>("TaskCreatorId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
@@ -346,7 +346,7 @@ namespace Provis.Infrastructure.Migrations
 
                     b.HasIndex("StatusId");
 
-                    b.HasIndex("TaskCreaterId");
+                    b.HasIndex("TaskCreatorId");
 
                     b.HasIndex("WorkspaceId");
 
@@ -618,7 +618,7 @@ namespace Provis.Infrastructure.Migrations
 
                     b.HasOne("Provis.Core.Entities.User", "UserCreator")
                         .WithMany()
-                        .HasForeignKey("TaskCreaterId")
+                        .HasForeignKey("TaskCreatorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 

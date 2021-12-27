@@ -7,25 +7,25 @@ namespace Provis.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
-                name: "IX_Tasks_TaskCreaterId",
+                name: "IX_Tasks_TaskCreatorId",
                 table: "Tasks");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tasks_TaskCreaterId",
+                name: "IX_Tasks_TaskCreatorId",
                 table: "Tasks",
-                column: "TaskCreaterId");
+                column: "TaskCreatorId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropIndex(
-                name: "IX_Tasks_TaskCreaterId",
+                name: "IX_Tasks_TaskCreatorId",
                 table: "Tasks");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Tasks_TaskCreaterId",
+                name: "IX_Tasks_TaskCreatorId",
                 table: "Tasks",
-                column: "TaskCreaterId",
+                column: "TaskCreatorId",
                 unique: true);
         }
     }
