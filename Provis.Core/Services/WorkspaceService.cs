@@ -218,16 +218,16 @@ namespace Provis.Core.Services
             await Task.CompletedTask;  
         }
 
-        public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspid, string userid)
+        public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspId, string userId)
         {
-            var user = await _userManager.FindByIdAsync(userid);
+            var user = await _userManager.FindByIdAsync(userId);
             
             if (user == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            var userworkspace = _userWorkspaceRepository.Query().Where(x => x.WorkspaceId == workspid && x.UserId == userid)
+            var userworkspace = _userWorkspaceRepository.Query().Where(x => x.WorkspaceId == workspId && x.UserId == userId)
                 .Include(x => x.Workspace).Include(x => x.Role).FirstOrDefault();
 
             if (userworkspace == null)
