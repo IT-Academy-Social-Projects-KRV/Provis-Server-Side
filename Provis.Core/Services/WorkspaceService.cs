@@ -244,9 +244,9 @@ namespace Provis.Core.Services
                 Description = taskCreateDTO.Description,
                 DateOfCreate = DateTime.UtcNow,
                 DateOfEnd = taskCreateDTO.DateOfEnd,
-                StatusId = taskCreateDTO.StatusID,
+                StatusId = 1,
                 WorkspaceId = taskCreateDTO.WorkspaceID,
-                TaskCreaterId = user.Id
+                TaskCreatorId = user.Id
             };
             await _taskRepository.AddAsync(task);
             await _taskRepository.SaveChangesAsync();
