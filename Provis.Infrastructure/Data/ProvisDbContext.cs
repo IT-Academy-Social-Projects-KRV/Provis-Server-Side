@@ -55,7 +55,7 @@ namespace Provis.Infrastructure.Data
             // Task Foreign Key
             modelBuilder.Entity<Task>()
                 .HasOne(u => u.UserCreator)
-                .WithOne()
+                .WithMany()
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
