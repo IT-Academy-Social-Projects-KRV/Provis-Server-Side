@@ -18,10 +18,10 @@ namespace Provis.Infrastructure.Data.SeedData
                 new Status()
                 {
                     Id = (int)TaskStatuses.ToDoId,
-                    StatusName = "TO DO"
+                    StatusName = "To do"
                 },
                 new Status()
-                { 
+                {
                     Id = (int)TaskStatuses.InProgressId,
                     StatusName = "In progress"
                 },
@@ -32,18 +32,8 @@ namespace Provis.Infrastructure.Data.SeedData
                 },
                 new Status()
                 {
-                    Id = (int)TaskStatuses.OnHoldId,
-                    StatusName = "On hold"
-                },
-                new Status()
-                {
                     Id = (int)TaskStatuses.CompleatedId,
                     StatusName = "Compleated"
-                },
-                new Status()
-                {
-                    Id = (int)TaskStatuses.ClosedId,
-                    StatusName = "Closed"
                 });
 
         public static void SeedWorkspaceRole(ModelBuilder builder) =>

@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Provis.Core.DTO.workspaceDTO;
+using System;
 
 namespace Provis.Core.Validation
 {
@@ -16,12 +17,9 @@ namespace Provis.Core.Validation
                 .NotNull();
 
             RuleFor(task => task.DateOfEnd)
-                .NotEmpty()
-                .NotNull();
-
-            RuleFor(task => task.StatusID)
-                .NotEmpty()
-                .NotNull();
+                .NotEmpty() 
+                .NotNull()
+                .GreaterThan(DateTime.UtcNow);
 
             RuleFor(task => task.WorkspaceID)
                 .NotEmpty()
