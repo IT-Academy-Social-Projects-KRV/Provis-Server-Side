@@ -23,12 +23,14 @@ namespace Provis.Core.Services
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
         protected readonly IRepository<InviteUser> _inviteUserRepository;
+        protected readonly IRepository<Entities.Task> _tasksRepository;
         protected readonly IMapper _mapper;
 
         public WorkspaceService(UserManager<User> userManager, 
             IRepository<Workspace> workspace, 
             IRepository<UserWorkspace> userWorkspace,
             IRepository<InviteUser> inviteUser,
+            IRepository<Entities.Task> tasks,
             IEmailSenderService emailSenderService,
             IMapper mapper)
         {
@@ -37,6 +39,7 @@ namespace Provis.Core.Services
             _userWorkspaceRepository = userWorkspace;
             _emailSendService = emailSenderService;
             _inviteUserRepository = inviteUser;
+            _tasksRepository = tasks;
             _mapper = mapper;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
@@ -216,6 +219,13 @@ namespace Provis.Core.Services
             await _inviteUserRepository.SaveChangesAsync();
 
             await Task.CompletedTask;
+        }
+
+        public async Task<List<Entities.Task>> GetUserTasksAsync(string userid, int workspaceid)
+        {
+            var userTask = await _tasksRepository.Query().Where(x => x.WorkspaceId == workspaceid).ToListAsync();
+
+            return userTask;
         }
     }
 }
