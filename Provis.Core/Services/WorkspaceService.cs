@@ -276,7 +276,7 @@ namespace Provis.Core.Services
                 { 
                     Id = o.UserId, 
                     Role = o.Role.Name,
-                    UserName = o.User.Name 
+                    UserName = o.User.UserName 
                 })
                 .ToListAsync();
 
