@@ -215,7 +215,35 @@ namespace Provis.Core.Services
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _inviteUserRepository.SaveChangesAsync();
 
-            await Task.CompletedTask;
+            await Task.CompletedTask;  
+        }
+
+        public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspId, string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                    "User with Id not exist");
+            }
+
+            var userWorkspace = _userWorkspaceRepository
+                .Query()
+                .Where(x => x.WorkspaceId == workspId && x.UserId == userId)
+                .Include(x => x.Workspace)
+                .Include(x => x.Role)
+                .FirstOrDefault();
+
+            if (userWorkspace == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                    "Workspace with this Id doesn't exist or you hasn't permissions");
+            }
+
+            var workspace = _mapper.Map<WorkspaceInfoDTO>(userWorkspace);
+
+            return workspace;
         }
     }
 }
