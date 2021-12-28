@@ -267,7 +267,7 @@ namespace Provis.Core.Services
             return workspace;
         }
 
-        public async Task DeletefromWorkspaceAsync(int id, DeleteUserDTO deleteUserDTO)
+        public async Task DeleteFromWorkspaceAsync(int id, DeleteUserDTO deleteUserDTO)
         {
             var user = await _userManager.FindByEmailAsync(deleteUserDTO.UserEmail);
 
@@ -277,7 +277,10 @@ namespace Provis.Core.Services
                     "User with this Id not exist");
             }
 
-            var workspId = _workspaceRepository.Query().Where(x => x.Id == id).FirstOrDefault();
+            var workspId = _workspaceRepository
+                .Query()
+                .Where(x => x.Id == id)
+                .FirstOrDefault();
 
             if (workspId == null)
             {

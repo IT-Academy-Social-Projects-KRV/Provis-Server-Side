@@ -100,7 +100,7 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> DeleteFromWorkspace(int workspaceId, 
             [FromBody] DeleteUserDTO deleteUserDTO)
         {
-            await _workspaceService.DeletefromWorkspaceAsync(workspaceId, deleteUserDTO);
+            await _workspaceService.DeleteFromWorkspaceAsync(workspaceId, deleteUserDTO);
 
             return Ok();
         }
