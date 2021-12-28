@@ -11,13 +11,7 @@ namespace Provis.Core.Helpers.Mails
         public int Port { get; set; }
         public string FromName { get; set; }
         public string FromAddress { get; set; }
-        public bool IsHtml { get; set; }
-        public TextFormat TextFormat
-        {
-            get
-            {
-                return IsHtml ? TextFormat.Html : TextFormat.Text;
-            }
-        }
+        public TextFormat TextFormat { get; set; }
+
     }
 }

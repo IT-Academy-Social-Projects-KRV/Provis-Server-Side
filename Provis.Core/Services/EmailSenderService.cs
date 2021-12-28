@@ -33,7 +33,7 @@ namespace Provis.Core.Services
                 {
                     if (file.Length > 0)
                     {
-                        using (var ms = new MemoryStream())
+                        using (var ms = new MemoryStream()) //TODO: investigate
                         {
                             file.CopyTo(ms);
                             fileBytes = ms.ToArray();
