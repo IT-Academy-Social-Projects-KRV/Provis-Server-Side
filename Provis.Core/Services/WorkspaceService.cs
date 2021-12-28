@@ -238,6 +238,7 @@ namespace Provis.Core.Services
                     Role = o.Role.Name,
                     UserName = o.User.UserName 
                 })
+                .OrderBy(o => o.UserName)
                 .ToListAsync();
 
             return workspaceMembers;
