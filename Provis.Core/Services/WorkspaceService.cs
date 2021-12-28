@@ -68,6 +68,26 @@ namespace Provis.Core.Services
 
             await Task.CompletedTask;
         }
+        public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "User with Id not exist");
+            
+            var workspaceRec = await _workspaceRepository.GetByKeyAsync(workspaceUpdateDTO.WorkspaceId);
+
+            _ = workspaceRec ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Workspace with with Id not found");
+            
+            _mapper.Map(workspaceUpdateDTO, workspaceRec);
+
+            await _workspaceRepository.UpdateAsync(workspaceRec);
+
+            await _workspaceRepository.SaveChangesAsync();           
+
+            await Task.CompletedTask;
+        }
 
         public async Task SendInviteAsync(InviteUserDTO inviteDTO, string ownerId)
         {

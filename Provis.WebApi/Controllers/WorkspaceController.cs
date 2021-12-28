@@ -72,6 +72,17 @@ namespace Provis.WebApi.Controllers
             return Ok(getList);
         }
 
+        [HttpPut]
+        [Authorize]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
+        [Route("updateworkspace")]
+        public async Task<IActionResult> UpdateWorkspaceAsync([FromBody] WorkspaceUpdateDTO workspaceUpdate)
+        {
+            await _workspaceService.UpdateWorkspaceAsync(workspaceUpdate, UserId);
+
+            return Ok();
+        }
+
         [HttpGet]
         [Authorize]
         [Route("getworkspace/{id}/info")]
