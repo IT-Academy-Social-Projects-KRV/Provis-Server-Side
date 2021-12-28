@@ -16,7 +16,7 @@ namespace Provis.Core.Validation
 
             RuleFor(workspace => workspace.Description)
                 .NotNull()
-                .Length(0, 50)
+                .Length(0, 200)
                 .Matches("^[^£# “”]*$")
                 .WithMessage("{PropertyName} must not contain the following characters £ # “” or spaces.");
         }
