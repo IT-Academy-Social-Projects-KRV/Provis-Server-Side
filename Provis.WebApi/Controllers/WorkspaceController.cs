@@ -95,10 +95,10 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("workspacemembers")]
-        public async Task<IActionResult> GetWorkspaceMembersAsync(int workspaceid)
+        [Route("/getworkspace/{id}/members")]
+        public async Task<IActionResult> GetWorkspaceMembersAsync(int id)
         {
-            var members = await _workspaceService.GetWorkspaceMembersAsync(workspaceid);
+            var members = await _workspaceService.GetWorkspaceMembersAsync(id);
             return Ok(members);
         }
     }
