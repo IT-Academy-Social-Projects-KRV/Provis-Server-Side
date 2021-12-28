@@ -97,7 +97,8 @@ namespace Provis.WebApi.Controllers
         [HttpDelete]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
         [Route("{workspaceId}/user")]
-        public async Task<IActionResult> DeleteFromWorkspace(int workspaceId, [FromBody] DeleteUserDTO deleteUserDTO)
+        public async Task<IActionResult> DeleteFromWorkspace(int workspaceId, 
+            [FromBody] DeleteUserDTO deleteUserDTO)
         {
             await _workspaceService.DeletefromWorkspaceAsync(workspaceId, deleteUserDTO);
 

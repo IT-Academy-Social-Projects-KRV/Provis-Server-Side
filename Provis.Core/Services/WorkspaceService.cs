@@ -68,6 +68,7 @@ namespace Provis.Core.Services
 
             await Task.CompletedTask;
         }
+
         public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -272,25 +273,30 @@ namespace Provis.Core.Services
 
             if (user == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Id not exist");
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                    "User with this Id not exist");
             }
 
             var workspId = _workspaceRepository.Query().Where(x => x.Id == id).FirstOrDefault();
 
             if (workspId == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Workspace with Id not exist");
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                    "Workspace with Id not exist");
             }
 
-            var userworksp = _userWorkspaceRepository.Query()
-                .Where(x => x.WorkspaceId == id && x.User.Email == deleteUserDTO.UserEmail).FirstOrDefault();
+            var userWorksp = _userWorkspaceRepository
+                .Query()
+                .Where(x => x.WorkspaceId == id && x.User.Email == deleteUserDTO.UserEmail)
+                .FirstOrDefault();
 
-            if (userworksp == null)
+            if (userWorksp == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User is doesnt contain in this workspace");
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                    "User is doesnt contain in this workspace");
             }
 
-            await _userWorkspaceRepository.DeleteAsync(userworksp);
+            await _userWorkspaceRepository.DeleteAsync(userWorksp);
             await _workspaceRepository.SaveChangesAsync();
         }
     }
