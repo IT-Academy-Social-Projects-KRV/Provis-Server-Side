@@ -145,7 +145,7 @@ namespace Provis.Core.Services
             await _emailSendService.SendEmailAsync(new MailRequest 
             { 
                 ToEmail = inviteDTO.UserEmail, 
-                Subject = "Provis", 
+                Subject = "Workspace invitation", 
                 Body = $"Owner: {owner.UserName} - Welcome to my Workspace {workspace.Name}"
             });
 
