@@ -48,8 +48,8 @@ namespace Provis.Core.Services
         public async Task ChangeInfoAsync(string userId, UserChangeInfoDTO userChangeInfoDTO)
         {
             var userObject = await _userManager.FindByNameAsync(userChangeInfoDTO.UserName);
-
-            if (userObject != null)
+            
+            if (userObject != null && userObject.Id != userId)
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "This username already exists");
             }
