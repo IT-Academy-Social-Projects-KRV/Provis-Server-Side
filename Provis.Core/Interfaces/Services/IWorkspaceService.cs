@@ -1,4 +1,5 @@
-﻿using Provis.Core.DTO.workspaceDTO;
+﻿using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.workspaceDTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
@@ -21,5 +22,6 @@ namespace Provis.Core.Interfaces.Services
 
         Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int id, string userEmail);
 
+        Task<List<UserInviteInfoDTO>> GetWorkspaceActiveInvitesAsync(int id, string userId);
     }
 }

@@ -92,5 +92,17 @@ namespace Provis.WebApi.Controllers
 
             return Ok(workspInfo);
         }
+
+        [HttpGet]
+        [Authorize]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
+        [Route("activeinvites/{workspaceId}/info")]
+        public async Task<IActionResult> GetWorkspaceActiveInvitesAsync(int workspaceId)
+        {
+            var workspInvites = await _workspaceService.GetWorkspaceActiveInvitesAsync(workspaceId, UserId);
+
+            return Ok(workspInvites);
+        }
+
     }
 }

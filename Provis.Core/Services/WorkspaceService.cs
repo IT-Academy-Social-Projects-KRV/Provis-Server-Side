@@ -13,6 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Provis.Core.Helpers.Mails;
+using Provis.Core.DTO.userDTO;
 
 namespace Provis.Core.Services
 {
@@ -68,6 +69,7 @@ namespace Provis.Core.Services
 
             await Task.CompletedTask;
         }
+
         public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -181,7 +183,6 @@ namespace Provis.Core.Services
         }
 
         public async Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid)
-
         {
             var user = await _userManager.FindByIdAsync(userid);
 
@@ -264,6 +265,32 @@ namespace Provis.Core.Services
             var workspace = _mapper.Map<WorkspaceInfoDTO>(userWorkspace);
 
             return workspace;
+        }
+
+        public async Task<List<UserInviteInfoDTO>> GetWorkspaceActiveInvitesAsync(int workspId, string userId)
+        {
+            var workspace = _workspaceRepository.Query().Where(x => x.Id == workspId).FirstOrDefault();
+
+            if (workspace == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Workspace with this ID not exist");
+            }
+
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            var invitesList = await _inviteUserRepository
+                .Query()
+                .Where(x => x.WorkspaceId == workspId && x.FromUserId == userId && x.IsConfirm == null)
+                .ToListAsync();
+
+            var listToReturn = _mapper.Map<List<UserInviteInfoDTO>>(invitesList);
+
+            return (listToReturn);
         }
     }
 }
