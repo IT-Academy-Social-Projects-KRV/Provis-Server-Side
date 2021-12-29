@@ -48,7 +48,7 @@ namespace Provis.Core.Services
         public async Task ChangeInfoAsync(string userId, UserChangeInfoDTO userChangeInfoDTO)
         {
             var userObject = await _userManager.FindByNameAsync(userChangeInfoDTO.UserName);
-            
+
             if (userObject != null && userObject.Id != userId)
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "This username already exists");
@@ -56,11 +56,6 @@ namespace Provis.Core.Services
 
             var user = await _userRepository.GetByKeyAsync(userId);
 
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
-            }
-            
             _mapper.Map(userChangeInfoDTO, user);
 
             await _userRepository.UpdateAsync(user);
