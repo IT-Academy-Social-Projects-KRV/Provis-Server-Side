@@ -268,11 +268,13 @@ namespace Provis.Core.Services
         public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
         {
             var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
-            if (workspace == null)
-                throw new HttpException
-                    (System.Net.HttpStatusCode.NotFound,
-                    "Workspace with current Id not found");
 
+            if (workspace == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "Workspace with current Id not found");
+            }
+                
             var workspaceMembers = await _userWorkspaceRepository.Query()
                 .Where(u => u.WorkspaceId == workspaceId)
                 .Include(u => u.User)
