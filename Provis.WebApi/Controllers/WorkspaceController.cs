@@ -70,15 +70,5 @@ namespace Provis.WebApi.Controllers
             var getList = await _workspaceService.GetWorkspaceListAsync(UserId);
             return Ok(getList);
         }
-
-        [Authorize]
-        [HttpGet]
-        [Route("getusertasks")]
-        public async Task<IActionResult> GetUserTasks(int workspaceId)
-        {
-            var getTasks = await _workspaceService.GetUserTasksAsync(UserId, workspaceId);
-
-            return Ok(getTasks);
-        }
     }
 }

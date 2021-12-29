@@ -30,8 +30,11 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.FromUserName, act => act.MapFrom(srs => srs.FromUser.Name))
                 .ForMember(x => x.ToUserId, act => act.MapFrom(srs => srs.ToUserId));
 
-            //CreateMap<Task, TasksDTO>()
-                //.ForMember(x => x.Name, ac)
+            CreateMap<Task, TaskDTO>()
+                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
+                .ForMember(x => x.Status, act => act.MapFrom(srs => srs.Status.StatusName))
+                .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd));
 
             CreateMap<UserChangeInfoDTO, User>();
         }

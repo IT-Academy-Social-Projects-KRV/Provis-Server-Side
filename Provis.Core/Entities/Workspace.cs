@@ -20,5 +20,6 @@ namespace Provis.Core.Entities
         public List<User> Users { get; set; } = new List<User>();
 
         public List<UserWorkspace> UserWorkspaces { get; set; } = new List<UserWorkspace>();
+        public List<Task> Tasks { get; set; } = new List<Task>();
     }
 }
