@@ -7,7 +7,7 @@ namespace Provis.Core.Validation
     {
         public UserConfirmEmailValidation()
         {
-            RuleFor(email => email.ConfirmCode)
+            RuleFor(email => email.ConfirmationCode)
                 .NotEmpty()
                 .NotNull();
         }

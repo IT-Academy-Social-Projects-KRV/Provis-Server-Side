@@ -2,7 +2,6 @@
 using MimeKit;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Services;
-using System.IO;
 using Task = System.Threading.Tasks.Task;
 
 namespace Provis.Core.Services
@@ -19,34 +18,18 @@ namespace Provis.Core.Services
 
         public async Task SendEmailAsync(MailRequest mailRequest)
         {
-            var email = new MimeMessage();
-            email.From.Add(new MailboxAddress(_mailSettings.FromName, _mailSettings.FromAddress));
-            email.To.Add(MailboxAddress.Parse(mailRequest.ToEmail));
-            email.Subject = mailRequest.Subject;
-            email.Body = new TextPart(_mailSettings.TextFormat);
+            await _smtpService.SendAsync(CreateEmailMessage(mailRequest), _mailSettings);
+        }
 
-            var builder = new BodyBuilder();
-            if (mailRequest.Attachments != null)
-            {
-                byte[] fileBytes;
-                foreach (var file in mailRequest.Attachments)
-                {
-                    if (file.Length > 0)
-                    {
-                        using (var ms = new MemoryStream()) //TODO: investigate
-                        {
-                            file.CopyTo(ms);
-                            fileBytes = ms.ToArray();
-                        }
-                        builder.Attachments.Add(file.FileName, fileBytes, ContentType.Parse(file.ContentType));
-                    }
-                }
-            }
+        private MimeMessage CreateEmailMessage(MailRequest mailRequest)
+        {
+            var emailMessage = new MimeMessage();
+            emailMessage.From.Add(new MailboxAddress(_mailSettings.FromName, _mailSettings.FromAddress));
+            emailMessage.To.Add(MailboxAddress.Parse(mailRequest.ToEmail));
+            emailMessage.Subject = mailRequest.Subject;
+            emailMessage.Body = new TextPart(_mailSettings.TextFormat) { Text = mailRequest.Body };
 
-            builder.HtmlBody = mailRequest.Body;
-            email.Body = builder.ToMessageBody();
-
-            await _smtpService.SendAsync(_mailSettings, email);
+            return emailMessage;
         }
     }
 }

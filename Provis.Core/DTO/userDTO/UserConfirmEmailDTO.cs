@@ -2,6 +2,6 @@
 {
     public class UserConfirmEmailDTO
     {
-        public string ConfirmCode { get; set; }
+        public string ConfirmationCode { get; set; }
     }
 }

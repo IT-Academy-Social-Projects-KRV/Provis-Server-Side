@@ -34,7 +34,7 @@ namespace Provis.Core.Services
             {
                 ToEmail = user.Email,
                 Subject = "Provis Confirm Email",
-                Body = $"Your code: {encodedCode}"
+                Body = $"<div><h1>Your code:</h1> <label>{encodedCode}</label></div>"
             });
 
             await Task.CompletedTask;
@@ -46,7 +46,7 @@ namespace Provis.Core.Services
 
             CheckUserAndEmailConfirmed(user);
 
-            var decodedCode = DecodeUnicodeBase64(confirmEmailDTO.ConfirmCode);
+            var decodedCode = DecodeUnicodeBase64(confirmEmailDTO.ConfirmationCode);
 
             var result = await _userManager.ConfirmEmailAsync(user, decodedCode);
 
