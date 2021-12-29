@@ -277,18 +277,9 @@ namespace Provis.Core.Services
                     "User with this Id not exist");
             }
 
-            var workspace = _workspaceRepository.GetByKeyAsync(workspaceId);
-
-            if (workspace == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
-                    "Workspace with Id not exist");
-            }
-
             var userWorksp = _userWorkspaceRepository
                 .Query()
-                .Where(x => x.WorkspaceId == workspaceId && x.User.Email == deleteUserDTO.UserEmail)
-                .FirstOrDefault();
+                .FirstOrDefault(x => x.WorkspaceId == workspaceId && x.User == user);
 
             if (userWorksp == null)
             {

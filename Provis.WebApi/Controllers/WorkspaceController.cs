@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Provis.Core.DTO.workspaceDTO;
+using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using Provis.WebApi.Policy;
@@ -100,6 +101,11 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> DeleteFromWorkspace(int workspaceId, 
             [FromBody] DeleteUserDTO deleteUserDTO)
         {
+            if (deleteUserDTO == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,"Error");
+            }
+
             await _workspaceService.DeleteFromWorkspaceAsync(workspaceId, deleteUserDTO);
 
             return Ok();
