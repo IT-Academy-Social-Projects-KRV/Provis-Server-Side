@@ -37,16 +37,16 @@ namespace Provis.Core.Services
             {
                 userTasks = await _taskRepository.Query()
                     .Include(x => x.Users)
-                    .Where(x => x.WorkspaceId == workspaceId
-                    && !x.Users.Any())
+                    .Where(x => x.WorkspaceId == workspaceId &&
+                        !x.Users.Any())
                     .ToListAsync();
             }
             else
             {
                 userTasks = await _taskRepository.Query()
                    .Include(x => x.Users)
-                   .Where(x => x.WorkspaceId == workspaceId
-                   && x.Users.Any())
+                   .Where(x => x.WorkspaceId == workspaceId && 
+                        x.Users.Any())
                    .ToListAsync();
             }
 
