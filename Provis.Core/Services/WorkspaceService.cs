@@ -279,7 +279,7 @@ namespace Provis.Core.Services
 
             var userWorksp = _userWorkspaceRepository
                 .Query()
-                .FirstOrDefault(x => x.WorkspaceId == workspaceId && x.User == user);
+                .FirstOrDefault(x => x.WorkspaceId == workspaceId && x.User.Id == user.Id);
 
             if (userWorksp == null)
             {
