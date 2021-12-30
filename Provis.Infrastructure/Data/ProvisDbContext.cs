@@ -52,18 +52,27 @@ namespace Provis.Infrastructure.Data
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Task Foreign Key
+            // Add UsersTasks table
             modelBuilder.Entity<Task>()
-                .HasOne(u => u.UserCreator)
-                .WithMany()
-                .IsRequired()
-                .OnDelete(DeleteBehavior.Restrict);
+                    .HasMany(t => t.Users)
+                    .WithMany(u => u.Tasks)
+                    .UsingEntity<UsersTasks>(
+                j => j
+                    .HasOne(ut=>ut.User)
+                    .WithMany(t => t.UsersTasks)
+                    .HasForeignKey(ut => ut.UserId),
+                j => j
+                    .HasOne(ut => ut.Task)
+                    .WithMany(t => t.UsersTasks)
+                    .HasForeignKey(ut => ut.TaskId),
+                j =>
+                {
+                    j.Property(pt => pt.IsDeleted).HasDefaultValue(false);
+                    j.ToTable("UsersTasks");
+                });
 
-            modelBuilder.Entity<Task>()
-                .HasMany(t => t.Users)
-                .WithMany(u => u.Tasks)
-                .UsingEntity(j => j.ToTable("UsersTasks"));
-
+            modelBuilder.Seed();
+                
             // RefreshToken Foreign Key
             modelBuilder.Entity<RefreshToken>()
                 .HasOne(x => x.User)
