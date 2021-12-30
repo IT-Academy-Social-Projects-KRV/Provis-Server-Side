@@ -296,5 +296,34 @@ namespace Provis.Core.Services
 
             return workspaceMembers;
         }
+
+        public async Task CancelInviteAsync(int id, int workspaceId, string userId)
+        {
+            var invite = await _inviteUserRepository
+                .Query()
+                .FirstOrDefaultAsync(i => i.Id == id &&
+                        i.WorkspaceId == workspaceId &&
+                        i.IsConfirm == null);
+
+            _ = invite ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Invite with Id not found or it already answered");
+
+            var user = await _userWorkspaceRepository
+                .Query()
+                .FirstOrDefaultAsync(u => u.WorkspaceId == workspaceId && u.UserId == userId);
+
+            if (user.RoleId == (int)WorkSpaceRoles.OwnerId || invite.FromUserId == userId)
+            {
+                await _inviteUserRepository.DeleteAsync(invite);
+                await _inviteUserRepository.SaveChangesAsync();
+            }
+            else
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "You don't have permission to do this");
+            }
+
+            await Task.CompletedTask;
+        }
     }
 }
