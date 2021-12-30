@@ -288,7 +288,7 @@ namespace Provis.Core.Services
 
             var listToReturn = _mapper.Map<List<UserInviteInfoDTO>>(invitesList);
 
-            return (listToReturn);
+            return listToReturn;
         }
     }
 }
