@@ -1,14 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Provis.Core;
-using Provis.Core.Entities;
 using Provis.Infrastructure;
-using Provis.Infrastructure.Data;
 using Provis.WebApi.Middleweres;
 using Provis.WebApi.ServiceExtension;
 
@@ -42,12 +39,7 @@ namespace Provis.WebApi
             services.AddSwagger();
             services.AddPolicyServices();
             services.AddJwtAuthentication(Configuration);
-<<<<<<< HEAD
-            services.AddCors();         
-=======
             services.AddCors();
-
->>>>>>> e273657... Add configure methods for image, file and add useStaticFiles middleware.
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

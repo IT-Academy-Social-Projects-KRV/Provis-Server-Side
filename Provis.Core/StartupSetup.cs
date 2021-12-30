@@ -19,14 +19,10 @@ namespace Provis.Core
             services.AddScoped<IJwtService, JwtService>();
             services.AddTransient<IEmailSenderService, EmailSenderService>();
             services.AddScoped<ISmtpService, SmtpService>();
-<<<<<<< HEAD
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IConfirmEmailService, ConfirmEmailService>();
-=======
-            services.AddScoped<IUserService, UserService>();
             services.AddScoped<IFileService, FileService>();
->>>>>>> efcbdbe... Add configure for image and file settings.
         }
 
         public static void AddFluentValitation(this IServiceCollection services)
