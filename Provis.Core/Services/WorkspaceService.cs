@@ -282,6 +282,7 @@ namespace Provis.Core.Services
 
             var invitesList = await _inviteUserRepository
                 .Query()
+                .Include(x => x.FromUser)
                 .Where(x => x.WorkspaceId == workspId && x.FromUserId == userId && x.IsConfirm == null)
                 .ToListAsync();
 
