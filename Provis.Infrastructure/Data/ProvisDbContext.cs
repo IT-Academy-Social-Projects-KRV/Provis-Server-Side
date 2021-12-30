@@ -7,7 +7,7 @@ namespace Provis.Infrastructure.Data
 {
     public class ProvisDbContext: IdentityDbContext<User>
     {
-        public ProvisDbContext(DbContextOptions<ProvisDbContext> options): base(options) 
+        public ProvisDbContext(DbContextOptions<ProvisDbContext> options): base(options)
         {
             //Database.EnsureCreated();
         }
@@ -16,7 +16,7 @@ namespace Provis.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Invite User Foreign Key 
+            // Invite User Foreign Key
             modelBuilder.Entity<InviteUser>()
                 .HasOne(r => r.FromUser)
                 .WithMany()
@@ -29,7 +29,7 @@ namespace Provis.Infrastructure.Data
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Status History Foreign Key 
+            // Status History Foreign Key
             modelBuilder.Entity<StatusHistory>()
                .HasOne(r => r.Task)
                .WithMany()
@@ -40,7 +40,7 @@ namespace Provis.Infrastructure.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Comment Foreign Key 
+            // Comment Foreign Key
             modelBuilder.Entity<Comment>()
                .HasOne(r => r.Task)
                .WithMany()
@@ -55,13 +55,13 @@ namespace Provis.Infrastructure.Data
             // Task Foreign Key
             modelBuilder.Entity<Task>()
                 .HasOne(u => u.UserCreator)
-                .WithMany()
+                .WithMany(u => u.Tasks)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Task>()
                 .HasMany(t => t.Users)
-                .WithMany(u => u.Tasks)
+                .WithMany(u => u.UserTasks)
                 .UsingEntity(j => j.ToTable("UsersTasks"));
 
             // RefreshToken Foreign Key

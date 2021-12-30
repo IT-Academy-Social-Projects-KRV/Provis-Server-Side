@@ -468,13 +468,13 @@ namespace Provis.Infrastructure.Migrations
 
             modelBuilder.Entity("TaskUser", b =>
                 {
-                    b.Property<int>("TasksId")
+                    b.Property<int>("UserTasksId")
                         .HasColumnType("int");
 
                     b.Property<string>("UsersId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("TasksId", "UsersId");
+                    b.HasKey("UserTasksId", "UsersId");
 
                     b.HasIndex("UsersId");
 
@@ -615,7 +615,7 @@ namespace Provis.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Provis.Core.Entities.User", "UserCreator")
-                        .WithMany()
+                        .WithMany("Tasks")
                         .HasForeignKey("TaskCreatorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -664,7 +664,7 @@ namespace Provis.Infrastructure.Migrations
                 {
                     b.HasOne("Provis.Core.Entities.Task", null)
                         .WithMany()
-                        .HasForeignKey("TasksId")
+                        .HasForeignKey("UserTasksId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -678,6 +678,8 @@ namespace Provis.Infrastructure.Migrations
             modelBuilder.Entity("Provis.Core.Entities.User", b =>
                 {
                     b.Navigation("RefreshTokens");
+
+                    b.Navigation("Tasks");
 
                     b.Navigation("UserWorkspaces");
                 });
