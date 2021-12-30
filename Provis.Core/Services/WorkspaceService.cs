@@ -235,13 +235,13 @@ namespace Provis.Core.Services
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _inviteUserRepository.SaveChangesAsync();
 
-            await Task.CompletedTask;  
+            await Task.CompletedTask;
         }
 
         public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspId, string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            
+
             if (user == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, 
@@ -257,7 +257,7 @@ namespace Provis.Core.Services
 
             if (userWorkspace == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
                     "Workspace with this Id doesn't exist or you hasn't permissions");
             }
 
@@ -265,7 +265,7 @@ namespace Provis.Core.Services
 
             return workspace;
         }
-        public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
+        public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId, string userId)
         {
             var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
 
@@ -274,7 +274,7 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound,
                     "Workspace with current Id not found");
             }
-                
+
             var workspaceMembers = await _userWorkspaceRepository.Query()
                 .Where(u => u.WorkspaceId == workspaceId)
                 .Include(u => u.User)
@@ -287,6 +287,12 @@ namespace Provis.Core.Services
                 })
                 .OrderBy(o => o.UserName)
                 .ToListAsync();
+
+            if(workspaceMembers.FirstOrDefault(o => o.Id == userId) == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                    "You don't have access to this workspace!");
+            }
 
             return workspaceMembers;
         }
