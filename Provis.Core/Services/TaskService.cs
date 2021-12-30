@@ -36,17 +36,19 @@ namespace Provis.Core.Services
             if (String.IsNullOrEmpty(userId))
             {
                 userTasks = await _taskRepository.Query()
-                    .Include(x => x.Users)
+                    .Include(x => x.UserTasks)
+                    .Include(x => x.Status)
                     .Where(x => x.WorkspaceId == workspaceId &&
-                        !x.Users.Any())
+                        !x.UserTasks.Any())
                     .ToListAsync();
             }
             else
             {
                 userTasks = await _taskRepository.Query()
-                   .Include(x => x.Users)
-                   .Where(x => x.WorkspaceId == workspaceId && 
-                        x.Users.Any())
+                   .Include(x => x.UserTasks)
+                   .Include(x => x.Status)
+                   .Where(x => x.WorkspaceId == workspaceId &&
+                        x.UserTasks.Any())
                    .ToListAsync();
             }
 
