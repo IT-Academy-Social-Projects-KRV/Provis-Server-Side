@@ -235,13 +235,13 @@ namespace Provis.Core.Services
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _inviteUserRepository.SaveChangesAsync();
 
-            await Task.CompletedTask;  
+            await Task.CompletedTask;
         }
 
         public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspId, string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            
+
             if (user == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, 
@@ -257,13 +257,38 @@ namespace Provis.Core.Services
 
             if (userWorkspace == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
                     "Workspace with this Id doesn't exist or you hasn't permissions");
             }
 
             var workspace = _mapper.Map<WorkspaceInfoDTO>(userWorkspace);
 
             return workspace;
+        }
+        public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
+        {
+            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
+
+            if (workspace == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "Workspace with current Id not found");
+            }
+
+            var workspaceMembers = await _userWorkspaceRepository.Query()
+                .Where(u => u.WorkspaceId == workspaceId)
+                .Include(u => u.User)
+                .Include(u => u.Role)
+                .Select(o => new WorkspaceMemberDTO
+                {
+                    Id = o.UserId,
+                    Role = o.Role.Name,
+                    UserName = o.User.UserName
+                })
+                .OrderBy(o => o.UserName)
+                .ToListAsync();
+
+            return workspaceMembers;
         }
     }
 }
