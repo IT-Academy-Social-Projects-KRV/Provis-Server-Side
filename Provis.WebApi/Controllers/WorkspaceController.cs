@@ -101,11 +101,6 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> DeleteFromWorkspace(int workspaceId, 
             [FromBody] DeleteUserDTO deleteUserDTO)
         {
-            if (deleteUserDTO == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,"Error");
-            }
-
             await _workspaceService.DeleteFromWorkspaceAsync(workspaceId, deleteUserDTO);
 
             return Ok();
