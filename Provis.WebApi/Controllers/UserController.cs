@@ -58,16 +58,26 @@ namespace Provis.WebApi.Controllers
             return Ok(activeInvite);
         }
 
+<<<<<<< HEAD
         [HttpGet]
         [Authorize]
         [Route("sendconfirmmail")]
         public async Task<IActionResult> SendConfirmMailAsync()
         {
             await _confirmEmailService.SendConfirmMailAsync(UserId);
+=======
+        [HttpPut]
+        [Authorize]
+        [Route("image")]
+        public async Task<IActionResult> UpdateImageAsync([FromForm] UploadImageDTO uploadImage)
+        {
+            await _userService.UpdateUserImageAsync(uploadImage.Image, UserId);
+>>>>>>> 14e1860... Add endpoints for update and get user image.
 
             return Ok();
         }
 
+<<<<<<< HEAD
         [HttpPost]
         [Authorize]
         [Route("confirmemail")]
@@ -76,6 +86,16 @@ namespace Provis.WebApi.Controllers
             await _confirmEmailService.ConfirmEmailAsync(UserId, confirmEmailDTO);
 
             return Ok();
+=======
+        [HttpGet]
+        [Authorize]
+        [Route("image")]
+        public async Task<FileResult> GetImageAsync()
+        {
+            var file = await _userService.GetUserImageAsync(UserId);
+
+            return File(file.Content, file.ContentType, file.Name);
+>>>>>>> 14e1860... Add endpoints for update and get user image.
         }
     }
 }
