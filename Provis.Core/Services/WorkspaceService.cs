@@ -265,7 +265,7 @@ namespace Provis.Core.Services
 
             return workspace;
         }
-        public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId, string userId)
+        public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
         {
             var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
 
@@ -287,12 +287,6 @@ namespace Provis.Core.Services
                 })
                 .OrderBy(o => o.UserName)
                 .ToListAsync();
-
-            if(workspaceMembers.FirstOrDefault(o => o.Id == userId) == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                    "You don't have access to this workspace!");
-            }
 
             return workspaceMembers;
         }
