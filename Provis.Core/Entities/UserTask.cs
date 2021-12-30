@@ -14,10 +14,8 @@ namespace Provis.Core.Entities
 
         public User User { get; set; }
 
-        [Required]
         public int UserRoleTagId { get; set; }
 
-        [ForeignKey(nameof(UserRoleTagId))]
         public UserRoleTag UserRoleTag { get; set; }
     }
 }

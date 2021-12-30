@@ -1,5 +1,6 @@
 ﻿using Provis.Core.Interfaces;
 using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
 
 namespace Provis.Core.Entities
 {
@@ -9,5 +10,7 @@ namespace Provis.Core.Entities
         public int Id { get; set; }
 
         public string Name { get; set; }
+
+        public List<UserTask> UserTasks { get; set; } = new List<UserTask>();
     }
 }
