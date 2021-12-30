@@ -67,7 +67,7 @@ namespace Provis.Infrastructure.Data
                     .HasForeignKey(ut => ut.TaskId),
                 j =>
                 {
-                    j.Property(pt => pt.IsDeleted).HasDefaultValue(false);
+                    j.Property(pt => pt.IsDeleted);
                     j.ToTable("UsersTasks");
                 });
 
