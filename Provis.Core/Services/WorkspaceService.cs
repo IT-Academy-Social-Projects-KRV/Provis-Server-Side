@@ -23,20 +23,26 @@ namespace Provis.Core.Services
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
         protected readonly IRepository<InviteUser> _inviteUserRepository;
+        protected readonly IRepository<Entities.Task> _tasksRepository;
+        protected readonly IRepository<User> _userRepository;
         protected readonly IMapper _mapper;
 
-        public WorkspaceService(UserManager<User> userManager, 
-            IRepository<Workspace> workspace, 
+        public WorkspaceService(UserManager<User> userManager,
+            IRepository<Workspace> workspace,
             IRepository<UserWorkspace> userWorkspace,
             IRepository<InviteUser> inviteUser,
+            IRepository<Entities.Task> tasks,
             IEmailSenderService emailSenderService,
+            IRepository<User> user,
             IMapper mapper)
         {
+            _userRepository = user;
             _userManager = userManager;
             _workspaceRepository = workspace;
             _userWorkspaceRepository = userWorkspace;
             _emailSendService = emailSenderService;
             _inviteUserRepository = inviteUser;
+            _tasksRepository = tasks;
             _mapper = mapper;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
