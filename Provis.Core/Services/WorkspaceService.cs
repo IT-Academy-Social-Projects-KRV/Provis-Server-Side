@@ -267,20 +267,17 @@ namespace Provis.Core.Services
             return workspace;
         }
 
-        public async Task<List<UserInviteInfoDTO>> GetWorkspaceActiveInvitesAsync(int workspId, string userId)
+        public async Task<List<UserInviteInfoDTO>> 
+            GetWorkspaceActiveInvitesAsync(int workspId, string userId)
         {
-            var workspace = _workspaceRepository.Query().Where(x => x.Id == workspId).FirstOrDefault();
+            var workspace = _workspaceRepository
+                .Query()
+                .FirstOrDefault(x => x.Id == workspId);
 
             if (workspace == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Workspace with this ID not exist");
-            }
-
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                    "Workspace with this ID not exist");
             }
 
             var invitesList = await _inviteUserRepository
