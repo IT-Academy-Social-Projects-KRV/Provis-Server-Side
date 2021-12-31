@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Provis.Core.DTO.userDTO
+namespace Provis.Core.DTO.UserDTO
 {
     public class UserPersonalInfoDTO
     {
