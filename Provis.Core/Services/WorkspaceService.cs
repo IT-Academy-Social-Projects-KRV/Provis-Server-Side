@@ -270,19 +270,10 @@ namespace Provis.Core.Services
         public async Task<List<UserInviteInfoDTO>> 
             GetWorkspaceActiveInvitesAsync(int workspId, string userId)
         {
-            var workspace = _workspaceRepository
-                .Query()
-                .FirstOrDefault(x => x.Id == workspId);
-
-            if (workspace == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
-                    "Workspace with this ID not exist");
-            }
-
             var invitesList = await _inviteUserRepository
                 .Query()
                 .Include(x => x.FromUser)
+                .Include(x => x.Workspace)
                 .Where(x => x.WorkspaceId == workspId && x.FromUserId == userId && x.IsConfirm == null)
                 .ToListAsync();
 
