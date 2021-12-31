@@ -274,7 +274,7 @@ namespace Provis.Core.Services
                 .Query()
                 .Include(x => x.FromUser)
                 .Include(x => x.Workspace)
-                .Where(x => x.WorkspaceId == workspId && x.FromUserId == userId && x.IsConfirm == null)
+                .Where(x => x.WorkspaceId == workspId && x.IsConfirm == null)
                 .ToListAsync();
 
             var listToReturn = _mapper.Map<List<UserInviteInfoDTO>>(invitesList);
