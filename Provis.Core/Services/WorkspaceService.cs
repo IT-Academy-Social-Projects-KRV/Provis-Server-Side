@@ -13,7 +13,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Provis.Core.Helpers.Mails;
-using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 
 namespace Provis.Core.Services
 {

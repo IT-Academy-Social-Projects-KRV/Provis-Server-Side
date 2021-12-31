@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Entities;
 
