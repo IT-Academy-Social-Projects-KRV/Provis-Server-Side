@@ -29,19 +29,9 @@ namespace Provis.Core.Services
                 throw new FileIsEmptyException(fileName);
             }
 
-            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, folderPath);
+            await CreateDirectoryAsync(folderPath);
 
-            if (!Directory.Exists(uploadsFolder))
-            {
-                if (!_fileSettings.Value.AllowCreateFolderPath)
-                {
-                    throw new FileFolderNotExistException(uploadsFolder);
-                }
-                else
-                {
-                    Directory.CreateDirectory(uploadsFolder);
-                }
-            }
+            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, folderPath);
 
             string uniqueFileName = CreateName(fileName, uploadsFolder);
 
@@ -56,8 +46,10 @@ namespace Provis.Core.Services
             return dbPath;
         }
 
-        public Task<DownloadFile> GetFileAsync(string path)
+        public Task<DownloadFile> GetFileAsync(string dbPath)
         {
+            string path = Path.Combine(_webHostEnvironment.WebRootPath, dbPath);
+
             if (!File.Exists(path))
             {
                 throw new Exeptions.FileExceptions.FileNotFoundException(path);
@@ -81,9 +73,9 @@ namespace Provis.Core.Services
             return Task.FromResult(fileInfo);
         }
 
-        public async Task DeleteFileAsync(string path)
+        public async Task DeleteFileAsync(string dbPath)
         {
-            string deletePath = Path.Combine(_webHostEnvironment.WebRootPath, path);
+            string deletePath = Path.Combine(_webHostEnvironment.WebRootPath, dbPath);
             var file = new FileInfo(deletePath);
             if (file.Exists)
             {
@@ -105,11 +97,32 @@ namespace Provis.Core.Services
                 }
                 else
                 {
-                    return $"{Path.GetFileNameWithoutExtension(path)}_{DateTime.Now.ToString("yyyyMMddTHHmmssfff")}{Path.GetExtension(path)}";
+                    return $"{Path.GetFileNameWithoutExtension(path)}_" +
+                        $"{DateTime.Now.ToString("yyyyMMddTHHmmssfff")}" +
+                        $"{Path.GetExtension(path)}";
                 }
             }
 
             return fileName;
+        }
+
+        public Task CreateDirectoryAsync(string folderPath)
+        {
+            string path = Path.Combine(_webHostEnvironment.WebRootPath, folderPath);
+
+            if (!Directory.Exists(path))
+            {
+                if (!_fileSettings.Value.AllowCreateFolderPath)
+                {
+                    throw new FileFolderNotExistException(path);
+                }
+                else
+                {
+                    Directory.CreateDirectory(path);
+                }
+            }
+
+            return Task.CompletedTask;
         }
     }
 }
