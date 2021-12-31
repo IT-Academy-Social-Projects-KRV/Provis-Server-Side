@@ -13,6 +13,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Provis.Core.Helpers.Mails;
+using Microsoft.Extensions.Options;
+using Provis.Core.Helpers;
 
 namespace Provis.Core.Services
 {
@@ -24,13 +26,16 @@ namespace Provis.Core.Services
         protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
         protected readonly IRepository<InviteUser> _inviteUserRepository;
         protected readonly IMapper _mapper;
+        protected readonly RoleAccess _roleAccess;
 
-        public WorkspaceService(UserManager<User> userManager, 
-            IRepository<Workspace> workspace, 
+        public WorkspaceService(UserManager<User> userManager,
+            IRepository<Workspace> workspace,
             IRepository<UserWorkspace> userWorkspace,
             IRepository<InviteUser> inviteUser,
             IEmailSenderService emailSenderService,
-            IMapper mapper)
+            IMapper mapper,
+            RoleAccess roleAccess
+            )
         {
             _userManager = userManager;
             _workspaceRepository = workspace;
@@ -38,6 +43,7 @@ namespace Provis.Core.Services
             _emailSendService = emailSenderService;
             _inviteUserRepository = inviteUser;
             _mapper = mapper;
+            _roleAccess = roleAccess;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -217,5 +223,41 @@ namespace Provis.Core.Services
 
             await Task.CompletedTask;
         }
+
+        public async Task<ChangeRoleDTO> ChangeUserRoleAsync(string userId, ChangeRoleDTO userChangeRole)
+        {
+            var modifier = await _userWorkspaceRepository.Query()
+                .FirstOrDefaultAsync(p => p.UserId == userId &&
+                    p.WorkspaceId == userChangeRole.WorkspaceId);
+            var target = await _userWorkspaceRepository.Query()
+                .FirstOrDefaultAsync(p => p.UserId == userChangeRole.UserId &&
+                    p.WorkspaceId == userChangeRole.WorkspaceId);
+
+            if (modifier.UserId == null)
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden, "User with this Id doesn't exist");
+
+            if (target.UserId == null)
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Id doesn't exist");
+
+            var roleId = (WorkSpaceRoles)modifier.RoleId;
+
+
+            if (_roleAccess.RolesAccess.ContainsKey(roleId) &&
+                _roleAccess.RolesAccess[roleId]
+                    .Any(p => p == (WorkSpaceRoles)target.RoleId) &&
+                _roleAccess.RolesAccess[roleId]
+                    .Any(p => p == (WorkSpaceRoles)userChangeRole.RoleId)
+                    )
+            {
+                target.RoleId = userChangeRole.RoleId;
+                await _userWorkspaceRepository.SaveChangesAsync();
+                return _mapper.Map<ChangeRoleDTO>(target);
+            }
+            else 
+            { 
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden, "You haven't permission to change this Role");
+            }
+        }
+
     }
 }

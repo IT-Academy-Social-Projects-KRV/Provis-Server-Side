@@ -5,12 +5,12 @@ using Provis.Core.Entities;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Provis.Core.Helpers;
 
 namespace Provis.Core.Services
 {
@@ -21,15 +21,17 @@ namespace Provis.Core.Services
         protected readonly IRepository<InviteUser> _inviteUserRepository;
         protected readonly IMapper _mapper;
 
+
         public UserService(UserManager<User> userManager,
             IRepository<User> userRepository,
             IRepository<InviteUser> inviteUser,
-            IMapper mapper)
+            IMapper mapper            
+            )
         {
             _userManager = userManager;
             _userRepository = userRepository;
             _inviteUserRepository = inviteUser;
-            _mapper = mapper;
+            _mapper = mapper;                        
         }
 
         public async Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId)
@@ -76,6 +78,6 @@ namespace Provis.Core.Services
             userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.Query().AnyAsync(u => u.ToUserId == userId && u.IsConfirm == null);
 
             return userActiveInviteDTO;
-        }
+        }       
     }
 }

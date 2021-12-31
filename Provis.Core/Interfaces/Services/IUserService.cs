@@ -1,10 +1,7 @@
 ﻿using Provis.Core.DTO.userDTO;
-using System;
+using Provis.Core.DTO.workspaceDTO;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-
 
 namespace Provis.Core.Interfaces.Services
 {
@@ -12,7 +9,6 @@ namespace Provis.Core.Interfaces.Services
     {
         Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId);
         Task<List<UserInviteInfoDTO>> GetUserInviteInfoListAsync(string userId);
-        Task<UserActiveInviteDTO> IsActiveInviteAsync(string userId);
-    }
-    
+        Task<UserActiveInviteDTO> IsActiveInviteAsync(string userId);        
+    }    
 }

@@ -46,6 +46,5 @@ namespace Provis.WebApi.Controllers
 
             return Ok(activeInvite);
         }
-
     }
 }
