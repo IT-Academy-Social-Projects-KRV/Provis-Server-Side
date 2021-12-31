@@ -135,7 +135,7 @@ namespace Provis.Core.Services
 
             _ = user.Img ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Image not found");
 
-            var file = await _fileService.GetFileAsync(Path.Combine(_webHostEnvironment.WebRootPath, user.Img));
+            var file = await _fileService.GetFileAsync(user.Img);
 
             return file;
         }
