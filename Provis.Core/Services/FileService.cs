@@ -77,6 +77,7 @@ namespace Provis.Core.Services
         {
             string deletePath = Path.Combine(_webHostEnvironment.WebRootPath, dbPath);
             var file = new FileInfo(deletePath);
+
             if (file.Exists)
             {
                 await Task.Factory.StartNew(() => file.Delete());

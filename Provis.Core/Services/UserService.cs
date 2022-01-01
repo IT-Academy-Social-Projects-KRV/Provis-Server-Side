@@ -27,15 +27,13 @@ namespace Provis.Core.Services
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
         private readonly IOptions<ImageSettings> _imageSettings;
-        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public UserService(UserManager<User> userManager,
             IRepository<User> userRepository,
             IRepository<InviteUser> inviteUser,
             IMapper mapper,
             IFileService fileService,
-            IOptions<ImageSettings> imageSettings,
-            IWebHostEnvironment webHostEnvironment)
+            IOptions<ImageSettings> imageSettings)
         {
             _userManager = userManager;
             _userRepository = userRepository;
@@ -43,7 +41,6 @@ namespace Provis.Core.Services
             _mapper = mapper;
             _fileService = fileService;
             _imageSettings = imageSettings;
-            _webHostEnvironment = webHostEnvironment;
         }
 
         public async Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId)
