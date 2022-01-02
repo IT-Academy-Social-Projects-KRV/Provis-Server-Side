@@ -14,6 +14,8 @@ namespace Provis.Core.Entities
 
         public User User { get; set; }
 
+        public bool IsUserDeleted { get; set; }
+
         public int UserRoleTagId { get; set; }
 
         public UserRoleTag UserRoleTag { get; set; }
