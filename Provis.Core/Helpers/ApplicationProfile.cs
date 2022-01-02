@@ -36,6 +36,12 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.FromUserName, act => act.MapFrom(srs => srs.FromUser.Name))
                 .ForMember(x => x.ToUserId, act => act.MapFrom(srs => srs.ToUserId));
 
+            CreateMap<InviteUser, WorkspaceInviteInfoDTO>()
+                .ForMember(x => x.Date, act => act.MapFrom(srs => srs.Date))
+                .ForMember(x => x.FromUserName, act => act.MapFrom(srs => srs.FromUser.Name))
+                .ForMember(x => x.ToUserName, act => act.MapFrom(srs => srs.ToUser.Name))
+                .ForMember(x => x.ToUserEmail, act => act.MapFrom(srs => srs.ToUser.Email));
+
             CreateMap<UserChangeInfoDTO, User>();
         }
     }

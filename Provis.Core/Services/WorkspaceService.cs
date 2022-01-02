@@ -13,7 +13,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Provis.Core.Helpers.Mails;
-using Provis.Core.DTO.UserDTO;
 
 namespace Provis.Core.Services
 {
@@ -267,17 +266,17 @@ namespace Provis.Core.Services
             return workspace;
         }
 
-        public async Task<List<UserInviteInfoDTO>> 
+        public async Task<List<WorkspaceInviteInfoDTO>> 
             GetWorkspaceActiveInvitesAsync(int workspId, string userId)
         {
             var invitesList = await _inviteUserRepository
                 .Query()
                 .Include(x => x.FromUser)
-                .Include(x => x.Workspace)
+                .Include(x => x.ToUser)
                 .Where(x => x.WorkspaceId == workspId && x.IsConfirm == null)
                 .ToListAsync();
 
-            var listToReturn = _mapper.Map<List<UserInviteInfoDTO>>(invitesList);
+            var listToReturn = _mapper.Map<List<WorkspaceInviteInfoDTO>>(invitesList);
 
             return listToReturn;
         }
