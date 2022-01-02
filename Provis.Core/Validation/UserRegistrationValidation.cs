@@ -9,7 +9,7 @@ namespace Provis.Core.Validation
 {
     public class UserRegistrationValidation : AbstractValidator<UserRegDTO>
     {
-        private static UserManager<User> _userManager;
+        protected readonly UserManager<User> _userManager;
 
         public UserRegistrationValidation(UserManager<User> manager)
         {
@@ -47,21 +47,13 @@ namespace Provis.Core.Validation
         private async Task<bool> IsUniqueUserName(string username, CancellationToken cancellationToken)
         {
             var userObject = await _userManager.FindByNameAsync(username);
-            if (userObject != null)
-            {
-                return false;
-            }
-            return true;
+            return userObject == null;
         }
 
         private async Task<bool> IsUniqueUserEmail(string email, CancellationToken cancellationToken)
         {
             var userObject = await _userManager.FindByEmailAsync(email);
-            if (userObject != null)
-            {
-                return false;
-            }
-            return true;
+            return userObject == null;
         }
     }
 }

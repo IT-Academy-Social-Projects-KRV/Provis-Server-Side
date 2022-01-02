@@ -25,23 +25,29 @@ namespace Provis.Core.Services
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
         protected readonly IRepository<InviteUser> _inviteUserRepository;
+        protected readonly IRepository<Entities.Task> _tasksRepository;
+        protected readonly IRepository<User> _userRepository;
         protected readonly IMapper _mapper;
         protected readonly RoleAccess _roleAccess;
 
-        public WorkspaceService(UserManager<User> userManager,
+        public WorkspaceService(IRepository<User> user,
+            UserManager<User> userManager,
             IRepository<Workspace> workspace,
             IRepository<UserWorkspace> userWorkspace,
             IRepository<InviteUser> inviteUser,
-            IEmailSenderService emailSenderService,
+            IRepository<Entities.Task> tasks,
+            IEmailSenderService emailSenderService,            
             IMapper mapper,
             RoleAccess roleAccess
             )
         {
+            _userRepository = user;
             _userManager = userManager;
             _workspaceRepository = workspace;
             _userWorkspaceRepository = userWorkspace;
-            _emailSendService = emailSenderService;
             _inviteUserRepository = inviteUser;
+            _tasksRepository = tasks;
+            _emailSendService = emailSenderService; 
             _mapper = mapper;
             _roleAccess = roleAccess;
         }
@@ -71,6 +77,26 @@ namespace Provis.Core.Services
             };
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _userWorkspaceRepository.SaveChangesAsync();
+
+            await Task.CompletedTask;
+        }
+        public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "User with Id not exist");
+            
+            var workspaceRec = await _workspaceRepository.GetByKeyAsync(workspaceUpdateDTO.WorkspaceId);
+
+            _ = workspaceRec ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Workspace with with Id not found");
+            
+            _mapper.Map(workspaceUpdateDTO, workspaceRec);
+
+            await _workspaceRepository.UpdateAsync(workspaceRec);
+
+            await _workspaceRepository.SaveChangesAsync();           
 
             await Task.CompletedTask;
         }
@@ -131,7 +157,7 @@ namespace Provis.Core.Services
             await _emailSendService.SendEmailAsync(new MailRequest 
             { 
                 ToEmail = inviteDTO.UserEmail, 
-                Subject = "Provis", 
+                Subject = "Workspace invitation", 
                 Body = $"Owner: {owner.UserName} - Welcome to my Workspace {workspace.Name}"
             });
 
@@ -259,5 +285,57 @@ namespace Provis.Core.Services
             }
         }
 
+        public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspId, string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                    "User with Id not exist");
+            }
+
+            var userWorkspace = _userWorkspaceRepository
+                .Query()
+                .Where(x => x.WorkspaceId == workspId && x.UserId == userId)
+                .Include(x => x.Workspace)
+                .Include(x => x.Role)
+                .FirstOrDefault();
+
+            if (userWorkspace == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "Workspace with this Id doesn't exist or you hasn't permissions");
+            }
+
+            var workspace = _mapper.Map<WorkspaceInfoDTO>(userWorkspace);
+
+            return workspace;
+        }
+        public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
+        {
+            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
+
+            if (workspace == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "Workspace with current Id not found");
+            }
+
+            var workspaceMembers = await _userWorkspaceRepository.Query()
+                .Where(u => u.WorkspaceId == workspaceId)
+                .Include(u => u.User)
+                .Include(u => u.Role)
+                .Select(o => new WorkspaceMemberDTO
+                {
+                    Id = o.UserId,
+                    Role = o.Role.Name,
+                    UserName = o.User.UserName
+                })
+                .OrderBy(o => o.UserName)
+                .ToListAsync();
+
+            return workspaceMembers;
+        }
     }
 }
