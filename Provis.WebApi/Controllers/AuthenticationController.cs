@@ -56,7 +56,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Route("refreshToken")]
-        public async Task<IActionResult> RefreshTokenAsync([FromBody] UserTokensDTO userTokensDTO)
+        public async Task<IActionResult> RefreshTokenAsync([FromBody] UserAutorizationDTO userTokensDTO)
         {
             var tokens = await authenticationService.RefreshTokenAsync(userTokensDTO);
 
@@ -65,7 +65,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Route("logout")]
-        public async Task<IActionResult> LogoutAsync([FromBody] UserTokensDTO userTokensDTO)
+        public async Task<IActionResult> LogoutAsync([FromBody] UserAutorizationDTO userTokensDTO)
         {
             await authenticationService.LogoutAsync(userTokensDTO);
 

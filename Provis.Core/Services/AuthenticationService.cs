@@ -60,14 +60,14 @@ namespace Provis.Core.Services
             return await GenerateUserTokens(user);
         }
 
-        private async Task<UserTokensDTO> GenerateUserTokens(User user)
+        private async Task<UserAutorizationDTO> GenerateUserTokens(User user)
         {
             var claims = _jwtService.SetClaims(user);
 
             var token = _jwtService.CreateToken(claims);
             var refeshToken = await CreateRefreshToken(user);
 
-            var tokens = new UserTokensDTO()
+            var tokens = new UserAutorizationDTO()
             {
                 Token = token,
                 RefreshToken = refeshToken
@@ -115,7 +115,7 @@ namespace Provis.Core.Services
 
             var refeshToken = CreateRefreshToken(user).Result;
 
-            return new UserTokensDTO() { RefreshToken = refeshToken };
+            return new UserAutorizationDTO() { RefreshToken = refeshToken, Is2StepVerificationRequired = true, Provider = "Email" };
         }
 
         public async Task<UserAutorizationDTO> LoginTwoStepAsync(UserTwoFactorDTO twoFactorDTO)
@@ -179,7 +179,7 @@ namespace Provis.Core.Services
             await _refreshTokenRepository.SaveChangesAsync();
 
             var tokens = new UserAutorizationDTO()
-            {
+            { 
                 Token = newToken,
                 RefreshToken = newRefreshToken
             };
