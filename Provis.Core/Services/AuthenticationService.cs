@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers.Mails;
@@ -103,6 +104,8 @@ namespace Provis.Core.Services
 
             await _emailSenderService.SendEmailAsync(message);
 
+            var claims = _jwtService.SetClaims(user);
+
             var refeshToken = _jwtService.CreateRefreshToken();
 
             var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x => x.UserId == user.Id);
@@ -117,6 +120,47 @@ namespace Provis.Core.Services
             await _refreshTokenRepository.SaveChangesAsync();
 
             return new UserTokensDTO() { RefreshToken = refeshToken };
+        }
+
+        public async Task<UserTokensDTO> LoginTwoStepAsync(UserTwoFactorDTO twoFactorDTO)
+        {
+            var user = await _userManager.FindByEmailAsync(twoFactorDTO.Email);
+
+            if(user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Invalid Request");
+            }
+
+            var validVerification = await _userManager.VerifyTwoFactorTokenAsync(user, twoFactorDTO.Provider, twoFactorDTO.Token);
+
+            if(!validVerification)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Invalid Token Verification");
+            }
+
+            var claims = _jwtService.SetClaims(user);
+
+            var token = _jwtService.CreateToken(claims);
+            var refeshToken = _jwtService.CreateRefreshToken();
+
+            var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x => x.UserId == user.Id);
+
+            RefreshToken rt = new RefreshToken()
+            {
+                Token = refeshToken,
+                UserId = user.Id
+            };
+
+            await _refreshTokenRepository.AddAsync(rt);
+            await _refreshTokenRepository.SaveChangesAsync();
+
+            var tokens = new UserTokensDTO()
+            {
+                Token = token,
+                RefreshToken = refeshToken
+            };
+
+            return tokens;
         }
 
         public async Task RegistrationAsync(User user, string password, string roleName)
