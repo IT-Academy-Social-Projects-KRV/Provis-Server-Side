@@ -312,6 +312,16 @@ namespace Provis.Core.Services
                     "User is doesnt contain in this workspace");
             }
 
+            var userTasks = user.UserTasks.Where(o => o.Task.WorkspaceId == workspaceId);
+
+            if (userTasks != null)
+            {
+                foreach (var userTask in userTasks)
+                {
+                    userTask.IsUserDeleted = true;
+                }
+            }
+
             await _userWorkspaceRepository.DeleteAsync(userWorksp);
             await _workspaceRepository.SaveChangesAsync();
         }
