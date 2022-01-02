@@ -43,6 +43,11 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
 
+            if(await _userManager.GetTwoFactorEnabledAsync(user))
+            {
+                return await GenerateTwoStepVerificationCode(user);
+            }
+
             var result = await _signInManager.PasswordSignInAsync(user.UserName, password, false, false);
 
             if (!result.Succeeded)
@@ -73,6 +78,11 @@ namespace Provis.Core.Services
             };
             
             return tokens;
+        }
+
+        private async Task<UserTokensDTO> GenerateTwoStepVerificationCode(User user)
+        {
+            throw new NotImplementedException();
         }
 
         public async Task RegistrationAsync(User user, string password, string roleName)
