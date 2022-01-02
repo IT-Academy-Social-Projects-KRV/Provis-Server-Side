@@ -271,6 +271,7 @@ namespace Provis.Core.Services
 
             return workspace;
         }
+
         public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
         {
             var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
@@ -296,5 +297,24 @@ namespace Provis.Core.Services
 
             return workspaceMembers;
         }
+
+        public async Task DeleteFromWorkspaceAsync(int workspaceId, DeleteUserDTO deleteUserDTO)
+        {
+            var user = await _userManager.FindByEmailAsync(deleteUserDTO.UserEmail);
+
+            var userWorksp = _userWorkspaceRepository
+                .Query()
+                .FirstOrDefault(x => x.WorkspaceId == workspaceId && x.User.Id == user.Id);
+
+            if (userWorksp == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "User is doesnt contain in this workspace");
+            }
+
+            await _userWorkspaceRepository.DeleteAsync(userWorksp);
+            await _workspaceRepository.SaveChangesAsync();
+        }
     }
+
 }
