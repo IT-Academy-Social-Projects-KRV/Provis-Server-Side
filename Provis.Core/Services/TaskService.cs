@@ -92,9 +92,10 @@ namespace Provis.Core.Services
                 List<UserTask> userTasks = new List<UserTask>(); 
                 foreach (var item in taskCreateDTO.AssignedUsers)
                 {
-                    if (true)
+                    if (userTasks.Exists(x => x.UserId == item.UserId))
                     {
-
+                        throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "This user has already assigned");
                     }
                     userTasks.Add(new UserTask
                     {
@@ -106,7 +107,6 @@ namespace Provis.Core.Services
                 await _userTaskRepository.AddRangeAsync(userTasks);
                 await _userTaskRepository.SaveChangesAsync();
             }
-
             await Task.CompletedTask;
         }
     }
