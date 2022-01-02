@@ -23,6 +23,7 @@ namespace Provis.Core.Interfaces.Services
 
         Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId);
 
+        Task DeleteFromWorkspaceAsync(int id, DeleteUserDTO deleteUserDTO);
     }
 }
 
