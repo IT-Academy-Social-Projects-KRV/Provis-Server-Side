@@ -4,6 +4,7 @@ using Provis.Core.Interfaces.Services;
 using Provis.Core.Entities;
 using Provis.Core.Roles;
 using System.Threading.Tasks;
+using Provis.Core.DTO.UserDTO;
 
 namespace Provis.WebApi.Controllers
 {
@@ -23,6 +24,15 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> LoginAsync([FromBody] UserLogDTO logDTO)
         {
             var tokens = await authenticationService.LoginAsync(logDTO.Email, logDTO.Password);
+
+            return Ok(tokens);
+        }
+
+        [HttpPost]
+        [Route("logintwostep")]
+        public async Task<IActionResult> LoginTwoStepAsync([FromBody] UserTwoFactorDTO twoFactorDTO)
+        {
+            var tokens = await authenticationService.LoginTwoStepAsync(twoFactorDTO);
 
             return Ok(tokens);
         }
