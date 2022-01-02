@@ -3,7 +3,7 @@ using Provis.Core.DTO.userDTO;
 
 namespace Provis.Core.Validation
 {
-    class UserTokensValidation: AbstractValidator<UserTokensDTO>
+    class UserTokensValidation: AbstractValidator<UserAutorizationDTO>
     {
         public UserTokensValidation()
         {

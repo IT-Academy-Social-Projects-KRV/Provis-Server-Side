@@ -39,7 +39,7 @@ namespace Provis.Core.Services
             _emailSenderService = emailSenderService;
         }
 
-        public async Task<UserTokensDTO> LoginAsync(string email, string password)
+        public async Task<UserAutorizationDTO> LoginAsync(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
 
@@ -63,14 +63,14 @@ namespace Provis.Core.Services
             return await GenerateUserTokens(user);
         }
 
-        private async Task<UserTokensDTO> GenerateUserTokens(User user)
+        private async Task<UserAutorizationDTO> GenerateUserTokens(User user)
         {
             var claims = _jwtService.SetClaims(user);
 
             var token = _jwtService.CreateToken(claims);
             var refeshToken = await CreateRefreshToken(user);
 
-            var tokens = new UserTokensDTO()
+            var tokens = new UserAutorizationDTO()
             {
                 Token = token,
                 RefreshToken = refeshToken
@@ -97,7 +97,7 @@ namespace Provis.Core.Services
             return refeshToken;
         }
 
-        private async Task<UserTokensDTO> GenerateTwoStepVerificationCode(User user)
+        private async Task<UserAutorizationDTO> GenerateTwoStepVerificationCode(User user)
         {
             var providers = await _userManager.GetValidTwoFactorProvidersAsync(user);
 
@@ -118,10 +118,10 @@ namespace Provis.Core.Services
 
             var refeshToken = CreateRefreshToken(user).Result;
 
-            return new UserTokensDTO() { RefreshToken = refeshToken };
+            return new UserAutorizationDTO() { RefreshToken = refeshToken, Is2StepVerificationRequired = true, Provider = "Email" };
         }
 
-        public async Task<UserTokensDTO> LoginTwoStepAsync(UserTwoFactorDTO twoFactorDTO)
+        public async Task<UserAutorizationDTO> LoginTwoStepAsync(UserTwoFactorDTO twoFactorDTO)
         {
             var user = await _userManager.FindByEmailAsync(twoFactorDTO.Email);
 
@@ -164,7 +164,7 @@ namespace Provis.Core.Services
             await _userManager.AddToRoleAsync(user, roleName);
         }
 
-        public async Task<UserTokensDTO> RefreshTokenAsync(UserTokensDTO userTokensDTO)
+        public async Task<UserAutorizationDTO> RefreshTokenAsync(UserAutorizationDTO userTokensDTO)
         {
             var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x=>x.Token == userTokensDTO.RefreshToken);
 
@@ -181,7 +181,7 @@ namespace Provis.Core.Services
             await _refreshTokenRepository.UpdateAsync(refeshTokenFromDb);
             await _refreshTokenRepository.SaveChangesAsync();
 
-            var tokens = new UserTokensDTO()
+            var tokens = new UserAutorizationDTO()
             { 
                 Token = newToken,
                 RefreshToken = newRefreshToken
@@ -190,7 +190,7 @@ namespace Provis.Core.Services
             return tokens;
         }
 
-        public async Task LogoutAsync(UserTokensDTO userTokensDTO)
+        public async Task LogoutAsync(UserAutorizationDTO userTokensDTO)
         {
             var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x => x.Token == userTokensDTO.RefreshToken);
 
