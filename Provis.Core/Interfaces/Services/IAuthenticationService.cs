@@ -1,4 +1,5 @@
 ﻿using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
@@ -11,5 +12,6 @@ namespace Provis.Core.Interfaces.Services
         Task<UserTokensDTO> LoginAsync(string email, string password);
         Task<UserTokensDTO> RefreshTokenAsync(UserTokensDTO userTokensDTO);
         Task LogoutAsync(UserTokensDTO userTokensDTO);
+        Task<UserTokensDTO> LoginTwoStepAsync(UserTwoFactorDTO twoFactorDTO);
     }
 }
