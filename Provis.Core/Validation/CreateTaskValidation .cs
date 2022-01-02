@@ -4,7 +4,7 @@ using System;
 
 namespace Provis.Core.Validation
 {
-    class CreateTaskValidation : AbstractValidator<TaskCreateDTO>
+    public class CreateTaskValidation : AbstractValidator<TaskCreateDTO>
     {
         public CreateTaskValidation()
         {
