@@ -32,7 +32,7 @@ namespace Provis.Core.Services
             _userManager = userManager;
             _userRepository = userRepository;
             _inviteUserRepository = inviteUser;
-            _mapper = mapper;                        
+            _mapper = mapper;
         }
 
         public async Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId)
