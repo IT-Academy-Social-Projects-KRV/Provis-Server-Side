@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities;
 using Provis.Core.Exeptions;
+using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using System;
@@ -19,19 +20,22 @@ namespace Provis.Core.Services
         protected readonly IJwtService _jwtService;
         protected readonly RoleManager<IdentityRole> _roleManager;
         protected readonly IRepository<RefreshToken> _refreshTokenRepository;
+        protected readonly IEmailSenderService _emailSenderService;
 
         public AuthenticationService(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IJwtService jwtService,
             RoleManager<IdentityRole> roleManager,
-            IRepository<RefreshToken> refreshTokenRepository)
+            IRepository<RefreshToken> refreshTokenRepository,
+            IEmailSenderService emailSenderService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _jwtService = jwtService;
             _roleManager = roleManager;
             _refreshTokenRepository = refreshTokenRepository;
+            _emailSenderService = emailSenderService;
         }
 
         public async Task<UserTokensDTO> LoginAsync(string email, string password)
@@ -82,7 +86,37 @@ namespace Provis.Core.Services
 
         private async Task<UserTokensDTO> GenerateTwoStepVerificationCode(User user)
         {
-            throw new NotImplementedException();
+            var providers = await _userManager.GetValidTwoFactorProvidersAsync(user);
+
+            if(!providers.Contains("Email"))
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Invalid 2-Step Verification Provider");
+            }
+
+            var twoFactorToken = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
+            var message = new MailRequest
+            {
+                ToEmail = user.Email,
+                Subject = "Provis authentication code",
+                Body = $"<div><h1>Your code:</h1> <label>{twoFactorToken}</label></div>"
+            };
+
+            await _emailSenderService.SendEmailAsync(message);
+
+            var refeshToken = _jwtService.CreateRefreshToken();
+
+            var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x => x.UserId == user.Id);
+
+            RefreshToken rt = new RefreshToken()
+            {
+                Token = refeshToken,
+                UserId = user.Id
+            };
+
+            await _refreshTokenRepository.AddAsync(rt);
+            await _refreshTokenRepository.SaveChangesAsync();
+
+            return new UserTokensDTO() { RefreshToken = refeshToken };
         }
 
         public async Task RegistrationAsync(User user, string password, string roleName)
