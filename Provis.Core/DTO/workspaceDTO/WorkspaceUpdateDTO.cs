@@ -1,10 +1,9 @@
 ﻿namespace Provis.Core.DTO.workspaceDTO
 {
-    public class WorkspaceInfoDTO
+    public class WorkspaceUpdateDTO
     {
-        public int Id { get; set; }
+        public int WorkspaceId{ get; set; }
         public string Name { get; set; }
-        public string Role { get; set; }
         public string Description { get; set; }
     }
 }

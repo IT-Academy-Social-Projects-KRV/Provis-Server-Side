@@ -9,7 +9,7 @@ namespace Provis.Core.Services
 {
     public class SmtpService : ISmtpService
     {
-        public async Task SendAsync(MailSettings mailSettings, MimeMessage email)
+        public async Task SendAsync(MimeMessage email, MailSettings mailSettings)
         {
             using (var smtp = new SmtpClient())
             {

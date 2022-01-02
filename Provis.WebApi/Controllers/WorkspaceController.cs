@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Provis.Core.DTO.userDTO;
 using Provis.Core.DTO.workspaceDTO;
@@ -70,6 +70,7 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> GetWorkspaceAsync()
         {
             var getList = await _workspaceService.GetWorkspaceListAsync(UserId);
+
             return Ok(getList);
         }
 
@@ -82,6 +83,37 @@ namespace Provis.WebApi.Controllers
             var changeRole = await _workspaceService.ChangeUserRoleAsync(UserId, userChangeRoleDTO);
 
             return Ok(changeRole);
+        }
+
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
+        [Route("updateworkspace")]
+        public async Task<IActionResult> UpdateWorkspaceAsync([FromBody] WorkspaceUpdateDTO workspaceUpdate)
+        {
+            await _workspaceService.UpdateWorkspaceAsync(workspaceUpdate, UserId);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("getworkspace/{id}/info")]
+        public async Task<IActionResult> GetWorkspaceInfoAsync(int id)
+        {
+            var workspInfo = await _workspaceService.GetWorkspaceInfoAsync(id, UserId);
+
+            return Ok(workspInfo);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [WorkspaceRoles(new WorkSpaceRoles[]{
+            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId ,
+            WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
+        [Route("workspace/{workspaceId}/members")]
+        public async Task<IActionResult> GetWorkspaceMembersAsync(int workspaceId)
+        {
+            var members = await _workspaceService.GetWorkspaceMembersAsync(workspaceId);
+            return Ok(members);
         }
     }
 }

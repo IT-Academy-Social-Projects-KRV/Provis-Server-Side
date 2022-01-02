@@ -7,7 +7,7 @@ namespace Provis.Infrastructure.Data
 {
     public class ProvisDbContext: IdentityDbContext<User>
     {
-        public ProvisDbContext(DbContextOptions<ProvisDbContext> options): base(options) 
+        public ProvisDbContext(DbContextOptions<ProvisDbContext> options): base(options)
         {
             //Database.EnsureCreated();
         }
@@ -16,7 +16,7 @@ namespace Provis.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Invite User Foreign Key 
+            // Invite User Foreign Key
             modelBuilder.Entity<InviteUser>()
                 .HasOne(r => r.FromUser)
                 .WithMany()
@@ -29,7 +29,7 @@ namespace Provis.Infrastructure.Data
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Status History Foreign Key 
+            // Status History Foreign Key
             modelBuilder.Entity<StatusHistory>()
                .HasOne(r => r.Task)
                .WithMany()
@@ -40,7 +40,7 @@ namespace Provis.Infrastructure.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Comment Foreign Key 
+            // Comment Foreign Key
             modelBuilder.Entity<Comment>()
                .HasOne(r => r.Task)
                .WithMany()
@@ -55,14 +55,27 @@ namespace Provis.Infrastructure.Data
             // Task Foreign Key
             modelBuilder.Entity<Task>()
                 .HasOne(u => u.UserCreator)
-                .WithOne()
+                .WithMany(u => u.Tasks)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Task>()
-                .HasMany(t => t.Users)
-                .WithMany(u => u.Tasks)
-                .UsingEntity(j => j.ToTable("UsersTasks"));
+            modelBuilder.Entity<UserTask>()
+                .HasOne(x => x.Task)
+                .WithMany(x => x.UserTasks)
+                .HasForeignKey(x => x.TaskId);
+
+            modelBuilder.Entity<UserTask>()
+               .HasOne(x => x.User)
+               .WithMany(x => x.UserTasks)
+               .HasForeignKey(x => x.UserId);
+
+            modelBuilder.Entity<UserRoleTag>()
+                    .HasMany(x => x.UserTasks)
+                    .WithOne(x => x.UserRoleTag)
+                    .HasForeignKey(x => x.UserRoleTagId);
+
+            modelBuilder.Entity<UserTask>()
+                .HasKey(x => new { x.UserId, x.TaskId });
 
             // RefreshToken Foreign Key
             modelBuilder.Entity<RefreshToken>()
@@ -88,6 +101,8 @@ namespace Provis.Infrastructure.Data
                     j.ToTable("UserWorkspaces");
                 });
 
+            
+
             modelBuilder.Seed();
         }
 
@@ -99,5 +114,7 @@ namespace Provis.Infrastructure.Data
         public DbSet<StatusHistory> StatusHistories { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<UserRoleTag> UserRoleTags { get; set; }
+        public DbSet<UserTask> UserTask { get; set; }
     }
 }
