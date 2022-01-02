@@ -25,7 +25,7 @@ namespace Provis.Core.Services
         public UserService(UserManager<User> userManager,
             IRepository<User> userRepository,
             IRepository<InviteUser> inviteUser,
-            IMapper mapper            
+            IMapper mapper
             )
         {
             _userManager = userManager;
@@ -78,6 +78,6 @@ namespace Provis.Core.Services
             userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.Query().AnyAsync(u => u.ToUserId == userId && u.IsConfirm == null);
 
             return userActiveInviteDTO;
-        }       
+        }
     }
 }
