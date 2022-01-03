@@ -10,6 +10,7 @@ using Task = System.Threading.Tasks.Task;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using Provis.Core.DTO.UserDTO;
 
 namespace Provis.Core.Services
 {
@@ -90,12 +91,33 @@ namespace Provis.Core.Services
             if (user == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+
             }
             var userActiveInviteDTO = new UserActiveInviteDTO();
 
             userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.Query().AnyAsync(u => u.ToUserId == userId && u.IsConfirm == null);
 
             return userActiveInviteDTO;
+        }
+
+        public async Task ChangeTwoFactorAuthentication(string userId, UserChangeTwoFactorDTO factorDTO)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+            }
+
+            if(!user.EmailConfirmed)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    "First you need to confirm your email address");
+            }
+
+            await _userManager.SetTwoFactorEnabledAsync(user, factorDTO.IsTwoFactor);
+
+            await Task.CompletedTask;
         }
     }
 }

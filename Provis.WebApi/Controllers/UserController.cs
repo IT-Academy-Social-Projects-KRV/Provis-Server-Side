@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Interfaces.Services;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -74,6 +75,16 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> ConfirmEmailAsync([FromBody] UserConfirmEmailDTO confirmEmailDTO)
         {
             await _confirmEmailService.ConfirmEmailAsync(UserId, confirmEmailDTO);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("activatwofactor")]
+        public async Task<IActionResult> ChangeTwoFactorAuthentication([FromBody] UserChangeTwoFactorDTO factorDTO)
+        {
+            await _userService.ChangeTwoFactorAuthentication(UserId, factorDTO);
 
             return Ok();
         }

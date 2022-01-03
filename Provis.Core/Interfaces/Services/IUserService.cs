@@ -1,6 +1,7 @@
 ﻿using Provis.Core.DTO.userDTO;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Provis.Core.DTO.UserDTO;
 
 namespace Provis.Core.Interfaces.Services
 {
@@ -10,6 +11,6 @@ namespace Provis.Core.Interfaces.Services
         Task ChangeInfoAsync(string userId, UserChangeInfoDTO userChangeInfoDTO);
         Task<List<UserInviteInfoDTO>> GetUserInviteInfoListAsync(string userId);
         Task<UserActiveInviteDTO> IsActiveInviteAsync(string userId);
-    }
-    
+        Task ChangeTwoFactorAuthentication(string userId, UserChangeTwoFactorDTO factorDTO);
+    }   
 }
