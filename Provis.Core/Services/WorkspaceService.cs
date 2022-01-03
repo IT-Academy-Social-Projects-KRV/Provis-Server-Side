@@ -286,13 +286,13 @@ namespace Provis.Core.Services
                 .Where(u => u.WorkspaceId == workspaceId)
                 .Include(u => u.User)
                 .Include(u => u.Role)
+                .OrderBy(o => o.RoleId)
                 .Select(o => new WorkspaceMemberDTO
                 {
                     Id = o.UserId,
                     Role = o.Role.Name,
                     UserName = o.User.UserName
                 })
-                .OrderBy(o => o.UserName)
                 .ToListAsync();
 
             return workspaceMembers;
