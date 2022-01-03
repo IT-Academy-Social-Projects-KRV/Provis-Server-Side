@@ -306,12 +306,6 @@ namespace Provis.Core.Services
                 .Query()
                 .FirstOrDefault(x => x.WorkspaceId == workspaceId && x.User.Id == user.Id);
 
-            if (userWorksp == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "User is doesnt contain in this workspace");
-            }
-
             var userTasks = user.UserTasks.Where(o => o.Task.WorkspaceId == workspaceId);
 
             if (userTasks != null)
