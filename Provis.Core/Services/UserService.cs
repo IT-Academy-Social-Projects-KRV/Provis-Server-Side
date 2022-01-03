@@ -102,6 +102,7 @@ namespace Provis.Core.Services
             if (user == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
+
             }
             var userActiveInviteDTO = new UserActiveInviteDTO();
 
@@ -135,6 +136,75 @@ namespace Provis.Core.Services
             var file = await _fileService.GetFileAsync(user.Img);
 
             return file;
+        }
+
+        public async Task<bool> CheckIsTwoFactorVerificationAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "User with Id not exist");
+            }
+
+            if (!user.EmailConfirmed)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    "First you need to confirm your email address");
+            }
+
+            return await _userManager.GetTwoFactorEnabledAsync(user);
+        }
+
+        public async Task ChangeTwoFactorVerificationStatusAsync(string userId, UserChange2faStatusDTO statusDTO)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "User with Id not exist");
+            }
+
+            var isUserToken = await _userManager.VerifyTwoFactorTokenAsync(user, "Email", statusDTO.Token);
+
+            if (!isUserToken)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Invalid code");
+            }
+
+            var result = await _userManager.SetTwoFactorEnabledAsync(user, !await _userManager.GetTwoFactorEnabledAsync(user));
+
+            if (!result.Succeeded)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Invalid request");
+            }
+
+            await Task.CompletedTask;
+        }
+
+        public async Task SendTwoFactorCodeAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if (user == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    "Cannot changed two factor verification");
+            }
+
+            var twoFactorToken = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
+            var message = new MailRequest
+            {
+                ToEmail = user.Email,
+                Subject = "Provis 2fa code",
+                Body = $"<div><h1>Your code:</h1> <label>{twoFactorToken}</label></div>"
+            };
+
+            await _emailSenderService.SendEmailAsync(message);
+
+            await Task.CompletedTask;
         }
     }
 }

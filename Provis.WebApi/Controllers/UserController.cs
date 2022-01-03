@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Interfaces.Services;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -96,6 +97,36 @@ namespace Provis.WebApi.Controllers
             var file = await _userService.GetUserImageAsync(UserId);
 
             return File(file.Content, file.ContentType, file.Name);
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("change2fastatus")]
+        public async Task<IActionResult> Change2faStatusAsync([FromBody] UserChange2faStatusDTO statusDTO)
+        {
+            await _userService.ChangeTwoFactorVerificationStatusAsync(UserId, statusDTO);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("checkistwofactor")]
+        public async Task<IActionResult> CheckIsTwoFactorVerificationAsync()
+        {
+            var result = await _userService.CheckIsTwoFactorVerificationAsync(UserId);
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("sendtwofactorcode")]
+        public async Task<IActionResult> SendTwoFactorCodeAsync()
+        {
+            await _userService.SendTwoFactorCodeAsync(UserId);
+
+            return Ok();
         }
     }
 }

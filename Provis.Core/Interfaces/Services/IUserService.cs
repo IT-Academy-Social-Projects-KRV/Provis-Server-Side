@@ -14,5 +14,8 @@ namespace Provis.Core.Interfaces.Services
         Task<UserActiveInviteDTO> IsActiveInviteAsync(string userId);
         Task UpdateUserImageAsync(IFormFile img, string userId);
         Task<DownloadFile> GetUserImageAsync(string userId);
+        Task ChangeTwoFactorVerificationStatusAsync(string userId, UserChange2faStatusDTO statusDTO);
+        Task<bool> CheckIsTwoFactorVerificationAsync(string userId);
+        Task SendTwoFactorCodeAsync(string userId);
     }
 }
