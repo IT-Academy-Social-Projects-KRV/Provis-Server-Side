@@ -56,9 +56,8 @@ namespace Provis.Core.Services
             }
 
             var provider = new FileExtensionContentTypeProvider();
-            string contentType;
 
-            if (!provider.TryGetContentType(path, out contentType))
+            if (!provider.TryGetContentType(path, out string contentType))
             {
                 throw new CannotGetFileContentTypeException(path);
             }
