@@ -48,16 +48,14 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
 
+            if(!await _userManager.CheckPasswordAsync(user, password))
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
+            }
+
             if(await _userManager.GetTwoFactorEnabledAsync(user))
             {
                 return await GenerateTwoStepVerificationCode(user);
-            }
-
-            var result = await _signInManager.PasswordSignInAsync(user.UserName, password, false, false);
-
-            if (!result.Succeeded)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
             }
            
             return await GenerateUserTokens(user);
