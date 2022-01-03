@@ -113,9 +113,7 @@ namespace Provis.Core.Services
 
             await _emailSenderService.SendEmailAsync(message);
 
-            var refeshToken = CreateRefreshToken(user).Result;
-
-            return new UserAutorizationDTO() { RefreshToken = refeshToken, Is2StepVerificationRequired = true, Provider = "Email" };
+            return new UserAutorizationDTO() { Is2StepVerificationRequired = true, Provider = "Email" };
         }
 
         public async Task<UserAutorizationDTO> LoginTwoStepAsync(UserTwoFactorDTO twoFactorDTO)
