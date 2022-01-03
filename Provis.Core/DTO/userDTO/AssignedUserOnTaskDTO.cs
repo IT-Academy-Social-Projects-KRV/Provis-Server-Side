@@ -1,4 +1,4 @@
-﻿namespace Provis.Core.Helpers
+﻿namespace Provis.Core.DTO.userDTO
 {
     public class AssignedUserOnTaskDTO
     {
