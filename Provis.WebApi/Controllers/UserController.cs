@@ -81,7 +81,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Authorize]
-        [Route("activatwofactor")]
+        [Route("changetwofactor")]
         public async Task<IActionResult> ChangeTwoFactorAuthentication([FromBody] UserChangeTwoFactorDTO factorDTO)
         {
             await _userService.ChangeTwoFactorAuthentication(UserId, factorDTO);
