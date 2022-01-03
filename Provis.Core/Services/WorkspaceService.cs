@@ -298,9 +298,9 @@ namespace Provis.Core.Services
             return workspaceMembers;
         }
 
-        public async Task DeleteFromWorkspaceAsync(int workspaceId, DeleteUserDTO deleteUserDTO)
+        public async Task DeleteFromWorkspaceAsync(int workspaceId, string userId)
         {
-            var user = await _userManager.FindByEmailAsync(deleteUserDTO.UserEmail);
+            var user = await _userManager.FindByIdAsync(userId);
 
             var userWorksp = _userWorkspaceRepository
                 .Query()
