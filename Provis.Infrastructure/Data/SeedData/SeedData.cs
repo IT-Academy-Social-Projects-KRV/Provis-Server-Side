@@ -10,6 +10,7 @@ namespace Provis.Infrastructure.Data.SeedData
         public static void Seed(this ModelBuilder builder)
         {
             SeedWorkspaceRole(builder);
+            SeedUserRoleTag(builder);
         }
 
         public static void SeedWorkspaceRole(ModelBuilder builder) =>
@@ -33,6 +34,23 @@ namespace Provis.Infrastructure.Data.SeedData
                 {
                     Id = (int)WorkSpaceRoles.ViewerId,
                     Name = "Viewer",
+                });
+        public static void SeedUserRoleTag(ModelBuilder builder) =>
+            builder.Entity<UserRoleTag>().HasData(
+                new UserRoleTag()
+                {
+                    Id = (int)TaskRoles.WorkerId,
+                    Name = "Worker",
+                },
+                new UserRoleTag()
+                {
+                    Id = (int)TaskRoles.SupportId,
+                    Name = "Support",
+                },
+                new UserRoleTag()
+                {
+                    Id = (int)TaskRoles.ReviewerId,
+                    Name = "Reviewer",
                 });
     }
 }

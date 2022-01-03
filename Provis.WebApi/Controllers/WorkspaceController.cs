@@ -104,5 +104,16 @@ namespace Provis.WebApi.Controllers
             return Ok(workspInvites);
         }
 
+        [HttpGet]
+        [Authorize]
+        [WorkspaceRoles(new WorkSpaceRoles[]{
+            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId ,
+            WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
+        [Route("workspace/{workspaceId}/members")]
+        public async Task<IActionResult> GetWorkspaceMembersAsync(int workspaceId)
+        {
+            var members = await _workspaceService.GetWorkspaceMembersAsync(workspaceId);
+            return Ok(members);
+        }
     }
 }
