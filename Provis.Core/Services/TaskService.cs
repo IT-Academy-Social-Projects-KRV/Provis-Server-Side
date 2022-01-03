@@ -80,15 +80,15 @@ namespace Provis.Core.Services
 
             var task = new TaskEntity();
 
-            _mapper.Map(taskCreateDTO, task);
-
             task.DateOfCreate = DateTime.UtcNow;
             task.TaskCreatorId = user.Id;
+
+            _mapper.Map(taskCreateDTO, task);
 
             await _taskRepository.AddAsync(task);
             await _taskRepository.SaveChangesAsync();
 
-            if (taskCreateDTO.AssignedUsers.Count !=0)
+            if (taskCreateDTO.AssignedUsers.Count != 0)
             {
                 List<UserTask> userTasks = new List<UserTask>(); 
                 foreach (var item in taskCreateDTO.AssignedUsers)
