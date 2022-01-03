@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Interfaces.Services;
+using Provis.Core.Roles;
+using Provis.WebApi.Policy;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -30,6 +32,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.ViewerId })]
         [Route("addtask")]
         public async Task<IActionResult> AddTaskAsync([FromBody] TaskCreateDTO createDTO)
         {

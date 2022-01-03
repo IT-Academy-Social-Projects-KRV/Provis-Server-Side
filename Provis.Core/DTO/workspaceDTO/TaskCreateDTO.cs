@@ -11,6 +11,6 @@ namespace Provis.Core.DTO.workspaceDTO
         public DateTime DateOfEnd { get; set; }
         public int WorkspaceId { get; set; }
         public int StatusId { get; set; }
-        public List<AssignedUserOnTask>  AssignedUsers { get; set; }
+        public List<AssignedUserOnTaskDTO>  AssignedUsers { get; set; }
     }
 }
