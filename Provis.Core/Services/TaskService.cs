@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
+using TaskEntity = Provis.Core.Entities.Task;
 
 namespace Provis.Core.Services
 {
@@ -19,12 +20,12 @@ namespace Provis.Core.Services
         protected readonly UserManager<User> _userManager;
         public readonly IRepository<User> _userRepository;
         public readonly IRepository<Workspace> _workspaceRepository;
-        public readonly IRepository<Entities.Task> _taskRepository;
+        public readonly IRepository<TaskEntity> _taskRepository;
         public readonly IRepository<UserTask> _userTaskRepository;
         protected readonly IMapper _mapper;
 
         public TaskService(IRepository<User> user,
-            IRepository<Entities.Task> task,
+            IRepository<TaskEntity> task,
             IRepository<Workspace> workspace,
             IRepository<UserTask> userTask,
             UserManager<User> userManager,
@@ -41,7 +42,7 @@ namespace Provis.Core.Services
 
         public async Task<List<TaskDTO>> GetUserTasksAsync(string userId, int workspaceId)
         {
-            IEnumerable<Entities.Task> userTasks = null;
+            IEnumerable<TaskEntity> userTasks = null;
             if (String.IsNullOrEmpty(userId))
             {
                 userTasks = await _taskRepository.Query()
@@ -77,7 +78,7 @@ namespace Provis.Core.Services
             _ = workspaceRec ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "Workspace with Id not found");
 
-            var task = new Entities.Task();
+            var task = new TaskEntity();
 
             _mapper.Map(taskCreateDTO, task);
 

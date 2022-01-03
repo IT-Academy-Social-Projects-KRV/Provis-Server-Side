@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Provis.Core.Helpers;
+using System;
 using System.Collections.Generic;
 
 namespace Provis.Core.DTO.workspaceDTO
@@ -11,10 +12,5 @@ namespace Provis.Core.DTO.workspaceDTO
         public int WorkspaceId { get; set; }
         public int StatusId { get; set; }
         public List<AssignedUserOnTask>  AssignedUsers { get; set; }
-    }
-    public class AssignedUserOnTask
-    {
-        public string UserId { get; set; }
-        public int RoleTagId { get; set; }
     }
 }
