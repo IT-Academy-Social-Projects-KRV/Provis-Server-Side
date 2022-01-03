@@ -115,7 +115,13 @@ namespace Provis.Core.Services
                     "First you need to confirm your email address");
             }
 
-            await _userManager.SetTwoFactorEnabledAsync(user, factorDTO.IsTwoFactor);
+            var result = await _userManager.SetTwoFactorEnabledAsync(user, factorDTO.IsTwoFactor);
+
+            if(!result.Succeeded)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    "Cannot changed two factor verification");
+            }
 
             await Task.CompletedTask;
         }
