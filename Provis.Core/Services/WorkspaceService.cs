@@ -74,6 +74,7 @@ namespace Provis.Core.Services
 
             await Task.CompletedTask;
         }
+
         public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -187,7 +188,6 @@ namespace Provis.Core.Services
         }
 
         public async Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid)
-
         {
             var user = await _userManager.FindByIdAsync(userid);
 
@@ -271,6 +271,22 @@ namespace Provis.Core.Services
 
             return workspace;
         }
+
+        public async Task<List<WorkspaceInviteInfoDTO>> 
+            GetWorkspaceActiveInvitesAsync(int workspId, string userId)
+        {
+            var invitesList = await _inviteUserRepository
+                .Query()
+                .Include(x => x.FromUser)
+                .Include(x => x.ToUser)
+                .Where(x => x.WorkspaceId == workspId && x.IsConfirm == null)
+                .ToListAsync();
+
+            var listToReturn = _mapper.Map<List<WorkspaceInviteInfoDTO>>(invitesList);
+
+            return listToReturn;
+         }
+
         public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
         {
             var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
@@ -285,16 +301,66 @@ namespace Provis.Core.Services
                 .Where(u => u.WorkspaceId == workspaceId)
                 .Include(u => u.User)
                 .Include(u => u.Role)
+                .OrderBy(o => o.RoleId)
                 .Select(o => new WorkspaceMemberDTO
                 {
                     Id = o.UserId,
                     Role = o.Role.Name,
                     UserName = o.User.UserName
                 })
-                .OrderBy(o => o.UserName)
                 .ToListAsync();
 
             return workspaceMembers;
+          }
+
+        public async Task DeleteFromWorkspaceAsync(int workspaceId, string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            var userWorksp = _userWorkspaceRepository
+                .Query()
+                .FirstOrDefault(x => x.WorkspaceId == workspaceId && x.User.Id == user.Id);
+
+            var userTasks = user.UserTasks.Where(o => o.Task.WorkspaceId == workspaceId);
+
+            if (userTasks != null)
+            {
+                foreach (var userTask in userTasks)
+                {
+                    userTask.IsUserDeleted = true;
+                }
+            }
+
+            await _userWorkspaceRepository.DeleteAsync(userWorksp);
+            await _workspaceRepository.SaveChangesAsync();
+            }
+
+        public async Task CancelInviteAsync(int id, int workspaceId, string userId)
+        {
+            var invite = await _inviteUserRepository.GetByKeyAsync(id);
+
+            if (invite == null || invite.IsConfirm != null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Invite with Id not found or it already answered");
+            }
+
+            var user = await _userWorkspaceRepository
+                .Query()
+                .FirstOrDefaultAsync(u => u.WorkspaceId == workspaceId && u.UserId == userId);
+
+            if((WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId || invite.FromUserId ==userId)
+            {
+                await _inviteUserRepository.DeleteAsync(invite);
+                await _inviteUserRepository.SaveChangesAsync();
+            }
+            else
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "You don't have permission to do this");
+            }
+
+            await Task.CompletedTask;
         }
 
         public async Task CancelInviteAsync(int id, int workspaceId, string userId)
@@ -325,4 +391,5 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
     }
+
 }

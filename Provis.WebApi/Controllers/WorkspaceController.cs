@@ -95,6 +95,17 @@ namespace Provis.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
+        [Route("{workspaceId}/invite/active")]
+        public async Task<IActionResult> GetWorkspaceActiveInvitesAsync(int workspaceId)
+        {
+            var workspInvites = await _workspaceService.GetWorkspaceActiveInvitesAsync(workspaceId, UserId);
+
+            return Ok(workspInvites);
+        }
+
+        [HttpGet]
+        [Authorize]
         [WorkspaceRoles(new WorkSpaceRoles[]{
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId ,
             WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
@@ -104,6 +115,17 @@ namespace Provis.WebApi.Controllers
             var members = await _workspaceService.GetWorkspaceMembersAsync(workspaceId);
             return Ok(members);
         }
+
+        [Authorize]
+        [HttpDelete]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
+        [Route("{workspaceId}/user/{userId}")]
+        public async Task<IActionResult> DeleteFromWorkspace(int workspaceId, string userId)
+        {
+            await _workspaceService.DeleteFromWorkspaceAsync(workspaceId, userId);
+            return Ok();
+        }
+        
 
         [HttpDelete]
         [Authorize]
