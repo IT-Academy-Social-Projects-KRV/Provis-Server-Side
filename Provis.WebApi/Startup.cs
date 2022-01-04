@@ -1,14 +1,11 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Provis.Core;
-using Provis.Core.Entities;
 using Provis.Infrastructure;
-using Provis.Infrastructure.Data;
 using Provis.WebApi.Middleweres;
 using Provis.WebApi.ServiceExtension;
 
@@ -35,12 +32,14 @@ namespace Provis.WebApi
             services.AddFluentValitation();
             services.ConfigJwtOptions(Configuration.GetSection("JwtOptions"));
             services.ConfigureMailSettings(Configuration);
+            services.ConfigureImageSettings(Configuration);
+            services.ConfigureFileSettings(Configuration);
             services.AddAutoMapper();
 
             services.AddSwagger();
             services.AddPolicyServices();
             services.AddJwtAuthentication(Configuration);
-            services.AddCors();         
+            services.AddCors();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,6 +51,8 @@ namespace Provis.WebApi
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Provis.WebApi v1"));
             }
+
+            app.UseStaticFiles();
 
             app.UseHttpsRedirection();
 
@@ -74,6 +75,5 @@ namespace Provis.WebApi
                 endpoints.MapControllers();
             });
         }
-        
     }
 }
