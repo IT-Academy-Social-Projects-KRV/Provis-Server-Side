@@ -16,6 +16,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using Provis.Core.ApiModels;
+using Provis.Core.Helpers.Mails;
 
 namespace Provis.Core.Services
 {
