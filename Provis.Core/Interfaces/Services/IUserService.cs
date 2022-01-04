@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using Provis.Core.DTO.UserDTO;
 using Microsoft.AspNetCore.Http;
 using Provis.Core.ApiModels;
-using Provis.Core.DTO.UserDTO;
 
 namespace Provis.Core.Interfaces.Services
 {
