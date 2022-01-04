@@ -19,17 +19,20 @@ namespace Provis.Core.Services
         public readonly IRepository<Workspace> _workspaceRepository;
         public readonly IRepository<Entities.Task> _taskRepository;
         protected readonly IMapper _mapper;
+        private readonly IRepository<StatusHistory> _statusHistoryRepository;
 
         public TaskService(IRepository<User> user,
             IRepository<Entities.Task> task,
             IRepository<Workspace> workspace,
-            IMapper mapper
+            IMapper mapper,
+            IRepository<StatusHistory> statusHistoryRepository
             )
         {
             _userRepository = user;
             _taskRepository = task;
             _workspaceRepository = workspace;
             _mapper = mapper;
+            _statusHistoryRepository = statusHistoryRepository;
         }
 
         public async Task<List<TaskDTO>> GetUserTasksAsync(string userId, int workspaceId)
@@ -64,8 +67,14 @@ namespace Provis.Core.Services
 
             _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task not found");
 
-            //Add logic to add record to statusHistory table
+            var statusHistory = new StatusHistory
+            {
+                DateOfChange = DateTime.UtcNow,
+                StatusId = changeTaskStatus.StatusId,
+                TaskId = task.Id
+            };
 
+            await _statusHistoryRepository.AddAsync(statusHistory);
             task.StatusId = changeTaskStatus.StatusId;
 
             await _taskRepository.UpdateAsync(task);
