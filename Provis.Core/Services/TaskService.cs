@@ -64,6 +64,8 @@ namespace Provis.Core.Services
 
             _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task not found");
 
+            //Add logic to add record to statusHistory table
+
             task.StatusId = changeTaskStatus.StatusId;
 
             await _taskRepository.UpdateAsync(task);
