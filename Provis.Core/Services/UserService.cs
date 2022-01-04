@@ -191,8 +191,6 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-
-
         public async Task SendTwoFactorCodeAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
