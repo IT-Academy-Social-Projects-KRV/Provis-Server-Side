@@ -301,17 +301,39 @@ namespace Provis.Core.Services
                 .Where(u => u.WorkspaceId == workspaceId)
                 .Include(u => u.User)
                 .Include(u => u.Role)
+                .OrderBy(o => o.RoleId)
                 .Select(o => new WorkspaceMemberDTO
                 {
                     Id = o.UserId,
                     Role = o.Role.Name,
                     UserName = o.User.UserName
                 })
-                .OrderBy(o => o.UserName)
                 .ToListAsync();
 
             return workspaceMembers;
           }
+
+        public async Task DeleteFromWorkspaceAsync(int workspaceId, string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            var userWorksp = _userWorkspaceRepository
+                .Query()
+                .FirstOrDefault(x => x.WorkspaceId == workspaceId && x.User.Id == user.Id);
+
+            var userTasks = user.UserTasks.Where(o => o.Task.WorkspaceId == workspaceId);
+
+            if (userTasks != null)
+            {
+                foreach (var userTask in userTasks)
+                {
+                    userTask.IsUserDeleted = true;
+                }
+            }
+
+            await _userWorkspaceRepository.DeleteAsync(userWorksp);
+            await _workspaceRepository.SaveChangesAsync();
+            }
 
         public async Task CancelInviteAsync(int id, int workspaceId, string userId)
         {
@@ -341,4 +363,5 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
     }
+
 }
