@@ -123,6 +123,7 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> DeleteFromWorkspace(int workspaceId, string userId)
         {
             await _workspaceService.DeleteFromWorkspaceAsync(workspaceId, userId);
+            return Ok();
         }
         
         [HttpDelete]
