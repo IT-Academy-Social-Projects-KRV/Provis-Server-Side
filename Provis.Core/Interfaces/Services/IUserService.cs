@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Provis.Core.ApiModels;
+using Provis.Core.DTO.UserDTO;
 
 namespace Provis.Core.Interfaces.Services
 {

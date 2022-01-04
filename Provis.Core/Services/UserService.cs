@@ -1,21 +1,21 @@
 using AutoMapper;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Provis.Core.ApiModels;
 using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities;
 using Provis.Core.Exeptions;
+using Provis.Core.Helpers;
+using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
-using System.Threading.Tasks;
-using Task = System.Threading.Tasks.Task;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
-using Provis.Core.Helpers;
-using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
-using Provis.Core.ApiModels;
+using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
 
 namespace Provis.Core.Services
 {
@@ -33,11 +33,10 @@ namespace Provis.Core.Services
             IRepository<User> userRepository,
             IRepository<InviteUser> inviteUser,
             IMapper mapper,
-            IEmailSenderService emailSenderService)
-            IMapper mapper,
+            IEmailSenderService emailSenderService,
             IFileService fileService,
             IOptions<ImageSettings> imageSettings)
-        {
+        { 
             _userManager = userManager;
             _userRepository = userRepository;
             _inviteUserRepository = inviteUser;
