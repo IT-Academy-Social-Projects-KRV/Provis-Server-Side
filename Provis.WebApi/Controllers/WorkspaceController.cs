@@ -104,5 +104,15 @@ namespace Provis.WebApi.Controllers
             var members = await _workspaceService.GetWorkspaceMembersAsync(workspaceId);
             return Ok(members);
         }
+
+        [HttpDelete]
+        [Authorize]
+        [WorkspaceRoles(new[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
+        [Route("workspace/{workspaceId}/invite/{id}/cancel")]
+        public async Task<IActionResult> CancelInviteAsync(int id, int workspaceId)
+        {
+            await _workspaceService.CancelInviteAsync(id, workspaceId, UserId);
+            return Ok();
+        }
     }
 }
