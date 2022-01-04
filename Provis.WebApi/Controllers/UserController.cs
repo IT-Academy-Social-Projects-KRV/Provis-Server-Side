@@ -81,10 +81,30 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Authorize]
-        [Route("changetwofactor")]
-        public async Task<IActionResult> ChangeTwoFactorAuthentication([FromBody] UserChangeTwoFactorDTO factorDTO)
+        [Route("change2fastatus")]
+        public async Task<IActionResult> Change2faStatusAsync([FromBody] UserChange2faStatusDTO statusDTO)
         {
-            await _userService.ChangeTwoFactorAuthentication(UserId, factorDTO);
+            await _userService.ChangeTwoFactorVerificationStatusAsync(UserId, statusDTO);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("checkistwofactor")]
+        public async Task<IActionResult> CheckIsTwoFactorVerificationAsync()
+        {
+            var result = await _userService.CheckIsTwoFactorVerificationAsync(UserId);
+
+            return Ok(result);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("sendtwofactorcode")]
+        public async Task<IActionResult> SendTwoFactorCodeAsync()
+        {
+            await _userService.SendTwoFactorCodeAsync(UserId);
 
             return Ok();
         }

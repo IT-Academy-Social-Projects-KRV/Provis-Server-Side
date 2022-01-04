@@ -11,6 +11,8 @@ namespace Provis.Core.Interfaces.Services
         Task ChangeInfoAsync(string userId, UserChangeInfoDTO userChangeInfoDTO);
         Task<List<UserInviteInfoDTO>> GetUserInviteInfoListAsync(string userId);
         Task<UserActiveInviteDTO> IsActiveInviteAsync(string userId);
-        Task ChangeTwoFactorAuthentication(string userId, UserChangeTwoFactorDTO factorDTO);
+        Task ChangeTwoFactorVerificationStatusAsync(string userId, UserChange2faStatusDTO statusDTO);
+        Task<bool> CheckIsTwoFactorVerificationAsync(string userId);
+        Task SendTwoFactorCodeAsync(string userId);
     }   
 }
