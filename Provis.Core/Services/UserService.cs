@@ -24,6 +24,7 @@ namespace Provis.Core.Services
         protected readonly UserManager<User> _userManager;
         protected readonly IRepository<User> _userRepository;
         protected readonly IRepository<InviteUser> _inviteUserRepository;
+        protected readonly IEmailSenderService _emailSenderService;
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
         private readonly IOptions<ImageSettings> _imageSettings;
@@ -63,7 +64,8 @@ namespace Provis.Core.Services
 
             if (userObject != null && userObject.Id != userId)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "This username already exists");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, 
+                    "This username already exists");
             }
 
             var user = await _userRepository.GetByKeyAsync(userId);
@@ -88,7 +90,9 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            var inviteListInfo = await _inviteUserRepository.Query().Where(u => u.ToUserId == userId).Include(w => w.Workspace).Include(u => u.FromUser).OrderBy(d => d.Date ).ToListAsync();
+            var inviteListInfo = await _inviteUserRepository.Query()
+                .Where(u => u.ToUserId == userId).Include(w => w.Workspace).Include(u => u.FromUser)
+                .OrderBy(d => d.Date ).ToListAsync();
 
             var userInviteListInfoToReturn = _mapper.Map<List<UserInviteInfoDTO>>(inviteListInfo);
 
@@ -106,7 +110,8 @@ namespace Provis.Core.Services
             }
             var userActiveInviteDTO = new UserActiveInviteDTO();
 
-            userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.Query().AnyAsync(u => u.ToUserId == userId && u.IsConfirm == null);
+            userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.Query()
+                .AnyAsync(u => u.ToUserId == userId && u.IsConfirm == null);
 
             return userActiveInviteDTO;
         }
@@ -190,8 +195,8 @@ namespace Provis.Core.Services
 
             if (user == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "User with Id not exist");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    "Cannot changed two factor verification");
             }
 
             var twoFactorToken = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
