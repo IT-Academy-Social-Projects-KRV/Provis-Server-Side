@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +24,7 @@ namespace Provis.Core
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IConfirmEmailService, ConfirmEmailService>();
+            services.AddScoped<IFileService, FileService>();
         }
 
         public static void AddFluentValitation(this IServiceCollection services)
@@ -41,12 +42,23 @@ namespace Provis.Core
             services.Configure<MailSettings>(configuration.GetSection("EmailSettings"));
         }
 
+
         public static void ConfigureValidationSettings(this IServiceCollection services, IConfiguration configuration)
         {
             var configItem = 
                 configuration.GetSection("RolesAccess")
                 .Get<Dictionary<WorkSpaceRoles, List<WorkSpaceRoles>>>();
             services.AddSingleton<RoleAccess>(new RoleAccess() { RolesAccess = configItem });
+        }
+
+        public static void ConfigureImageSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<ImageSettings>(configuration.GetSection("ImageSettings"));
+        }
+
+        public static void ConfigureFileSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<FileSettings>(configuration.GetSection("FileSettings"));
         }
 
         public static void AddAutoMapper(this IServiceCollection services)
@@ -63,6 +75,6 @@ namespace Provis.Core
         public static void ConfigureRolesAccess(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<RoleAccess>(configuration.GetSection("RolesAccess"));
-        }        
+        }
     }
 }

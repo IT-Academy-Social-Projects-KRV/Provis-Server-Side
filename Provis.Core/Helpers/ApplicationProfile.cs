@@ -41,11 +41,25 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
                 .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.RoleId));  
 
+            CreateMap<InviteUser, WorkspaceInviteInfoDTO>()
+                .ForMember(x => x.Date, act => act.MapFrom(srs => srs.Date))
+                .ForMember(x => x.FromUserName, act => act.MapFrom(srs => srs.FromUser.UserName))
+                .ForMember(x => x.ToUserName, act => act.MapFrom(srs => srs.ToUser.UserName))
+                .ForMember(x => x.ToUserEmail, act => act.MapFrom(srs => srs.ToUser.Email))
+                .ForMember(x => x.InviteId, act => act.MapFrom(srs => srs.Id));
+
             CreateMap<Task, TaskDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Status, act => act.MapFrom(srs => srs.Status.StatusName))
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd));
+
+            CreateMap<TaskCreateDTO, Task>()
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
+                .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
+                .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
+                .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
+                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId));
 
             CreateMap<UserChangeInfoDTO, User>();
         }

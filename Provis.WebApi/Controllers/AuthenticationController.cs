@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Entities;
 using Provis.Core.Roles;
 using System.Threading.Tasks;
+using Provis.Core.DTO.UserDTO;
 
 namespace Provis.WebApi.Controllers
 {
@@ -28,6 +29,15 @@ namespace Provis.WebApi.Controllers
         }
 
         [HttpPost]
+        [Route("logintwostep")]
+        public async Task<IActionResult> LoginTwoStepAsync([FromBody] UserTwoFactorDTO twoFactorDTO)
+        {
+            var tokens = await authenticationService.LoginTwoStepAsync(twoFactorDTO);
+
+            return Ok(tokens);
+        }
+
+        [HttpPost]
         [Route("registration")]
         public async Task<IActionResult> RegistrationAsync([FromBody] UserRegDTO regDTO)
         {
@@ -46,7 +56,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Route("refreshToken")]
-        public async Task<IActionResult> RefreshTokenAsync([FromBody] UserTokensDTO userTokensDTO)
+        public async Task<IActionResult> RefreshTokenAsync([FromBody] UserAutorizationDTO userTokensDTO)
         {
             var tokens = await authenticationService.RefreshTokenAsync(userTokensDTO);
 
@@ -55,7 +65,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Route("logout")]
-        public async Task<IActionResult> LogoutAsync([FromBody] UserTokensDTO userTokensDTO)
+        public async Task<IActionResult> LogoutAsync([FromBody] UserAutorizationDTO userTokensDTO)
         {
             await authenticationService.LogoutAsync(userTokensDTO);
 
