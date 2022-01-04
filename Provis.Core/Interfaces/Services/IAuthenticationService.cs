@@ -1,4 +1,4 @@
-﻿using Provis.Core.DTO.userDTO;
+﻿using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
