@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using Azure.Storage.Blobs.Models;
+using Provis.Core.ApiModels;
 using Provis.Core.DTO.userDTO;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Entities;
@@ -27,7 +29,7 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Workspace.Name))
                 .ForMember(x => x.Role, act => act.MapFrom(srs => srs.Role.Name))
                 .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Workspace.Description));
-            
+
             CreateMap<InviteUser, UserInviteInfoDTO > ()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                 .ForMember(x => x.Date, act => act.MapFrom(srs => srs.Date))
@@ -43,6 +45,10 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd));
 
             CreateMap<UserChangeInfoDTO, User>();
+
+            CreateMap<BlobDownloadInfo, DownloadFile>()
+                .ForMember(x => x.ContentType, act => act.MapFrom(srs => srs.Details.ContentType))
+                .ForMember(x => x.Content, act => act.MapFrom(srs => srs.Content));
         }
     }
 }

@@ -35,6 +35,7 @@ namespace Provis.WebApi
             services.ConfigureImageSettings(Configuration);
             services.ConfigureFileSettings(Configuration);
             services.AddAutoMapper();
+            services.AddFileService(Configuration);
 
             services.AddSwagger();
             services.AddPolicyServices();

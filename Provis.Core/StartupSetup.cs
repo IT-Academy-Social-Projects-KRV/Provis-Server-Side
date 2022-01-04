@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Azure.Storage.Blobs;
 using FluentValidation.AspNetCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -22,7 +23,24 @@ namespace Provis.Core
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IConfirmEmailService, ConfirmEmailService>();
-            services.AddScoped<IFileService, FileService>();
+        }
+
+        public static void AddFileService(this IServiceCollection services, IConfiguration configuration)
+        {
+            var allowStoreInAzureBlobStore = configuration.GetSection("FileSettings")
+                .GetValue<bool>("AllowStoreInAzureBlobStore");
+
+            if (allowStoreInAzureBlobStore)
+            {
+                services.AddScoped(_ =>
+                    new BlobServiceClient(configuration.GetSection("AzureBlobStorageSettings")
+                        .GetValue<string>("AccessKey")));
+                services.AddScoped<IFileService, AzureBlobStorageService>();
+            }
+            else
+            {
+                services.AddScoped<IFileService, FileService>();
+            }
         }
 
         public static void AddFluentValitation(this IServiceCollection services)
