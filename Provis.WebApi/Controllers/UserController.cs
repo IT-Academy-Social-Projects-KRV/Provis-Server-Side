@@ -79,6 +79,26 @@ namespace Provis.WebApi.Controllers
             return Ok();
         }
 
+        [HttpPut]
+        [Authorize]
+        [Route("image")]
+        public async Task<IActionResult> UpdateImageAsync([FromForm] UploadImageDTO uploadImage)
+        {
+            await _userService.UpdateUserImageAsync(uploadImage.Image, UserId);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("image")]
+        public async Task<FileResult> GetImageAsync()
+        {
+            var file = await _userService.GetUserImageAsync(UserId);
+
+            return File(file.Content, file.ContentType, file.Name);
+        }
+
         [HttpPost]
         [Authorize]
         [Route("change2fastatus")]

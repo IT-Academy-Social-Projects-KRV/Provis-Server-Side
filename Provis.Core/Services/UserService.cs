@@ -1,16 +1,21 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
-using Provis.Core.DTO.UserDTO;
+using Provis.Core.Helpers;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
+using Provis.Core.ApiModels;
 using Provis.Core.Helpers.Mails;
 
 namespace Provis.Core.Services
@@ -22,18 +27,24 @@ namespace Provis.Core.Services
         protected readonly IRepository<InviteUser> _inviteUserRepository;
         protected readonly IEmailSenderService _emailSenderService;
         protected readonly IMapper _mapper;
+        private readonly IFileService _fileService;
+        private readonly IOptions<ImageSettings> _imageSettings;
 
         public UserService(UserManager<User> userManager,
             IRepository<User> userRepository,
             IRepository<InviteUser> inviteUser,
             IMapper mapper,
             IEmailSenderService emailSenderService)
+            IFileService fileService,
+            IOptions<ImageSettings> imageSettings)
         {
             _userManager = userManager;
             _userRepository = userRepository;
             _inviteUserRepository = inviteUser;
             _mapper = mapper;
             _emailSenderService = emailSenderService;
+            _fileService = fileService;
+            _imageSettings = imageSettings;
         }
 
         public async Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId)
@@ -72,7 +83,7 @@ namespace Provis.Core.Services
 
             await Task.CompletedTask;
         }
-        
+
         public async Task<List<UserInviteInfoDTO>> GetUserInviteInfoListAsync(string userId)
         {
             var user = await _userRepository.GetByKeyAsync(userId);
@@ -87,7 +98,7 @@ namespace Provis.Core.Services
                 .OrderBy(d => d.Date ).ToListAsync();
 
             var userInviteListInfoToReturn = _mapper.Map<List<UserInviteInfoDTO>>(inviteListInfo);
-            
+
            return userInviteListInfoToReturn;
         }
 
@@ -175,6 +186,32 @@ namespace Provis.Core.Services
             await _emailSenderService.SendEmailAsync(message);
 
             await Task.CompletedTask;
+
+        public async Task UpdateUserImageAsync(IFormFile img, string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            string newPath = await _fileService.AddFileAsync(img.OpenReadStream(), _imageSettings.Value.Path, img.FileName);
+
+            if (user.Img != null)
+            {
+                await _fileService.DeleteFileAsync(user.Img);
+            }
+
+            user.Img = newPath;
+
+            await _userManager.UpdateAsync(user);
+        }
+
+        public async Task<DownloadFile> GetUserImageAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            _ = user.Img ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Image not found");
+
+            var file = await _fileService.GetFileAsync(user.Img);
+
+            return file;
         }
     }
 }
