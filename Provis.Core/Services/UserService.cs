@@ -35,7 +35,8 @@ namespace Provis.Core.Services
             IRepository<InviteUser> inviteUser,
             IMapper mapper,
             IFileService fileService,
-            IOptions<ImageSettings> imageSettings)
+            IOptions<ImageSettings> imageSettings,
+            IEmailSenderService emailSenderService)
         {
             _userManager = userManager;
             _userRepository = userRepository;
@@ -43,6 +44,7 @@ namespace Provis.Core.Services
             _mapper = mapper;
             _fileService = fileService;
             _imageSettings = imageSettings;
+            _emailSenderService = emailSenderService;
         }
 
         public async Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId)
