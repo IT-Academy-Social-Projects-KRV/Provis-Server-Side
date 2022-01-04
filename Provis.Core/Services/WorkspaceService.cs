@@ -23,20 +23,26 @@ namespace Provis.Core.Services
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
         protected readonly IRepository<InviteUser> _inviteUserRepository;
+        protected readonly IRepository<Entities.Task> _tasksRepository;
+        protected readonly IRepository<User> _userRepository;
         protected readonly IMapper _mapper;
 
-        public WorkspaceService(UserManager<User> userManager, 
-            IRepository<Workspace> workspace, 
+        public WorkspaceService(UserManager<User> userManager,
+            IRepository<Workspace> workspace,
             IRepository<UserWorkspace> userWorkspace,
             IRepository<InviteUser> inviteUser,
+            IRepository<Entities.Task> tasks,
             IEmailSenderService emailSenderService,
+            IRepository<User> user,
             IMapper mapper)
         {
+            _userRepository = user;
             _userManager = userManager;
             _workspaceRepository = workspace;
             _userWorkspaceRepository = userWorkspace;
             _emailSendService = emailSenderService;
             _inviteUserRepository = inviteUser;
+            _tasksRepository = tasks;
             _mapper = mapper;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
@@ -75,17 +81,17 @@ namespace Provis.Core.Services
 
             _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "User with Id not exist");
-            
+
             var workspaceRec = await _workspaceRepository.GetByKeyAsync(workspaceUpdateDTO.WorkspaceId);
 
             _ = workspaceRec ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "Workspace with with Id not found");
-            
+
             _mapper.Map(workspaceUpdateDTO, workspaceRec);
 
             await _workspaceRepository.UpdateAsync(workspaceRec);
 
-            await _workspaceRepository.SaveChangesAsync();           
+            await _workspaceRepository.SaveChangesAsync();
 
             await Task.CompletedTask;
         }
@@ -94,7 +100,7 @@ namespace Provis.Core.Services
         {
             var owner = await _userManager.FindByIdAsync(ownerId);
 
-            if(owner.Email == inviteDTO.UserEmail)
+            if (owner.Email == inviteDTO.UserEmail)
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You cannot send invite to your account");
             }
@@ -118,7 +124,7 @@ namespace Provis.Core.Services
                 x.ToUserId == inviteUser.Id &&
                 x.WorkspaceId == workspace.Id).ToListAsync();
 
-            foreach(var invite in inviteUserList)
+            foreach (var invite in inviteUserList)
             {
                 if (invite.IsConfirm == null)
                 {
@@ -143,10 +149,10 @@ namespace Provis.Core.Services
             await _inviteUserRepository.AddAsync(user);
             await _inviteUserRepository.SaveChangesAsync();
 
-            await _emailSendService.SendEmailAsync(new MailRequest 
-            { 
-                ToEmail = inviteDTO.UserEmail, 
-                Subject = "Provis", 
+            await _emailSendService.SendEmailAsync(new MailRequest
+            {
+                ToEmail = inviteDTO.UserEmail,
+                Subject = "Workspace invitation",
                 Body = $"Owner: {owner.UserName} - Welcome to my Workspace {workspace.Name}"
             });
 
@@ -169,7 +175,7 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "Invite with with Id not found");
             }
 
-            if(inviteUserRec.ToUserId != userid)
+            if (inviteUserRec.ToUserId != userid)
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You cannot deny this invite");
             }
@@ -178,7 +184,7 @@ namespace Provis.Core.Services
 
             await _inviteUserRepository.SaveChangesAsync();
 
-            await Task.CompletedTask;        
+            await Task.CompletedTask;
         }
 
         public async Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid)
@@ -235,16 +241,16 @@ namespace Provis.Core.Services
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _inviteUserRepository.SaveChangesAsync();
 
-            await Task.CompletedTask;  
+            await Task.CompletedTask;
         }
 
         public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspId, string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            
+
             if (user == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
                     "User with Id not exist");
             }
 
@@ -257,7 +263,7 @@ namespace Provis.Core.Services
 
             if (userWorkspace == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, 
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
                     "Workspace with this Id doesn't exist or you hasn't permissions");
             }
 
@@ -279,6 +285,60 @@ namespace Provis.Core.Services
             var listToReturn = _mapper.Map<List<WorkspaceInviteInfoDTO>>(invitesList);
 
             return listToReturn;
+        }
+        
+        public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
+        {
+            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
+
+            if (workspace == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "Workspace with current Id not found");
+            }
+
+            var workspaceMembers = await _userWorkspaceRepository.Query()
+                .Where(u => u.WorkspaceId == workspaceId)
+                .Include(u => u.User)
+                .Include(u => u.Role)
+                .Select(o => new WorkspaceMemberDTO
+                {
+                    Id = o.UserId,
+                    Role = o.Role.Name,
+                    UserName = o.User.UserName
+                })
+                .OrderBy(o => o.UserName)
+                .ToListAsync();
+
+            return workspaceMembers;
+        }
+
+        public async Task CancelInviteAsync(int id, int workspaceId, string userId)
+        {
+            var invite = await _inviteUserRepository.GetByKeyAsync(id);
+
+            if (invite == null || invite.IsConfirm != null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Invite with Id not found or it already answered");
+            }
+
+            var user = await _userWorkspaceRepository
+                .Query()
+                .FirstOrDefaultAsync(u => u.WorkspaceId == workspaceId && u.UserId == userId);
+
+            if((WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId || invite.FromUserId ==userId)
+            {
+                await _inviteUserRepository.DeleteAsync(invite);
+                await _inviteUserRepository.SaveChangesAsync();
+            }
+            else
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "You don't have permission to do this");
+            }
+
+            await Task.CompletedTask;
         }
     }
 }

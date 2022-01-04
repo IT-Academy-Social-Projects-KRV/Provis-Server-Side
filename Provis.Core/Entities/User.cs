@@ -10,7 +10,11 @@ namespace Provis.Core.Entities
         public string Name { get; set; }
         public string Surname { get; set; }
 
+        public string Img { get; set; }
+
         public DateTime CreateDate { get; set; } // DateTime UTC
+
+        public List<UserTask> UserTasks { get; set; } = new List<UserTask>();
 
         public List<Task> Tasks { get; set; } = new List<Task>();
 

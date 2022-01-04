@@ -32,13 +32,14 @@ namespace Provis.WebApi
             services.AddFluentValitation();
             services.ConfigJwtOptions(Configuration.GetSection("JwtOptions"));
             services.ConfigureMailSettings(Configuration);
+            services.ConfigureImageSettings(Configuration);
+            services.ConfigureFileSettings(Configuration);
             services.AddAutoMapper();
 
             services.AddSwagger();
             services.AddPolicyServices();
             services.AddJwtAuthentication(Configuration);
             services.AddCors();
-           
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -50,6 +51,8 @@ namespace Provis.WebApi
                 app.UseSwagger();
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Provis.WebApi v1"));
             }
+
+            app.UseStaticFiles();
 
             app.UseHttpsRedirection();
 
@@ -72,6 +75,5 @@ namespace Provis.WebApi
                 endpoints.MapControllers();
             });
         }
-        
     }
 }

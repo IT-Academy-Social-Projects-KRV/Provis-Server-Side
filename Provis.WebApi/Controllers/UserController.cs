@@ -12,10 +12,12 @@ namespace Provis.WebApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
+        private readonly IConfirmEmailService _confirmEmailService;
         private string UserId => User.FindFirst(ClaimTypes.NameIdentifier).Value;
-        public UserController(IUserService userService)
+        public UserController(IUserService userService, IConfirmEmailService confirmEmailService)
         {
             _userService = userService;
+            _confirmEmailService = confirmEmailService;
         }
 
         [HttpGet]
@@ -54,6 +56,46 @@ namespace Provis.WebApi.Controllers
             var activeInvite = await _userService.IsActiveInviteAsync(UserId);
 
             return Ok(activeInvite);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("sendconfirmmail")]
+        public async Task<IActionResult> SendConfirmMailAsync()
+        {
+            await _confirmEmailService.SendConfirmMailAsync(UserId);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("confirmemail")]
+        public async Task<IActionResult> ConfirmEmailAsync([FromBody] UserConfirmEmailDTO confirmEmailDTO)
+        {
+            await _confirmEmailService.ConfirmEmailAsync(UserId, confirmEmailDTO);
+
+            return Ok();
+        }
+
+        [HttpPut]
+        [Authorize]
+        [Route("image")]
+        public async Task<IActionResult> UpdateImageAsync([FromForm] UploadImageDTO uploadImage)
+        {
+            await _userService.UpdateUserImageAsync(uploadImage.Image, UserId);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("image")]
+        public async Task<FileResult> GetImageAsync()
+        {
+            var file = await _userService.GetUserImageAsync(UserId);
+
+            return File(file.Content, file.ContentType, file.Name);
         }
     }
 }

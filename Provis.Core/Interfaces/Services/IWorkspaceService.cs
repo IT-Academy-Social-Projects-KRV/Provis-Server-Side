@@ -23,5 +23,10 @@ namespace Provis.Core.Interfaces.Services
         Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int id, string userEmail);
 
         Task<List<WorkspaceInviteInfoDTO>> GetWorkspaceActiveInvitesAsync(int id, string userId);
+
+        Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId);
+
+        Task CancelInviteAsync(int id, int workspaceId, string userId);
     }
 }
+
