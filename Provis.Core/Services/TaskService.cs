@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Provis.Core.DTO.TaskDTO;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Entities;
+using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using System;
@@ -55,5 +57,18 @@ namespace Provis.Core.Services
             var mapTask = _mapper.Map<List<TaskDTO>>(userTasks);
             return mapTask;
         }
+
+        public async System.Threading.Tasks.Task ChangeTaskStatus(ChangeTaskStatusDTO changeTaskStatus)
+        {
+            var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
+
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task not found");
+
+            task.StatusId = changeTaskStatus.StatusId;
+
+            await _taskRepository.UpdateAsync(task);
+            await _taskRepository.SaveChangesAsync();
+        }
+
     }
 }
