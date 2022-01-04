@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Provis.Core.DTO.userDTO;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities;
 using Provis.Core.Exeptions;

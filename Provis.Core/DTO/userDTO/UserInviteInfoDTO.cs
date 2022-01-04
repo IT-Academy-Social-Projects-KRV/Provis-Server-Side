@@ -1,6 +1,6 @@
 ﻿using Provis.Core.Entities;
 using System;
-namespace Provis.Core.DTO.userDTO
+namespace Provis.Core.DTO.UserDTO
 {
     public class UserInviteInfoDTO
     {

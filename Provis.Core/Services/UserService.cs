@@ -1,10 +1,10 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Provis.Core.DTO.UserDTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Provis.Core.ApiModels;
-using Provis.Core.DTO.userDTO;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities;
 using Provis.Core.Exeptions;

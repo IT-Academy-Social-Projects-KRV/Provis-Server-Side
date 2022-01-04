@@ -1,4 +1,4 @@
-﻿namespace Provis.Core.DTO.userDTO
+﻿namespace Provis.Core.DTO.UserDTO
 {
     public class UserAutorizationDTO
     {
