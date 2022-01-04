@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using System.Threading;
