@@ -29,7 +29,7 @@ namespace Provis.Core.Services
         public TaskService(IRepository<User> user,
             IRepository<TaskEntity> task,
             IRepository<Workspace> workspace,
-            IRepository<StatusHistory> statusHistoryRepository
+            IRepository<StatusHistory> statusHistoryRepository,
             IRepository<UserTask> userTask,
             UserManager<User> userManager,
             IMapper mapper
