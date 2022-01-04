@@ -74,6 +74,7 @@ namespace Provis.Core.Services
 
             await Task.CompletedTask;
         }
+
         public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -187,7 +188,6 @@ namespace Provis.Core.Services
         }
 
         public async Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid)
-
         {
             var user = await _userManager.FindByIdAsync(userid);
 
@@ -271,6 +271,22 @@ namespace Provis.Core.Services
 
             return workspace;
         }
+
+        public async Task<List<WorkspaceInviteInfoDTO>> 
+            GetWorkspaceActiveInvitesAsync(int workspId, string userId)
+        {
+            var invitesList = await _inviteUserRepository
+                .Query()
+                .Include(x => x.FromUser)
+                .Include(x => x.ToUser)
+                .Where(x => x.WorkspaceId == workspId && x.IsConfirm == null)
+                .ToListAsync();
+
+            var listToReturn = _mapper.Map<List<WorkspaceInviteInfoDTO>>(invitesList);
+
+            return listToReturn;
+        }
+        
         public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
         {
             var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
