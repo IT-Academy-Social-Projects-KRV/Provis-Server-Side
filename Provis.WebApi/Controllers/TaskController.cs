@@ -35,7 +35,7 @@ namespace Provis.WebApi.Controllers
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId})]
         public async Task<IActionResult> ChangeTaskStatusAsync(ChangeTaskStatusDTO changeTaskStatus)
         {
-            await _taskService.ChangeTaskStatus(changeTaskStatus);
+            await _taskService.ChangeTaskStatusAsync(changeTaskStatus);
 
             return Ok();
         }

@@ -8,6 +8,6 @@ namespace Provis.Core.Interfaces.Services
     public interface ITaskService
     {
         Task<List<TaskDTO>> GetUserTasksAsync(string userId, int workspaceId);
-        Task ChangeTaskStatus(ChangeTaskStatusDTO cangeTaskStatus);
+        Task ChangeTaskStatusAsync(ChangeTaskStatusDTO cangeTaskStatus);
     }
 }

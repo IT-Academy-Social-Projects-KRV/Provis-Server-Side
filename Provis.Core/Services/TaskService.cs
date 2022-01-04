@@ -58,7 +58,7 @@ namespace Provis.Core.Services
             return mapTask;
         }
 
-        public async System.Threading.Tasks.Task ChangeTaskStatus(ChangeTaskStatusDTO changeTaskStatus)
+        public async System.Threading.Tasks.Task ChangeTaskStatusAsync(ChangeTaskStatusDTO changeTaskStatus)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
 
