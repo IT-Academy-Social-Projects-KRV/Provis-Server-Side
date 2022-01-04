@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Entities;
 using Provis.Core.Roles;

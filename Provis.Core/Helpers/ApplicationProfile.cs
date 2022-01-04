@@ -1,5 +1,5 @@
 using AutoMapper;
-using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Entities;
 
@@ -40,6 +40,14 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
                 .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.RoleId));  
+
+            CreateMap<InviteUser, WorkspaceInviteInfoDTO>()
+                .ForMember(x => x.Date, act => act.MapFrom(srs => srs.Date))
+                .ForMember(x => x.FromUserName, act => act.MapFrom(srs => srs.FromUser.UserName))
+                .ForMember(x => x.ToUserName, act => act.MapFrom(srs => srs.ToUser.UserName))
+                .ForMember(x => x.ToUserEmail, act => act.MapFrom(srs => srs.ToUser.Email))
+                .ForMember(x => x.InviteId, act => act.MapFrom(srs => srs.Id));
+
 
             CreateMap<Task, TaskDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
