@@ -22,6 +22,7 @@ namespace Provis.Core
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IConfirmEmailService, ConfirmEmailService>();
+            services.AddScoped<IFileService, FileService>();
         }
 
         public static void AddFluentValitation(this IServiceCollection services)
@@ -37,6 +38,16 @@ namespace Provis.Core
         public static void ConfigureMailSettings(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<MailSettings>(configuration.GetSection("EmailSettings"));
+        }
+
+        public static void ConfigureImageSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<ImageSettings>(configuration.GetSection("ImageSettings"));
+        }
+
+        public static void ConfigureFileSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<FileSettings>(configuration.GetSection("FileSettings"));
         }
 
         public static void AddAutoMapper(this IServiceCollection services)
