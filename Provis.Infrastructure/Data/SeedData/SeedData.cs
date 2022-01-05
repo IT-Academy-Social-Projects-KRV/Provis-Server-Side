@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Provis.Core.Entities;
 using Provis.Core.Roles;
+using Provis.Core.Statuses;
 using System;
 
 namespace Provis.Infrastructure.Data.SeedData
@@ -11,6 +12,7 @@ namespace Provis.Infrastructure.Data.SeedData
         {
             SeedWorkspaceRole(builder);
             SeedUserRoleTag(builder);
+            SeedTaskStatuses(builder);
         }
 
         public static void SeedWorkspaceRole(ModelBuilder builder) =>
@@ -51,6 +53,29 @@ namespace Provis.Infrastructure.Data.SeedData
                 {
                     Id = (int)TaskRoles.ReviewerId,
                     Name = "Reviewer",
+                });
+
+         public static void SeedTaskStatuses(ModelBuilder builder) =>
+             builder.Entity<Status>().HasData(
+                new Status()
+                {
+                    Id = (int)TaskStatuses.ToDoId,
+                    StatusName = "To do"
+                },
+                new Status()
+                {
+                    Id = (int)TaskStatuses.InProgressId,
+                    StatusName = "In progress"
+                },
+                new Status()
+                {
+                    Id = (int)TaskStatuses.InReviewId,
+                    StatusName = "In review"
+                },
+                new Status()
+                {
+                    Id = (int)TaskStatuses.CompleatedId,
+                    StatusName = "Compleated"
                 });
     }
 }

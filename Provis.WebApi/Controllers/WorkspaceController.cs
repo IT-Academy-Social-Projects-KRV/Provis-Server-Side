@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Provis.Core.DTO.userDTO;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using Provis.WebApi.Policy;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -74,6 +76,17 @@ namespace Provis.WebApi.Controllers
 
         [HttpPut]
         [Authorize]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
+        [Route("changerole")]
+        public async Task<IActionResult> GetUserChangeRoleAsync([FromBody] ChangeRoleDTO userChangeRoleDTO)
+        {
+            var changeRole = await _workspaceService.ChangeUserRoleAsync(UserId, userChangeRoleDTO);
+
+            return Ok(changeRole);
+        }
+
+        [HttpPut]
+        [Authorize]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
         [Route("updateworkspace")]
         public async Task<IActionResult> UpdateWorkspaceAsync([FromBody] WorkspaceUpdateDTO workspaceUpdate)
@@ -95,6 +108,17 @@ namespace Provis.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
+        [Route("{workspaceId}/invite/active")]
+        public async Task<IActionResult> GetWorkspaceActiveInvitesAsync(int workspaceId)
+        {
+            var workspInvites = await _workspaceService.GetWorkspaceActiveInvitesAsync(workspaceId, UserId);
+
+            return Ok(workspInvites);
+        }
+
+        [HttpGet]
+        [Authorize]
         [WorkspaceRoles(new WorkSpaceRoles[]{
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId ,
             WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
@@ -103,6 +127,16 @@ namespace Provis.WebApi.Controllers
         {
             var members = await _workspaceService.GetWorkspaceMembersAsync(workspaceId);
             return Ok(members);
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
+        [Route("{workspaceId}/user/{userId}")]
+        public async Task<IActionResult> DeleteFromWorkspaceAsync(int workspaceId, string userId)
+        {
+            await _workspaceService.DeleteFromWorkspaceAsync(workspaceId, userId);
+            return Ok();
         }
 
         [HttpDelete]

@@ -69,6 +69,10 @@ namespace Provis.Infrastructure.Data
                .WithMany(x => x.UserTasks)
                .HasForeignKey(x => x.UserId);
 
+            modelBuilder.Entity<UserTask>()
+                .Property(x=>x.IsUserDeleted)
+                .HasDefaultValue(false);
+
             modelBuilder.Entity<UserRoleTag>()
                     .HasMany(x => x.UserTasks)
                     .WithOne(x => x.UserRoleTag)

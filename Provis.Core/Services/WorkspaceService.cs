@@ -13,6 +13,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Provis.Core.Helpers.Mails;
+using Microsoft.Extensions.Options;
+using Provis.Core.Helpers;
 
 namespace Provis.Core.Services
 {
@@ -26,24 +28,28 @@ namespace Provis.Core.Services
         protected readonly IRepository<Entities.Task> _tasksRepository;
         protected readonly IRepository<User> _userRepository;
         protected readonly IMapper _mapper;
+        protected readonly RoleAccess _roleAccess;
 
-        public WorkspaceService(UserManager<User> userManager,
+        public WorkspaceService(IRepository<User> user,
+            UserManager<User> userManager,
             IRepository<Workspace> workspace,
             IRepository<UserWorkspace> userWorkspace,
             IRepository<InviteUser> inviteUser,
             IRepository<Entities.Task> tasks,
             IEmailSenderService emailSenderService,
-            IRepository<User> user,
-            IMapper mapper)
+            IMapper mapper,
+            RoleAccess roleAccess
+            )
         {
             _userRepository = user;
             _userManager = userManager;
             _workspaceRepository = workspace;
             _userWorkspaceRepository = userWorkspace;
-            _emailSendService = emailSenderService;
             _inviteUserRepository = inviteUser;
             _tasksRepository = tasks;
+            _emailSendService = emailSenderService;
             _mapper = mapper;
+            _roleAccess = roleAccess;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -74,6 +80,7 @@ namespace Provis.Core.Services
 
             await Task.CompletedTask;
         }
+
         public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -187,7 +194,6 @@ namespace Provis.Core.Services
         }
 
         public async Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid)
-
         {
             var user = await _userManager.FindByIdAsync(userid);
 
@@ -244,6 +250,45 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
+        public async Task<ChangeRoleDTO> ChangeUserRoleAsync(string userId, ChangeRoleDTO userChangeRole)
+        {
+            var modifier = await _userWorkspaceRepository.Query()
+                .FirstOrDefaultAsync(p => p.UserId == userId &&
+                    p.WorkspaceId == userChangeRole.WorkspaceId);
+            var target = await _userWorkspaceRepository.Query()
+                .FirstOrDefaultAsync(p => p.UserId == userChangeRole.UserId &&
+                    p.WorkspaceId == userChangeRole.WorkspaceId);
+
+            if (modifier.UserId == null)
+                throw new HttpException(
+                    System.Net.HttpStatusCode.Forbidden,
+                    "User with this Id doesn't exist");
+
+            if (target.UserId == null)
+                throw new HttpException(
+                    System.Net.HttpStatusCode.NotFound,
+                    "User with this Id doesn't exist");
+
+            var roleId = (WorkSpaceRoles)modifier.RoleId;
+
+
+            if (_roleAccess.RolesAccess.ContainsKey(roleId) &&
+                _roleAccess.RolesAccess[roleId]
+                    .Any(p => p == (WorkSpaceRoles)target.RoleId) &&
+                _roleAccess.RolesAccess[roleId]
+                    .Any(p => p == (WorkSpaceRoles)userChangeRole.RoleId)
+                )
+            {
+                target.RoleId = userChangeRole.RoleId;
+                await _userWorkspaceRepository.SaveChangesAsync();
+                return _mapper.Map<ChangeRoleDTO>(target);
+            }
+            else
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden, "You haven't permission to change this Role");
+            }
+        }
+
         public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspId, string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
@@ -271,6 +316,22 @@ namespace Provis.Core.Services
 
             return workspace;
         }
+
+        public async Task<List<WorkspaceInviteInfoDTO>>
+            GetWorkspaceActiveInvitesAsync(int workspId, string userId)
+        {
+            var invitesList = await _inviteUserRepository
+                .Query()
+                .Include(x => x.FromUser)
+                .Include(x => x.ToUser)
+                .Where(x => x.WorkspaceId == workspId && x.IsConfirm == null)
+                .ToListAsync();
+
+            var listToReturn = _mapper.Map<List<WorkspaceInviteInfoDTO>>(invitesList);
+
+            return listToReturn;
+        }
+
         public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
         {
             var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
@@ -285,18 +346,40 @@ namespace Provis.Core.Services
                 .Where(u => u.WorkspaceId == workspaceId)
                 .Include(u => u.User)
                 .Include(u => u.Role)
+                .OrderBy(o => o.RoleId)
                 .Select(o => new WorkspaceMemberDTO
                 {
                     Id = o.UserId,
                     Role = o.Role.Name,
                     UserName = o.User.UserName
                 })
-                .OrderBy(o => o.UserName)
                 .ToListAsync();
 
             return workspaceMembers;
         }
 
+        public async Task DeleteFromWorkspaceAsync(int workspaceId, string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            var userWorksp = _userWorkspaceRepository
+                .Query()
+                .FirstOrDefault(x => x.WorkspaceId == workspaceId && x.User.Id == user.Id);
+
+            var userTasks = user.UserTasks.Where(o => o.Task.WorkspaceId == workspaceId);
+
+            if (userTasks != null)
+            {
+                foreach (var userTask in userTasks)
+                {
+                    userTask.IsUserDeleted = true;
+                }
+            }
+
+            await _userWorkspaceRepository.DeleteAsync(userWorksp);
+            await _workspaceRepository.SaveChangesAsync();
+        }
+        
         public async Task CancelInviteAsync(int id, int workspaceId, string userId)
         {
             var invite = await _inviteUserRepository.GetByKeyAsync(id);
@@ -325,4 +408,5 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
     }
+
 }
