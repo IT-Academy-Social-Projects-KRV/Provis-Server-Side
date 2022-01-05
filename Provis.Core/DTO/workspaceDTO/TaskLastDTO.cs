@@ -2,7 +2,7 @@
 
 namespace Provis.Core.DTO.workspaceDTO
 {
-    public class TaskDTO
+    public class TaskLastDTO
     {
         public int Id { get; set; }
         public string Name { get; set; }

@@ -25,6 +25,7 @@ namespace Provis.Core.Services
         public readonly IRepository<UserTask> _userTaskRepository;
         protected readonly IMapper _mapper;
         private readonly IRepository<StatusHistory> _statusHistoryRepository;
+        private readonly IRepository<Status> _statusRepository;
 
         public TaskService(IRepository<User> user,
             IRepository<TaskEntity> task,
@@ -32,7 +33,8 @@ namespace Provis.Core.Services
             IMapper mapper,
             IRepository<StatusHistory> statusHistoryRepository,
             IRepository<UserTask> userTask,
-            UserManager<User> userManager
+            UserManager<User> userManager,
+            IRepository<Status> statusRepository
             )
         {
             _userManager = userManager;
@@ -42,18 +44,19 @@ namespace Provis.Core.Services
             _userTaskRepository = userTask;
             _mapper = mapper;
             _statusHistoryRepository = statusHistoryRepository;
+            _statusRepository = statusRepository;
         }
 
-        public async Task<List<TaskDTO>> GetUserTasksAsync(string userId, int workspaceId)
+        public async Task<List<TaskLastDTO>> GetUserTasksAsync(string userId, int workspaceId)
         {
             IEnumerable<TaskEntity> userTasks = null;
-            if (String.IsNullOrEmpty(userId))
+            if (!String.IsNullOrEmpty(userId))
             {
                 userTasks = await _taskRepository.Query()
                     .Include(x => x.UserTasks)
                     .Include(x => x.Status)
                     .Where(x => x.WorkspaceId == workspaceId &&
-                        !x.UserTasks.Any())
+                        x.UserTasks.Any(y => y.UserId == userId))
                     .ToListAsync();
             }
             else
@@ -62,11 +65,11 @@ namespace Provis.Core.Services
                    .Include(x => x.UserTasks)
                    .Include(x => x.Status)
                    .Where(x => x.WorkspaceId == workspaceId &&
-                        x.UserTasks.Any())
+                        !x.UserTasks.Any())
                    .ToListAsync();
             }
 
-            var mapTask = _mapper.Map<List<TaskDTO>>(userTasks);
+            var mapTask = _mapper.Map<List<TaskLastDTO>>(userTasks);
             return mapTask;
         }
 
@@ -115,7 +118,7 @@ namespace Provis.Core.Services
 
             if (taskCreateDTO.AssignedUsers.Count != 0)
             {
-                List<UserTask> userTasks = new List<UserTask>(); 
+                List<UserTask> userTasks = new List<UserTask>();
                 foreach (var item in taskCreateDTO.AssignedUsers)
                 {
                     if (userTasks.Exists(x => x.UserId == item.UserId))
@@ -134,6 +137,39 @@ namespace Provis.Core.Services
                 await _userTaskRepository.SaveChangesAsync();
             }
             await Task.CompletedTask;
+        }
+
+        public async Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId)
+        {
+            
+            var selection = await _userTaskRepository.Query()
+                .Include(x => x.Task)
+                .Include(x => x.UserRoleTag) //TODO: remove when front-end get's a list  of worker roles
+                .Where(x => x.UserId == userId && x.Task.WorkspaceId == workspaceId)
+                .OrderBy(x => x.Task.StatusId)
+                .Select(x => new Tuple<int, TaskDTO>(x.Task.StatusId, 
+                    new TaskDTO() //TODO: Create mapper from UserTask to taskDto
+                    { 
+                        Id = x.TaskId, 
+                        Deadline = x.Task.DateOfEnd, 
+                        Name = x.Task.Name, 
+                        WorkerRoleName = x.UserRoleTag.Name, //TODO: remove when front-end get's a list  of worker roles
+                        WorkerRoleId = x.UserRoleTagId
+                    })) 
+                .ToListAsync();
+
+            var result =
+                selection
+                    .GroupBy(x => x.Item1)
+                    .ToDictionary(k => k.Key,
+                        v => v.Select(x => x.Item2)
+                    .ToList());
+
+            return new TaskGroupByStatusDTO() 
+            { 
+                UserId = userId, 
+                Tasks = result 
+            };
         }
     }
 }
