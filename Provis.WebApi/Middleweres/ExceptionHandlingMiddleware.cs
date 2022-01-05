@@ -34,7 +34,7 @@ namespace Provis.WebApi.Middleweres
                 await CreateErrorAsync(context, ex.StatusCode, ex.Message);
                 return;
             }
-            catch(Exception ex)
+            catch(Exception)
             {
                 await CreateErrorAsync(context);
                 return;
