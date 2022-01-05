@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
+using Microsoft.EntityFrameworkCore;
+
 
 namespace Provis.Core.Services
 {
@@ -28,6 +30,7 @@ namespace Provis.Core.Services
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
         private readonly IOptions<ImageSettings> _imageSettings;
+
 
         public UserService(UserManager<User> userManager,
             IRepository<User> userRepository,

@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+using AutoMapper;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Entities;
@@ -36,6 +36,11 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.FromUserName, act => act.MapFrom(srs => srs.FromUser.Name))
                 .ForMember(x => x.ToUserId, act => act.MapFrom(srs => srs.ToUserId));
 
+            CreateMap<UserWorkspace, ChangeRoleDTO>()
+                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
+                .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
+                .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.RoleId));  
+
             CreateMap<InviteUser, WorkspaceInviteInfoDTO>()
                 .ForMember(x => x.Date, act => act.MapFrom(srs => srs.Date))
                 .ForMember(x => x.FromUserName, act => act.MapFrom(srs => srs.FromUser.UserName))
@@ -43,11 +48,19 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.ToUserEmail, act => act.MapFrom(srs => srs.ToUser.Email))
                 .ForMember(x => x.InviteId, act => act.MapFrom(srs => srs.Id));
 
+
             CreateMap<Task, TaskDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Status, act => act.MapFrom(srs => srs.Status.StatusName))
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd));
+
+            CreateMap<TaskCreateDTO, Task>()
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
+                .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
+                .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
+                .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
+                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId));
 
             CreateMap<UserChangeInfoDTO, User>();
         }

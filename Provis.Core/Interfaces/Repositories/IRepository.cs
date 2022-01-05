@@ -15,5 +15,6 @@ namespace Provis.Core.Interfaces.Repositories
         Task DeleteAsync(TEntity entity);
         IQueryable<TEntity> Query(params Expression<Func<TEntity, object>>[] includes);
         Task<int> SaveChangesAsync();
+        Task AddRangeAsync(List<TEntity> entities);
     }
 }
