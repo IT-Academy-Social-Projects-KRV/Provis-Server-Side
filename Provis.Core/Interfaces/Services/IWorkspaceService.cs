@@ -6,10 +6,10 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Provis.Core.Interfaces.Services
 {
-    public interface IWorkspaceService 
+    public interface IWorkspaceService
     {
         Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid);
-      
+
         Task DenyInviteAsync(int id, string userid);
 
         Task AcceptInviteAsync(int id, string userid);
@@ -26,7 +26,7 @@ namespace Provis.Core.Interfaces.Services
 
         Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId);
 
-        Task DeleteFromWorkspaceAsync(int WorkspId, string userId);
+        Task DeleteFromWorkspaceAsync(int workspId, string userId);
 
         Task CancelInviteAsync(int id, int workspaceId, string userId);
     }
