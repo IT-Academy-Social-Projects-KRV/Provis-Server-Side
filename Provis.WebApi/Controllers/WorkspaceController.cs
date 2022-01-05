@@ -130,6 +130,16 @@ namespace Provis.WebApi.Controllers
         }
 
         [Authorize]
+        [HttpGet]
+        [Route("roles")]
+        public async Task<IActionResult> GetWorkerRoles()
+        {
+            var res = await _workspaceService.GetAllowedRoles();
+
+            return Ok(res);
+        }
+
+        [Authorize]
         [HttpDelete]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
         [Route("{workspaceId}/user/{userId}")]
