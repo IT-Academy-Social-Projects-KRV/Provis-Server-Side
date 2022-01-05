@@ -10,8 +10,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Provis.Core.Helpers;
 using Microsoft.Extensions.Options;
