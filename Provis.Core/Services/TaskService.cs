@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Provis.Core.DTO.TaskDTO;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Entities;
 using Provis.Core.Exeptions;
@@ -23,13 +24,15 @@ namespace Provis.Core.Services
         public readonly IRepository<TaskEntity> _taskRepository;
         public readonly IRepository<UserTask> _userTaskRepository;
         protected readonly IMapper _mapper;
+        private readonly IRepository<StatusHistory> _statusHistoryRepository;
 
         public TaskService(IRepository<User> user,
             IRepository<TaskEntity> task,
             IRepository<Workspace> workspace,
+            IMapper mapper,
+            IRepository<StatusHistory> statusHistoryRepository,
             IRepository<UserTask> userTask,
-            UserManager<User> userManager,
-            IMapper mapper
+            UserManager<User> userManager
             )
         {
             _userManager = userManager;
@@ -38,6 +41,7 @@ namespace Provis.Core.Services
             _workspaceRepository = workspace;
             _userTaskRepository = userTask;
             _mapper = mapper;
+            _statusHistoryRepository = statusHistoryRepository;
         }
 
         public async Task<List<TaskDTO>> GetUserTasksAsync(string userId, int workspaceId)
@@ -64,6 +68,27 @@ namespace Provis.Core.Services
 
             var mapTask = _mapper.Map<List<TaskDTO>>(userTasks);
             return mapTask;
+        }
+
+        public async System.Threading.Tasks.Task ChangeTaskStatusAsync(ChangeTaskStatusDTO changeTaskStatus)
+        {
+            var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
+
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task not found");
+
+            var statusHistory = new StatusHistory
+            {
+                DateOfChange = DateTime.UtcNow,
+                StatusId = changeTaskStatus.StatusId,
+                TaskId = task.Id
+            };
+
+            await _statusHistoryRepository.AddAsync(statusHistory);
+
+            task.StatusId = changeTaskStatus.StatusId;
+            await _taskRepository.UpdateAsync(task);
+
+            await _taskRepository.SaveChangesAsync();
         }
 
         public async Task CreateTaskAsync(TaskCreateDTO taskCreateDTO, string userId)
