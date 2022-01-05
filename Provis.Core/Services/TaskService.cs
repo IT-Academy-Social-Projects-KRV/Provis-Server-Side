@@ -19,19 +19,24 @@ namespace Provis.Core.Services
     public class TaskService : ITaskService
     {
         protected readonly UserManager<User> _userManager;
-        public readonly IRepository<User> _userRepository;
-        public readonly IRepository<Workspace> _workspaceRepository;
-        public readonly IRepository<TaskEntity> _taskRepository;
-        public readonly IRepository<UserTask> _userTaskRepository;
+        protected readonly IRepository<User> _userRepository;
+        protected readonly IRepository<Workspace> _workspaceRepository;
+        protected readonly IRepository<TaskEntity> _taskRepository;
+        protected readonly IRepository<UserTask> _userTaskRepository;
+        protected readonly IRepository<StatusHistory> _statusHistoryRepository;
+        protected readonly IRepository<Status> _taskStatusRepository;
+        protected readonly IRepository<UserRoleTag> _workerRoleRepository;
         protected readonly IMapper _mapper;
-        private readonly IRepository<StatusHistory> _statusHistoryRepository;
+
 
         public TaskService(IRepository<User> user,
             IRepository<TaskEntity> task,
             IRepository<Workspace> workspace,
+            IRepository<Status> taskStatusRepository,
             IMapper mapper,
             IRepository<StatusHistory> statusHistoryRepository,
             IRepository<UserTask> userTask,
+            IRepository<UserRoleTag> workerRoleRepository,
             UserManager<User> userManager
             )
         {
@@ -42,6 +47,8 @@ namespace Provis.Core.Services
             _userTaskRepository = userTask;
             _mapper = mapper;
             _statusHistoryRepository = statusHistoryRepository;
+            _workerRoleRepository = workerRoleRepository;
+
         }
 
         public async Task<List<TaskDTO>> GetUserTasksAsync(string userId, int workspaceId)
@@ -115,7 +122,7 @@ namespace Provis.Core.Services
 
             if (taskCreateDTO.AssignedUsers.Count != 0)
             {
-                List<UserTask> userTasks = new List<UserTask>(); 
+                List<UserTask> userTasks = new List<UserTask>();
                 foreach (var item in taskCreateDTO.AssignedUsers)
                 {
                     if (userTasks.Exists(x => x.UserId == item.UserId))
@@ -134,6 +141,20 @@ namespace Provis.Core.Services
                 await _userTaskRepository.SaveChangesAsync();
             }
             await Task.CompletedTask;
+        }
+
+        public async Task<List<TaskStatusDTO>> GetTaskStatuses()
+        {
+            var result = await _taskStatusRepository.GetAllAsync();
+
+            return result.Select(x => _mapper.Map<TaskStatusDTO>(x)).ToList();
+        }
+
+        public async Task<List<WorkerRoleDTO>> GetWorkerRoles()
+        {
+            var result = await _workerRoleRepository.GetAllAsync();
+
+            return result.Select(x => _mapper.Map<WorkerRoleDTO>(x)).ToList();
         }
     }
 }

@@ -13,7 +13,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Provis.Core.Helpers.Mails;
-using Microsoft.Extensions.Options;
 using Provis.Core.Helpers;
 
 namespace Provis.Core.Services
@@ -27,6 +26,7 @@ namespace Provis.Core.Services
         protected readonly IRepository<InviteUser> _inviteUserRepository;
         protected readonly IRepository<Entities.Task> _tasksRepository;
         protected readonly IRepository<User> _userRepository;
+        protected readonly IRepository<Role> _userRoleRepository;
         protected readonly IMapper _mapper;
         protected readonly RoleAccess _roleAccess;
 
@@ -36,6 +36,7 @@ namespace Provis.Core.Services
             IRepository<UserWorkspace> userWorkspace,
             IRepository<InviteUser> inviteUser,
             IRepository<Entities.Task> tasks,
+            IRepository<Role> userRoleRepository,
             IEmailSenderService emailSenderService,
             IMapper mapper,
             RoleAccess roleAccess
@@ -50,6 +51,7 @@ namespace Provis.Core.Services
             _emailSendService = emailSenderService;
             _mapper = mapper;
             _roleAccess = roleAccess;
+            _userRoleRepository = userRoleRepository;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -379,7 +381,7 @@ namespace Provis.Core.Services
             await _userWorkspaceRepository.DeleteAsync(userWorksp);
             await _workspaceRepository.SaveChangesAsync();
         }
-        
+
         public async Task CancelInviteAsync(int id, int workspaceId, string userId)
         {
             var invite = await _inviteUserRepository.GetByKeyAsync(id);
@@ -406,6 +408,13 @@ namespace Provis.Core.Services
             }
 
             await Task.CompletedTask;
+        }
+
+        public async Task<List<WorkspaceRolesDTO>> GetAllowedRoles()
+        {
+            var result = await _userRoleRepository.GetAllAsync();
+
+            return result.Select(x => _mapper.Map<WorkspaceRolesDTO>(x)).ToList();
         }
     }
 
