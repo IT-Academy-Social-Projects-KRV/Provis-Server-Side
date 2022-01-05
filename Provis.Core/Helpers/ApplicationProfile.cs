@@ -55,6 +55,13 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Status, act => act.MapFrom(srs => srs.Status.StatusName))
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd));
 
+            CreateMap<TaskCreateDTO, Task>()
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
+                .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
+                .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
+                .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
+                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId));
+
             CreateMap<UserChangeInfoDTO, User>();
         }
     }
