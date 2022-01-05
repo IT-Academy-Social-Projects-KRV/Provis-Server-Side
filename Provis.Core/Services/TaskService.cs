@@ -30,7 +30,7 @@ namespace Provis.Core.Services
             IRepository<TaskEntity> task,
             IRepository<Workspace> workspace,
             IMapper mapper,
-            IRepository<StatusHistory> statusHistoryRepository
+            IRepository<StatusHistory> statusHistoryRepository,
             IRepository<UserTask> userTask,
             UserManager<User> userManager
             )

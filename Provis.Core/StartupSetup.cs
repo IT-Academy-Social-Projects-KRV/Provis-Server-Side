@@ -45,10 +45,11 @@ namespace Provis.Core
 
         public static void ConfigureValidationSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            var configItem = 
+            var configItem =
                 configuration.GetSection("RolesAccess")
                 .Get<Dictionary<WorkSpaceRoles, List<WorkSpaceRoles>>>();
             services.AddSingleton<RoleAccess>(new RoleAccess() { RolesAccess = configItem });
+        }
 
         public static void ConfigureImageSettings(this IServiceCollection services, IConfiguration configuration)
         {

@@ -40,10 +40,10 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> ChangeTaskStatusAsync(ChangeTaskStatusDTO changeTaskStatus)
         {
             await _taskService.ChangeTaskStatusAsync(changeTaskStatus);
-            
+
             return Ok();
         }
-        
+
         [Authorize]
         [HttpPost]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.ViewerId })]

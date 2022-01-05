@@ -2,7 +2,6 @@
 using Provis.Core.Entities;
 using Provis.Core.Roles;
 using Provis.Core.Statuses;
-using System;
 
 namespace Provis.Infrastructure.Data.SeedData
 {
