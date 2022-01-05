@@ -31,6 +31,7 @@ namespace Provis.Core.Interfaces.Services
         Task DeleteFromWorkspaceAsync(int workspId, string userId);
 
         Task CancelInviteAsync(int id, int workspaceId, string userId);
+        Task<List<WorkspaceRolesDTO>> GetAllowedRoles();
     }
 }
 

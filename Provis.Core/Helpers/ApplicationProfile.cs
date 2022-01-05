@@ -2,6 +2,7 @@ using AutoMapper;
 using Azure.Storage.Blobs.Models;
 using Provis.Core.ApiModels;
 using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.TaskDTO;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Entities;
@@ -42,7 +43,7 @@ namespace Provis.Core.Helpers
             CreateMap<UserWorkspace, ChangeRoleDTO>()
                 .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
-                .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.RoleId));  
+                .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.RoleId));
 
             CreateMap<InviteUser, WorkspaceInviteInfoDTO>()
                 .ForMember(x => x.Date, act => act.MapFrom(srs => srs.Date))
@@ -70,6 +71,18 @@ namespace Provis.Core.Helpers
             CreateMap<BlobDownloadInfo, DownloadFile>()
                 .ForMember(x => x.ContentType, act => act.MapFrom(srs => srs.Details.ContentType))
                 .ForMember(x => x.Content, act => act.MapFrom(srs => srs.Content));
+
+            CreateMap<UserRoleTag, WorkerRoleDTO>()
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
+                .ForMember(x => x.Id,  act => act.MapFrom(srs => srs.Id));
+
+            CreateMap<Status, TaskStatusDTO>()
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.StatusName))
+                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id));
+
+            CreateMap<Role, WorkspaceRolesDTO>()
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
+                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id));
         }
     }
 }
