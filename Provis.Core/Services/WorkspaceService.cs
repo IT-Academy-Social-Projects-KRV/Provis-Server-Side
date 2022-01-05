@@ -36,7 +36,7 @@ namespace Provis.Core.Services
             IRepository<UserWorkspace> userWorkspace,
             IRepository<InviteUser> inviteUser,
             IRepository<Entities.Task> tasks,
-            IEmailSenderService emailSenderService,            
+            IEmailSenderService emailSenderService,
             IMapper mapper,
             RoleAccess roleAccess
             )
@@ -47,7 +47,7 @@ namespace Provis.Core.Services
             _userWorkspaceRepository = userWorkspace;
             _inviteUserRepository = inviteUser;
             _tasksRepository = tasks;
-            _emailSendService = emailSenderService; 
+            _emailSendService = emailSenderService;
             _mapper = mapper;
             _roleAccess = roleAccess;
         }
@@ -260,10 +260,14 @@ namespace Provis.Core.Services
                     p.WorkspaceId == userChangeRole.WorkspaceId);
 
             if (modifier.UserId == null)
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden, "User with this Id doesn't exist");
+                throw new HttpException(
+                    System.Net.HttpStatusCode.Forbidden,
+                    "User with this Id doesn't exist");
 
             if (target.UserId == null)
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Id doesn't exist");
+                throw new HttpException(
+                    System.Net.HttpStatusCode.NotFound,
+                    "User with this Id doesn't exist");
 
             var roleId = (WorkSpaceRoles)modifier.RoleId;
 
@@ -273,14 +277,14 @@ namespace Provis.Core.Services
                     .Any(p => p == (WorkSpaceRoles)target.RoleId) &&
                 _roleAccess.RolesAccess[roleId]
                     .Any(p => p == (WorkSpaceRoles)userChangeRole.RoleId)
-                    )
+                )
             {
                 target.RoleId = userChangeRole.RoleId;
                 await _userWorkspaceRepository.SaveChangesAsync();
                 return _mapper.Map<ChangeRoleDTO>(target);
             }
-            else 
-            { 
+            else
+            {
                 throw new HttpException(System.Net.HttpStatusCode.Forbidden, "You haven't permission to change this Role");
             }
         }
@@ -313,7 +317,7 @@ namespace Provis.Core.Services
             return workspace;
         }
 
-        public async Task<List<WorkspaceInviteInfoDTO>> 
+        public async Task<List<WorkspaceInviteInfoDTO>>
             GetWorkspaceActiveInvitesAsync(int workspId, string userId)
         {
             var invitesList = await _inviteUserRepository
@@ -327,7 +331,7 @@ namespace Provis.Core.Services
 
             return listToReturn;
         }
-        
+
         public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
         {
             var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
