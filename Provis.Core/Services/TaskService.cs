@@ -48,7 +48,7 @@ namespace Provis.Core.Services
             _mapper = mapper;
             _statusHistoryRepository = statusHistoryRepository;
             _workerRoleRepository = workerRoleRepository;
-
+            _taskStatusRepository = taskStatusRepository;
         }
 
         public async Task<List<TaskDTO>> GetUserTasksAsync(string userId, int workspaceId)

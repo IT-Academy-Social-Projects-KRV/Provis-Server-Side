@@ -131,7 +131,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("workerroles")]
+        [Route("roles")]
         public async Task<IActionResult> GetWorkerRoles()
         {
             var res = await _workspaceService.GetAllowedRoles();
