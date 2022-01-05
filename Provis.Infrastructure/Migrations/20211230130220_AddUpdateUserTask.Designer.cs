@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Provis.Infrastructure.Data;
 
 namespace Provis.Infrastructure.Migrations
 {
     [DbContext(typeof(ProvisDbContext))]
-    partial class ProvisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211230130220_AddUpdateUserTask")]
+    partial class AddUpdateUserTask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -284,28 +286,6 @@ namespace Provis.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Statuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            StatusName = "To do"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            StatusName = "In progress"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            StatusName = "In review"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            StatusName = "Compleated"
-                        });
                 });
 
             modelBuilder.Entity("Provis.Core.Entities.StatusHistory", b =>
@@ -395,9 +375,6 @@ namespace Provis.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Img")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -450,63 +427,6 @@ namespace Provis.Infrastructure.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.UserRoleTag", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("UserRoleTags");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Worker"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Support"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Reviewer"
-                        });
-                });
-
-            modelBuilder.Entity("Provis.Core.Entities.UserTask", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("TaskId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsUserDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
-
-                    b.Property<int>("UserRoleTagId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "TaskId");
-
-                    b.HasIndex("TaskId");
-
-                    b.HasIndex("UserRoleTagId");
-
-                    b.ToTable("UserTask");
-                });
-
             modelBuilder.Entity("Provis.Core.Entities.UserWorkspace", b =>
                 {
                     b.Property<string>("UserId")
@@ -546,6 +466,21 @@ namespace Provis.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Workspaces");
+                });
+
+            modelBuilder.Entity("TaskUser", b =>
+                {
+                    b.Property<int>("UserTasksId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UsersId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UserTasksId", "UsersId");
+
+                    b.HasIndex("UsersId");
+
+                    b.ToTable("UsersTasks");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -700,33 +635,6 @@ namespace Provis.Infrastructure.Migrations
                     b.Navigation("Workspace");
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.UserTask", b =>
-                {
-                    b.HasOne("Provis.Core.Entities.Task", "Task")
-                        .WithMany("UserTasks")
-                        .HasForeignKey("TaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Provis.Core.Entities.User", "User")
-                        .WithMany("UserTasks")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Provis.Core.Entities.UserRoleTag", "UserRoleTag")
-                        .WithMany("UserTasks")
-                        .HasForeignKey("UserRoleTagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Task");
-
-                    b.Navigation("User");
-
-                    b.Navigation("UserRoleTag");
-                });
-
             modelBuilder.Entity("Provis.Core.Entities.UserWorkspace", b =>
                 {
                     b.HasOne("Provis.Core.Entities.Role", "Role")
@@ -754,9 +662,19 @@ namespace Provis.Infrastructure.Migrations
                     b.Navigation("Workspace");
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.Task", b =>
+            modelBuilder.Entity("TaskUser", b =>
                 {
-                    b.Navigation("UserTasks");
+                    b.HasOne("Provis.Core.Entities.Task", null)
+                        .WithMany()
+                        .HasForeignKey("UserTasksId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Provis.Core.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UsersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Provis.Core.Entities.User", b =>
@@ -765,14 +683,7 @@ namespace Provis.Infrastructure.Migrations
 
                     b.Navigation("Tasks");
 
-                    b.Navigation("UserTasks");
-
                     b.Navigation("UserWorkspaces");
-                });
-
-            modelBuilder.Entity("Provis.Core.Entities.UserRoleTag", b =>
-                {
-                    b.Navigation("UserTasks");
                 });
 
             modelBuilder.Entity("Provis.Core.Entities.Workspace", b =>

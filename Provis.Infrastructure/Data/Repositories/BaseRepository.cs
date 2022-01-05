@@ -57,5 +57,10 @@ namespace Provis.Infrastructure.Data.Repositories
         {
             return await _dbContext.SaveChangesAsync();
         }
+
+        public async Task AddRangeAsync(List<TEntity> entities)
+        {
+            await _dbContext.AddRangeAsync(entities);
+        }
     }
 }

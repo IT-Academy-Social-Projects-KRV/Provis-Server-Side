@@ -34,6 +34,7 @@ namespace Provis.Core.Entities
         [ForeignKey("TaskCreatorId")]
         public User UserCreator { get; set; }
 
-        public List<User> Users { get; set; } = new List<User>();
+        public List<UserTask> UserTasks { get; set; } = new List<UserTask>();
+
     }
 }

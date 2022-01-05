@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Provis.Infrastructure.Data;
 
 namespace Provis.Infrastructure.Migrations
 {
     [DbContext(typeof(ProvisDbContext))]
-    partial class ProvisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20211230213354_FixEntityUserTask")]
+    partial class FixEntityUserTask
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -284,28 +286,6 @@ namespace Provis.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Statuses");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            StatusName = "To do"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            StatusName = "In progress"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            StatusName = "In review"
-                        },
-                        new
-                        {
-                            Id = 4,
-                            StatusName = "Compleated"
-                        });
                 });
 
             modelBuilder.Entity("Provis.Core.Entities.StatusHistory", b =>
@@ -395,9 +375,6 @@ namespace Provis.Infrastructure.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
-                    b.Property<string>("Img")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -463,23 +440,6 @@ namespace Provis.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("UserRoleTags");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "Worker"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "Support"
-                        },
-                        new
-                        {
-                            Id = 3,
-                            Name = "Reviewer"
-                        });
                 });
 
             modelBuilder.Entity("Provis.Core.Entities.UserTask", b =>
@@ -489,11 +449,6 @@ namespace Provis.Infrastructure.Migrations
 
                     b.Property<int>("TaskId")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsUserDeleted")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
 
                     b.Property<int>("UserRoleTagId")
                         .HasColumnType("int");

@@ -14,7 +14,7 @@ namespace Provis.Core.Entities
 
         public DateTime CreateDate { get; set; } // DateTime UTC
 
-        public List<Task> UserTasks { get; set; } = new List<Task>();
+        public List<UserTask> UserTasks { get; set; } = new List<UserTask>();
 
         public List<Task> Tasks { get; set; } = new List<Task>();
 

@@ -59,10 +59,27 @@ namespace Provis.Infrastructure.Data
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Task>()
-                .HasMany(t => t.Users)
-                .WithMany(u => u.UserTasks)
-                .UsingEntity(j => j.ToTable("UsersTasks"));
+            modelBuilder.Entity<UserTask>()
+                .HasOne(x => x.Task)
+                .WithMany(x => x.UserTasks)
+                .HasForeignKey(x => x.TaskId);
+
+            modelBuilder.Entity<UserTask>()
+               .HasOne(x => x.User)
+               .WithMany(x => x.UserTasks)
+               .HasForeignKey(x => x.UserId);
+
+            modelBuilder.Entity<UserTask>()
+                .Property(x=>x.IsUserDeleted)
+                .HasDefaultValue(false);
+
+            modelBuilder.Entity<UserRoleTag>()
+                    .HasMany(x => x.UserTasks)
+                    .WithOne(x => x.UserRoleTag)
+                    .HasForeignKey(x => x.UserRoleTagId);
+
+            modelBuilder.Entity<UserTask>()
+                .HasKey(x => new { x.UserId, x.TaskId });
 
             // RefreshToken Foreign Key
             modelBuilder.Entity<RefreshToken>()
@@ -88,6 +105,8 @@ namespace Provis.Infrastructure.Data
                     j.ToTable("UserWorkspaces");
                 });
 
+            
+
             modelBuilder.Seed();
         }
 
@@ -99,5 +118,7 @@ namespace Provis.Infrastructure.Data
         public DbSet<StatusHistory> StatusHistories { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<RefreshToken> RefreshTokens { get; set; }
+        public DbSet<UserRoleTag> UserRoleTags { get; set; }
+        public DbSet<UserTask> UserTask { get; set; }
     }
 }
