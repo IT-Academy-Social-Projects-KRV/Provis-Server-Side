@@ -55,6 +55,8 @@ namespace Provis.WebApi.Controllers
             return Ok(getTasks);
         }
         
+        [Authorize]
+        [HttpGet]
         [Route("statuses")]
         public async Task<IActionResult> GetStatuses()
         {

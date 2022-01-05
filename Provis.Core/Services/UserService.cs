@@ -5,7 +5,6 @@ using Provis.Core.DTO.UserDTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Provis.Core.ApiModels;
-using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers;
@@ -16,9 +15,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
-using Microsoft.AspNetCore.Hosting;
-using System.IO;
-using Provis.Core.ApiModels;
 
 namespace Provis.Core.Services
 {

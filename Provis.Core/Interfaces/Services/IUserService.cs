@@ -1,7 +1,6 @@
 using System.Threading.Tasks;
 using Provis.Core.DTO.UserDTO;
 using System.Collections.Generic;
-using Provis.Core.DTO.UserDTO;
 using Microsoft.AspNetCore.Http;
 using Provis.Core.ApiModels;
 
