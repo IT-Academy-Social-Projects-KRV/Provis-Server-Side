@@ -94,6 +94,8 @@ namespace Provis.WebApi.Controllers
         [Route("image")]
         public async Task<FileResult> GetImageAsync()
         {
+            //We don't use IDisposable.Dispose here from type DownloadFile
+            //because it will invoke from FileStreamResult
             var file = await _userService.GetUserImageAsync(UserId);
 
             return File(file.Content, file.ContentType, file.Name);

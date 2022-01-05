@@ -16,6 +16,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
+using Provis.Core.ApiModels;
 
 namespace Provis.Core.Services
 {

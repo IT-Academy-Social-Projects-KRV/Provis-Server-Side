@@ -1,4 +1,7 @@
 using AutoMapper;
+using Azure.Storage.Blobs.Models;
+using Provis.Core.ApiModels;
+using Provis.Core.DTO.userDTO;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.DTO.workspaceDTO;
@@ -65,6 +68,10 @@ namespace Provis.Core.Helpers
 
             CreateMap<UserChangeInfoDTO, User>();
 
+            CreateMap<BlobDownloadInfo, DownloadFile>()
+                .ForMember(x => x.ContentType, act => act.MapFrom(srs => srs.Details.ContentType))
+                .ForMember(x => x.Content, act => act.MapFrom(srs => srs.Content));
+
             CreateMap<UserRoleTag, WorkerRoleDTO>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Id,  act => act.MapFrom(srs => srs.Id));
@@ -76,7 +83,6 @@ namespace Provis.Core.Helpers
             CreateMap<Role, WorkspaceRolesDTO>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id));
-
         }
     }
 }
