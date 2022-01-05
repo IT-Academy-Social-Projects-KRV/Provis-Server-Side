@@ -3,15 +3,11 @@ using Provis.Core.DTO.UserDTO;
 
 namespace Provis.Core.Validation
 {
-    class UserTokensValidation: AbstractValidator<UserAutorizationDTO>
+    public class UserChangeTwoFactorValidation : AbstractValidator<UserChange2faStatusDTO>
     {
-        public UserTokensValidation()
+        public UserChangeTwoFactorValidation()
         {
             RuleFor(user => user.Token)
-               .NotEmpty()
-               .NotNull();
-
-            RuleFor(user => user.RefreshToken)
                 .NotEmpty()
                 .NotNull();
         }
