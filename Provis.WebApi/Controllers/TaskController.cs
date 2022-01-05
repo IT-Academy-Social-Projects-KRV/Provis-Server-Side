@@ -24,16 +24,6 @@ namespace Provis.WebApi.Controllers
         }
 
         [Authorize]
-        [HttpGet]
-        [Route("usertasks")]
-        public async Task<IActionResult> GetUserTasks(string userId, int workspaceId)
-        {
-            var getTasks = await _taskService.GetUserTasksAsync(userId, workspaceId);
-
-            return Ok(getTasks);
-        }
-
-        [Authorize]
         [HttpPut]
         [Route("status")]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
@@ -57,6 +47,14 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
+        [Route("tasks")]
+        public async Task<IActionResult> GetTasks(string userId, int workspaceId)
+        {
+            var getTasks = await _taskService.GetTasks(userId, workspaceId);
+
+            return Ok(getTasks);
+        }
+        
         [Route("statuses")]
         public async Task<IActionResult> GetStatuses()
         {

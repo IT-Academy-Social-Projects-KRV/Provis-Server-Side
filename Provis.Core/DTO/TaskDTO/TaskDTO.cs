@@ -1,12 +1,12 @@
 ﻿using System;
 
-namespace Provis.Core.DTO.workspaceDTO
+namespace Provis.Core.DTO.TaskDTO
 {
     public class TaskDTO
     {
         public int Id { get; set; }
         public string Name { get; set; }
-        public string Status { get; set; }
         public DateTime Deadline { get; set; }
+        public int WorkerRoleId { get; set; }
     }
 }

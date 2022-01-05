@@ -51,32 +51,6 @@ namespace Provis.Core.Services
             _taskStatusRepository = taskStatusRepository;
         }
 
-        public async Task<List<TaskDTO>> GetUserTasksAsync(string userId, int workspaceId)
-        {
-            IEnumerable<TaskEntity> userTasks = null;
-            if (String.IsNullOrEmpty(userId))
-            {
-                userTasks = await _taskRepository.Query()
-                    .Include(x => x.UserTasks)
-                    .Include(x => x.Status)
-                    .Where(x => x.WorkspaceId == workspaceId &&
-                        !x.UserTasks.Any())
-                    .ToListAsync();
-            }
-            else
-            {
-                userTasks = await _taskRepository.Query()
-                   .Include(x => x.UserTasks)
-                   .Include(x => x.Status)
-                   .Where(x => x.WorkspaceId == workspaceId &&
-                        x.UserTasks.Any())
-                   .ToListAsync();
-            }
-
-            var mapTask = _mapper.Map<List<TaskDTO>>(userTasks);
-            return mapTask;
-        }
-
         public async System.Threading.Tasks.Task ChangeTaskStatusAsync(ChangeTaskStatusDTO changeTaskStatus)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
@@ -143,6 +117,30 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
+        public async Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId)
+        {
+            var selection = await _userTaskRepository.Query()
+                .Include(x => x.Task)
+                .Where(x => x.UserId == userId && x.Task.WorkspaceId == workspaceId)
+                .OrderBy(x => x.Task.StatusId)
+                .Select(x => new Tuple<int, TaskDTO>(
+                    x.Task.StatusId,
+                    _mapper.Map<TaskDTO>(x)))
+                .ToListAsync();
+
+            var result = selection
+                .GroupBy(x => x.Item1)
+                .ToDictionary(k => k.Key,
+                    v => v.Select(x => x.Item2)
+                .ToList());
+
+            return new TaskGroupByStatusDTO()
+            {
+                UserId = userId,
+                Tasks = result
+            };
+        }
+        
         public async Task<List<TaskStatusDTO>> GetTaskStatuses()
         {
             var result = await _taskStatusRepository.GetAllAsync();
