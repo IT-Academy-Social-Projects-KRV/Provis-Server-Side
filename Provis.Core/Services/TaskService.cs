@@ -75,9 +75,10 @@ namespace Provis.Core.Services
             };
 
             await _statusHistoryRepository.AddAsync(statusHistory);
-            task.StatusId = changeTaskStatus.StatusId;
 
+            task.StatusId = changeTaskStatus.StatusId;
             await _taskRepository.UpdateAsync(task);
+
             await _taskRepository.SaveChangesAsync();
         }
 
