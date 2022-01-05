@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Provis.Core.DTO.userDTO;
 using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using Provis.WebApi.Policy;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -70,6 +72,17 @@ namespace Provis.WebApi.Controllers
             var getList = await _workspaceService.GetWorkspaceListAsync(UserId);
 
             return Ok(getList);
+        }
+
+        [HttpPut]
+        [Authorize]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
+        [Route("changerole")]
+        public async Task<IActionResult> GetUserChangeRoleAsync([FromBody] ChangeRoleDTO userChangeRoleDTO)
+        {
+            var changeRole = await _workspaceService.ChangeUserRoleAsync(UserId, userChangeRoleDTO);
+
+            return Ok(changeRole);
         }
 
         [HttpPut]

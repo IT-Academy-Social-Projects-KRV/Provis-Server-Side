@@ -1,4 +1,4 @@
-﻿using Provis.Core.DTO.UserDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.DTO.workspaceDTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -17,6 +17,8 @@ namespace Provis.Core.Interfaces.Services
         Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid);
 
         Task SendInviteAsync(InviteUserDTO inviteUser, string userId);
+
+        Task<ChangeRoleDTO> ChangeUserRoleAsync(string userId, ChangeRoleDTO userChangeRole);
 
         Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceDTO, string userId);
 
