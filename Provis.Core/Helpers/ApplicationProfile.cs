@@ -64,6 +64,11 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Task.Name))
                 .ForMember(x => x.WorkerRoleId, act => act.MapFrom(srs => srs.UserRoleTagId));
 
+            CreateMap<Task, TaskDTO>()
+               .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
+               .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
+               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name));
+
             CreateMap<UserChangeInfoDTO, User>();
 
             CreateMap<BlobDownloadInfo, DownloadFile>()
