@@ -208,8 +208,8 @@ namespace Provis.Core.Services
                 .Where(y => y.UserId == userid)
                 .Include(x => x.Workspace)
                 .Include(x => x.Role)
-                .OrderBy(x=>x.RoleId)
-                .ThenBy(x=>x.Workspace.Name)
+                .OrderBy(x => x.RoleId)
+                .ThenBy(x => x.Workspace.Name)
                 .ToListAsync();
 
             var listWorkspaceToReturn = _mapper.Map<List<WorkspaceInfoDTO>>(listWorkspace);
