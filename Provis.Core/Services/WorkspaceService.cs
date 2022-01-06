@@ -204,7 +204,13 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            var listWorkspace = await _userWorkspaceRepository.Query().Where(y => y.UserId == userid).Include(x => x.Workspace).Include(x => x.Role).ToListAsync();
+            var listWorkspace = await _userWorkspaceRepository.Query()
+                .Where(y => y.UserId == userid)
+                .Include(x => x.Workspace)
+                .Include(x => x.Role)
+                .OrderBy(x=>x.RoleId)
+                .ThenBy(x=>x.Workspace.Name)
+                .ToListAsync();
 
             var listWorkspaceToReturn = _mapper.Map<List<WorkspaceInfoDTO>>(listWorkspace);
 
