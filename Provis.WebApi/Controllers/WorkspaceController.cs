@@ -25,7 +25,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [Route("addworkspace")]
+        [Route("workspace")]
         public async Task<IActionResult> AddWorkspaceAsync([FromBody] WorkspaceCreateDTO createDTO)
         {
             await _workspaceService.CreateWorkspaceAsync(createDTO, UserId);
@@ -35,20 +35,20 @@ namespace Provis.WebApi.Controllers
 
         [HttpPut]
         [Authorize]
-        [Route("invite/{id}/deny")]
-        public async Task<IActionResult> DenyInviteUserAsync(int id)
+        [Route("invite/{inviteid}/deny")]
+        public async Task<IActionResult> DenyInviteUserAsync(int inviteid)
         {
-            await _workspaceService.DenyInviteAsync(id, UserId);
+            await _workspaceService.DenyInviteAsync(inviteid, UserId);
 
             return Ok();
         }
 
         [HttpPut]
         [Authorize]
-        [Route("invite/{id}/accept")]
-        public async Task<IActionResult> AcceptInviteUserAsync(int id)
+        [Route("invite/{inviteid}/accept")]
+        public async Task<IActionResult> AcceptInviteUserAsync(int inviteid)
         {
-            await _workspaceService.AcceptInviteAsync(id, UserId);
+            await _workspaceService.AcceptInviteAsync(inviteid, UserId);
 
             return Ok();
         }
@@ -56,7 +56,7 @@ namespace Provis.WebApi.Controllers
         [Authorize]
         [HttpPost]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
-        [Route("inviteuser")]
+        [Route("invite")]
         public async Task<IActionResult> SendInviteToUser([FromBody] InviteUserDTO inviteUser)
         {
             await _workspaceService.SendInviteAsync(inviteUser, UserId);
@@ -66,7 +66,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("getworlspacelist")]
+        [Route("workspaces")]
         public async Task<IActionResult> GetWorkspaceAsync()
         {
             var getList = await _workspaceService.GetWorkspaceListAsync(UserId);
@@ -77,7 +77,7 @@ namespace Provis.WebApi.Controllers
         [HttpPut]
         [Authorize]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
-        [Route("changerole")]
+        [Route("role")]
         public async Task<IActionResult> GetUserChangeRoleAsync([FromBody] ChangeRoleDTO userChangeRoleDTO)
         {
             var changeRole = await _workspaceService.ChangeUserRoleAsync(UserId, userChangeRoleDTO);
@@ -88,7 +88,7 @@ namespace Provis.WebApi.Controllers
         [HttpPut]
         [Authorize]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
-        [Route("updateworkspace")]
+        [Route("workspace")]
         public async Task<IActionResult> UpdateWorkspaceAsync([FromBody] WorkspaceUpdateDTO workspaceUpdate)
         {
             await _workspaceService.UpdateWorkspaceAsync(workspaceUpdate, UserId);
@@ -98,10 +98,10 @@ namespace Provis.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("getworkspace/{id}/info")]
-        public async Task<IActionResult> GetWorkspaceInfoAsync(int id)
+        [Route("workspaces/{workspaceid}")]
+        public async Task<IActionResult> GetWorkspaceInfoAsync(int workspaceid)
         {
-            var workspInfo = await _workspaceService.GetWorkspaceInfoAsync(id, UserId);
+            var workspInfo = await _workspaceService.GetWorkspaceInfoAsync(workspaceid, UserId);
 
             return Ok(workspInfo);
         }
@@ -109,10 +109,10 @@ namespace Provis.WebApi.Controllers
         [HttpGet]
         [Authorize]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
-        [Route("{workspaceId}/invite/active")]
-        public async Task<IActionResult> GetWorkspaceActiveInvitesAsync(int workspaceId)
+        [Route("workspaces/{workspaceid}/active-invites")]
+        public async Task<IActionResult> GetWorkspaceActiveInvitesAsync(int workspaceid)
         {
-            var workspInvites = await _workspaceService.GetWorkspaceActiveInvitesAsync(workspaceId, UserId);
+            var workspInvites = await _workspaceService.GetWorkspaceActiveInvitesAsync(workspaceid, UserId);
 
             return Ok(workspInvites);
         }
@@ -122,10 +122,10 @@ namespace Provis.WebApi.Controllers
         [WorkspaceRoles(new WorkSpaceRoles[]{
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId ,
             WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
-        [Route("workspace/{workspaceId}/members")]
-        public async Task<IActionResult> GetWorkspaceMembersAsync(int workspaceId)
+        [Route("workspaces/{workspaceid}/members")]
+        public async Task<IActionResult> GetWorkspaceMembersAsync(int workspaceid)
         {
-            var members = await _workspaceService.GetWorkspaceMembersAsync(workspaceId);
+            var members = await _workspaceService.GetWorkspaceMembersAsync(workspaceid);
             return Ok(members);
         }
 
@@ -142,20 +142,20 @@ namespace Provis.WebApi.Controllers
         [Authorize]
         [HttpDelete]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
-        [Route("{workspaceId}/user/{userId}")]
-        public async Task<IActionResult> DeleteFromWorkspaceAsync(int workspaceId, string userId)
+        [Route("workspaces/{workspaceid}/users/{userid}")]
+        public async Task<IActionResult> DeleteFromWorkspaceAsync(int workspaceid, string userid)
         {
-            await _workspaceService.DeleteFromWorkspaceAsync(workspaceId, userId);
+            await _workspaceService.DeleteFromWorkspaceAsync(workspaceid, userid);
             return Ok();
         }
 
         [HttpDelete]
         [Authorize]
         [WorkspaceRoles(new[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
-        [Route("workspace/{workspaceId}/invite/{id}/cancel")]
-        public async Task<IActionResult> CancelInviteAsync(int id, int workspaceId)
+        [Route("workspaces/{workspaceid}/invite/{inviteid}/cancel")]
+        public async Task<IActionResult> CancelInviteAsync(int inviteid, int workspaceid)
         {
-            await _workspaceService.CancelInviteAsync(id, workspaceId, UserId);
+            await _workspaceService.CancelInviteAsync(inviteid, workspaceid, UserId);
             return Ok();
         }
     }
