@@ -132,16 +132,22 @@ namespace Provis.Core.Services
                 x.ToUserId == inviteUser.Id &&
                 x.WorkspaceId == workspace.Id).ToListAsync();
 
+            var userWorkspaceInvite = await _userWorkspaceRepository.Query().FirstOrDefaultAsync(u =>
+                u.WorkspaceId == workspace.Id &&
+                u.UserId == inviteUser.Id);
+
             foreach (var invite in inviteUserList)
             {
                 if (invite.IsConfirm == null)
                 {
-                    throw new HttpException(System.Net.HttpStatusCode.BadRequest, "User already has invite, wait for a answer");
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                        "User already has invite, wait for a answer");
                 }
 
-                if (invite.IsConfirm.Value == true)
+                if (invite.IsConfirm.Value == true && userWorkspaceInvite != null)
                 {
-                    throw new HttpException(System.Net.HttpStatusCode.BadRequest, "This user already accepted your invite");
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                        "This user already accepted your invite");
                 }
             }
 
