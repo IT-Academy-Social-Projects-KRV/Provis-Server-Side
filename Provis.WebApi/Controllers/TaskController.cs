@@ -37,7 +37,7 @@ namespace Provis.WebApi.Controllers
         [Authorize]
         [HttpPost]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.ViewerId })]
-        [Route("addtask")]
+        [Route("task")]
         public async Task<IActionResult> AddTaskAsync([FromBody] TaskCreateDTO createDTO)
         {
             await _taskService.CreateTaskAsync(createDTO, UserId);
@@ -67,7 +67,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("workerroles")]
+        [Route("roles")]
         public async Task<IActionResult> GetWorkerRoles()
         {
             var res = await _taskService.GetWorkerRoles();

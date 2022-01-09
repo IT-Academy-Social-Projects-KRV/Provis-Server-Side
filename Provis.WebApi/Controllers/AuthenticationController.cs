@@ -28,7 +28,7 @@ namespace Provis.WebApi.Controllers
         }
 
         [HttpPost]
-        [Route("logintwostep")]
+        [Route("login-two-step")]
         public async Task<IActionResult> LoginTwoStepAsync([FromBody] UserTwoFactorDTO twoFactorDTO)
         {
             var tokens = await authenticationService.LoginTwoStepAsync(twoFactorDTO);
@@ -54,7 +54,7 @@ namespace Provis.WebApi.Controllers
         }
 
         [HttpPost]
-        [Route("refreshToken")]
+        [Route("refresh-token")]
         public async Task<IActionResult> RefreshTokenAsync([FromBody] UserAutorizationDTO userTokensDTO)
         {
             var tokens = await authenticationService.RefreshTokenAsync(userTokensDTO);
