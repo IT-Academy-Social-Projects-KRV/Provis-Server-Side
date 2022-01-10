@@ -121,8 +121,8 @@ namespace Provis.Core.Services
                     }
                     await _userTaskRepository.AddRangeAsync(userTasks);
                     await _userTaskRepository.SaveChangesAsync();
-                    await transaction.CommitAsync();
                 }
+                await transaction.CommitAsync();
             }
             catch (Exception)
             {
