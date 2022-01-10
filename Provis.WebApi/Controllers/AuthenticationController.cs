@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Interfaces.Services;
-using Provis.Core.Entities;
 using Provis.Core.Roles;
 using System.Threading.Tasks;
+using Provis.Core.Entities.UserEntity;
 
 namespace Provis.WebApi.Controllers
 {

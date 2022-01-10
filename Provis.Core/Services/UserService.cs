@@ -5,7 +5,6 @@ using Provis.Core.DTO.UserDTO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Provis.Core.ApiModels;
-using Provis.Core.Entities;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers;
 using Provis.Core.Helpers.Mails;
@@ -14,7 +13,8 @@ using Provis.Core.Interfaces.Services;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Task = System.Threading.Tasks.Task;
+using Provis.Core.Entities.UserEntity;
+using Provis.Core.Entities.InviteUserEntity;
 
 namespace Provis.Core.Services
 {
@@ -36,7 +36,7 @@ namespace Provis.Core.Services
             IEmailSenderService emailSenderService,
             IFileService fileService,
             IOptions<ImageSettings> imageSettings)
-        { 
+        {
             _userManager = userManager;
             _userRepository = userRepository;
             _inviteUserRepository = inviteUser;
@@ -124,12 +124,12 @@ namespace Provis.Core.Services
 
             string newPath = await _fileService.AddFileAsync(img.OpenReadStream(), _imageSettings.Value.Path, img.FileName);
 
-            if (user.Img != null)
+            if (user.ImageAvatarUrl != null)
             {
-                await _fileService.DeleteFileAsync(user.Img);
+                await _fileService.DeleteFileAsync(user.ImageAvatarUrl);
             }
 
-            user.Img = newPath;
+            user.ImageAvatarUrl = newPath;
 
             await _userManager.UpdateAsync(user);
         }
@@ -138,9 +138,9 @@ namespace Provis.Core.Services
         {
             var user = await _userManager.FindByIdAsync(userId);
 
-            _ = user.Img ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Image not found");
+            _ = user.ImageAvatarUrl ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Image not found");
 
-            var file = await _fileService.GetFileAsync(user.Img);
+            var file = await _fileService.GetFileAsync(user.ImageAvatarUrl);
 
             return file;
         }

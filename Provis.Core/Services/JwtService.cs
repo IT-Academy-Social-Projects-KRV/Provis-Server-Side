@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using Provis.Core.Entities;
+using Provis.Core.Entities.UserEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers;
 using Provis.Core.Interfaces.Services;

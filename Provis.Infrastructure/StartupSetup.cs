@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Provis.Core.Entities;
+using Provis.Core.Entities.UserEntity;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Infrastructure.Data;
 using Provis.Infrastructure.Data.Repositories;
@@ -22,7 +22,7 @@ namespace Provis.Infrastructure
 
         public static void AddIdentityDbContext(this IServiceCollection services)
         {
-            services.AddIdentity<User, 
+            services.AddIdentity<User,
                 IdentityRole>().AddEntityFrameworkStores<ProvisDbContext>().AddDefaultTokenProviders();
         }
     }

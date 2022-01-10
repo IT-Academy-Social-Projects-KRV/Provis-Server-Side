@@ -1,7 +1,6 @@
 ﻿using Provis.Core.DTO.UserDTO;
-using Provis.Core.Entities;
+using Provis.Core.Entities.UserEntity;
 using System.Threading.Tasks;
-using Task = System.Threading.Tasks.Task;
 
 namespace Provis.Core.Interfaces.Services
 {

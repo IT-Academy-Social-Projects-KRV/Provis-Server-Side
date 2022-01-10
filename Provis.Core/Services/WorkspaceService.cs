@@ -1,19 +1,22 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Provis.Core.DTO.workspaceDTO;
-using Provis.Core.Entities;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using System;
-using Task = System.Threading.Tasks.Task;
 using AutoMapper;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Helpers;
+using Provis.Core.Entities.UserEntity;
+using Provis.Core.Entities.WorkspaceEntity;
+using Provis.Core.Entities.UserWorkspaceEntity;
+using Provis.Core.Entities.InviteUserEntity;
+using Provis.Core.Entities.RoleEntity;
 
 namespace Provis.Core.Services
 {
@@ -24,7 +27,6 @@ namespace Provis.Core.Services
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
         protected readonly IRepository<InviteUser> _inviteUserRepository;
-        protected readonly IRepository<Entities.Task> _tasksRepository;
         protected readonly IRepository<User> _userRepository;
         protected readonly IRepository<Role> _userRoleRepository;
         protected readonly IMapper _mapper;
@@ -35,7 +37,6 @@ namespace Provis.Core.Services
             IRepository<Workspace> workspace,
             IRepository<UserWorkspace> userWorkspace,
             IRepository<InviteUser> inviteUser,
-            IRepository<Entities.Task> tasks,
             IRepository<Role> userRoleRepository,
             IEmailSenderService emailSenderService,
             IMapper mapper,
@@ -47,7 +48,6 @@ namespace Provis.Core.Services
             _workspaceRepository = workspace;
             _userWorkspaceRepository = userWorkspace;
             _inviteUserRepository = inviteUser;
-            _tasksRepository = tasks;
             _emailSendService = emailSenderService;
             _mapper = mapper;
             _roleAccess = roleAccess;

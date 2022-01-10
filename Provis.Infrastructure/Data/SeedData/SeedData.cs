@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Provis.Core.Entities;
+using Provis.Core.Entities.RoleEntity;
+using Provis.Core.Entities.StatusEntity;
+using Provis.Core.Entities.UserRoleTagEntity;
 using Provis.Core.Roles;
 using Provis.Core.Statuses;
 
@@ -59,22 +61,22 @@ namespace Provis.Infrastructure.Data.SeedData
                 new Status()
                 {
                     Id = (int)TaskStatuses.ToDoId,
-                    StatusName = "To do"
+                    Name = "To do"
                 },
                 new Status()
                 {
                     Id = (int)TaskStatuses.InProgressId,
-                    StatusName = "In progress"
+                    Name = "In progress"
                 },
                 new Status()
                 {
                     Id = (int)TaskStatuses.InReviewId,
-                    StatusName = "In review"
+                    Name = "In review"
                 },
                 new Status()
                 {
                     Id = (int)TaskStatuses.CompleatedId,
-                    StatusName = "Compleated"
+                    Name = "Compleated"
                 });
     }
 }

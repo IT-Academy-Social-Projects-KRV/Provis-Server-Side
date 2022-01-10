@@ -1,5 +1,5 @@
 ﻿using Provis.Core.Helpers.Mails;
-using Task = System.Threading.Tasks.Task;
+using System.Threading.Tasks;
 
 namespace Provis.Core.Interfaces.Services
 {
