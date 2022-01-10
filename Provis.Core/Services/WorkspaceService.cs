@@ -358,7 +358,7 @@ namespace Provis.Core.Services
                 .Select(o => new WorkspaceMemberDTO
                 {
                     Id = o.UserId,
-                    Role = o.Role.Name,
+                    Role = o.Role.Id,
                     UserName = o.User.UserName
                 })
                 .ToListAsync();
