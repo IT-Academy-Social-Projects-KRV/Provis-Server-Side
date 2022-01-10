@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Provis.Core.Interfaces;
 using Provis.Core.Interfaces.Repositories;
 using System;
@@ -61,6 +62,11 @@ namespace Provis.Infrastructure.Data.Repositories
         public async Task AddRangeAsync(List<TEntity> entities)
         {
             await _dbContext.AddRangeAsync(entities);
+        }
+
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return (await _dbContext.Database.BeginTransactionAsync());
         }
     }
 }

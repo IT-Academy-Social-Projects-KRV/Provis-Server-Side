@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -16,5 +17,6 @@ namespace Provis.Core.Interfaces.Repositories
         IQueryable<TEntity> Query(params Expression<Func<TEntity, object>>[] includes);
         Task<int> SaveChangesAsync();
         Task AddRangeAsync(List<TEntity> entities);
+        Task<IDbContextTransaction> BeginTransactionAsync();
     }
 }
