@@ -676,15 +676,9 @@ namespace Provis.Infrastructure.Migrations
 
             modelBuilder.Entity("Provis.Core.Entities.StatusHistoryEntity.StatusHistory", b =>
                 {
-                    b.HasOne("Provis.Core.Entities.StatusEntity.Status", null)
-                        .WithMany("TaskHistories")
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Provis.Core.Entities.StatusEntity.Status", "Status")
                         .WithMany("StatusHistories")
-                        .HasForeignKey("TaskId")
+                        .HasForeignKey("StatusId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -788,8 +782,6 @@ namespace Provis.Infrastructure.Migrations
             modelBuilder.Entity("Provis.Core.Entities.StatusEntity.Status", b =>
                 {
                     b.Navigation("StatusHistories");
-
-                    b.Navigation("TaskHistories");
 
                     b.Navigation("Tasks");
                 });

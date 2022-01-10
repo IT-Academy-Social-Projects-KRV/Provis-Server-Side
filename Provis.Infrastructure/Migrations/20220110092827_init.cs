@@ -379,12 +379,6 @@ namespace Provis.Infrastructure.Migrations
                         column: x => x.StatusId,
                         principalTable: "Statuses",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_StatusHistories_Statuses_TaskId",
-                        column: x => x.TaskId,
-                        principalTable: "Statuses",
-                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_StatusHistories_Tasks_TaskId",

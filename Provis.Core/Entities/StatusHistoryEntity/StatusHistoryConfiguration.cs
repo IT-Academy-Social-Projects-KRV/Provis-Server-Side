@@ -31,7 +31,7 @@ namespace Provis.Core.Entities.StatusHistoryEntity
             builder
                 .HasOne(x => x.Status)
                 .WithMany(x => x.StatusHistories)
-                .HasForeignKey(x => x.TaskId)
+                .HasForeignKey(x => x.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
