@@ -3,7 +3,7 @@ using Provis.Core.DTO.UserDTO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
 using System.Threading;
-using Provis.Core.Entities;
+using Provis.Core.Entities.UserEntity;
 
 namespace Provis.Core.Validation
 {

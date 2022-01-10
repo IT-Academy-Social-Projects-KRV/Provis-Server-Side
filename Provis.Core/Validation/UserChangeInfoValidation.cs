@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Provis.Core.DTO.UserDTO;
 using Microsoft.AspNetCore.Identity;
-using Provis.Core.Entities;
+using Provis.Core.Entities.UserEntity;
 
 namespace Provis.Core.Validation
 {

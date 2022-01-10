@@ -1,7 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Provis.Core.DTO.UserDTO;
-using Provis.Core.Entities;
+using Provis.Core.Entities.RefreshTokenEntity;
+using Provis.Core.Entities.UserEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Repositories;
@@ -9,7 +10,6 @@ using Provis.Core.Interfaces.Services;
 using System;
 using System.Text;
 using System.Threading.Tasks;
-using Task = System.Threading.Tasks.Task;
 
 namespace Provis.Core.Services
 {
@@ -56,7 +56,7 @@ namespace Provis.Core.Services
             {
                 return await GenerateTwoStepVerificationCode(user);
             }
-           
+
             return await GenerateUserTokens(user);
         }
 
@@ -177,7 +177,7 @@ namespace Provis.Core.Services
             await _refreshTokenRepository.SaveChangesAsync();
 
             var tokens = new UserAutorizationDTO()
-            { 
+            {
                 Token = newToken,
                 RefreshToken = newRefreshToken
             };

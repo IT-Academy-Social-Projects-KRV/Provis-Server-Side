@@ -4,7 +4,15 @@ using Provis.Core.ApiModels;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.DTO.workspaceDTO;
-using Provis.Core.Entities;
+using Provis.Core.Entities.InviteUserEntity;
+using Provis.Core.Entities.RoleEntity;
+using Provis.Core.Entities.StatusEntity;
+using Provis.Core.Entities.UserEntity;
+using Provis.Core.Entities.UserRoleTagEntity;
+using Provis.Core.Entities.UserTaskEntity;
+using Provis.Core.Entities.UserWorkspaceEntity;
+using Provis.Core.Entities.WorkspaceEntity;
+using Provis.Core.Entities.WorkspaceTaskEntity;
 
 namespace Provis.Core.Helpers
 {
@@ -51,7 +59,7 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.ToUserEmail, act => act.MapFrom(srs => srs.ToUser.Email))
                 .ForMember(x => x.InviteId, act => act.MapFrom(srs => srs.Id));
 
-            CreateMap<TaskCreateDTO, Task>()
+            CreateMap<TaskCreateDTO, WorkspaceTask>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
                 .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
@@ -64,7 +72,7 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Task.Name))
                 .ForMember(x => x.WorkerRoleId, act => act.MapFrom(srs => srs.UserRoleTagId));
 
-            CreateMap<Task, TaskDTO>()
+            CreateMap<WorkspaceTask, TaskDTO>()
                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name));
@@ -80,7 +88,7 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Id,  act => act.MapFrom(srs => srs.Id));
 
             CreateMap<Status, TaskStatusDTO>()
-                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.StatusName))
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id));
 
             CreateMap<Role, WorkspaceRolesDTO>()

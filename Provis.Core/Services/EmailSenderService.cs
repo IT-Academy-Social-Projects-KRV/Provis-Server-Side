@@ -2,7 +2,7 @@
 using MimeKit;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Services;
-using Task = System.Threading.Tasks.Task;
+using System.Threading.Tasks;
 
 namespace Provis.Core.Services
 {

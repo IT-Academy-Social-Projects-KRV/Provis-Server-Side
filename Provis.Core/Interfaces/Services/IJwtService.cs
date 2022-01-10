@@ -1,4 +1,4 @@
-﻿using Provis.Core.Entities;
+﻿using Provis.Core.Entities.UserEntity;
 using System.Collections.Generic;
 using System.Security.Claims;
 

@@ -3,7 +3,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.DTO.workspaceDTO;
-using Provis.Core.Entities;
+using Provis.Core.Entities.StatusEntity;
+using Provis.Core.Entities.StatusHistoryEntity;
+using Provis.Core.Entities.UserEntity;
+using Provis.Core.Entities.UserRoleTagEntity;
+using Provis.Core.Entities.UserTaskEntity;
+using Provis.Core.Entities.WorkspaceEntity;
+using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
@@ -11,8 +17,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Task = System.Threading.Tasks.Task;
-using TaskEntity = Provis.Core.Entities.Task;
 
 namespace Provis.Core.Services
 {
@@ -21,7 +25,7 @@ namespace Provis.Core.Services
         protected readonly UserManager<User> _userManager;
         protected readonly IRepository<User> _userRepository;
         protected readonly IRepository<Workspace> _workspaceRepository;
-        protected readonly IRepository<TaskEntity> _taskRepository;
+        protected readonly IRepository<WorkspaceTask> _taskRepository;
         protected readonly IRepository<UserTask> _userTaskRepository;
         protected readonly IRepository<StatusHistory> _statusHistoryRepository;
         protected readonly IRepository<Status> _taskStatusRepository;
@@ -30,7 +34,7 @@ namespace Provis.Core.Services
 
 
         public TaskService(IRepository<User> user,
-            IRepository<TaskEntity> task,
+            IRepository<WorkspaceTask> task,
             IRepository<Workspace> workspace,
             IRepository<Status> taskStatusRepository,
             IMapper mapper,
@@ -51,7 +55,7 @@ namespace Provis.Core.Services
             _taskStatusRepository = taskStatusRepository;
         }
 
-        public async System.Threading.Tasks.Task ChangeTaskStatusAsync(ChangeTaskStatusDTO changeTaskStatus)
+        public async Task ChangeTaskStatusAsync(ChangeTaskStatusDTO changeTaskStatus)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
 
@@ -84,7 +88,7 @@ namespace Provis.Core.Services
             _ = workspaceRec ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "Workspace with Id not found");
 
-            var task = new TaskEntity();
+            var task = new WorkspaceTask();
 
             task.DateOfCreate = DateTime.UtcNow;
             task.TaskCreatorId = user.Id;

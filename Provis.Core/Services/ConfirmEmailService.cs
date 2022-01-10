@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Provis.Core.DTO.userDTO;
-using Provis.Core.Entities;
+using Provis.Core.Entities.UserEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Services;
 using System;
 using System.Text;
-using Task = System.Threading.Tasks.Task;
+using System.Threading.Tasks;
 
 namespace Provis.Core.Services
 {
