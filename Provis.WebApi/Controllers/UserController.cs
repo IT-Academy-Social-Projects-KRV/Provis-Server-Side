@@ -22,7 +22,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("getpersonalinfo")]
+        [Route("info")]
         public async Task<IActionResult> GetUserPersonalInfoAsync()
         {
             var userInfo = await _userService.GetUserPersonalInfoAsync(UserId);
@@ -32,7 +32,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPut]
         [Authorize]
-        [Route("changeinfo")]
+        [Route("info")]
         public async Task ChangeInfoAsync([FromBody] UserChangeInfoDTO userChangeInfoDTO)
         {
             await _userService.ChangeInfoAsync(UserId, userChangeInfoDTO);
@@ -40,7 +40,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("invite")]
+        [Route("invites")]
         public async Task<IActionResult> GetUserInviteInfoAsync()
         {
             var userInviteList = await _userService.GetUserInviteInfoListAsync(UserId);
@@ -50,7 +50,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("activeinvite")]
+        [Route("active-invite")]
         public async Task<IActionResult> GetUserActiveInviteAsync()
         {
             var activeInvite = await _userService.IsActiveInviteAsync(UserId);
@@ -60,7 +60,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("sendconfirmmail")]
+        [Route("confirm-email")]
         public async Task<IActionResult> SendConfirmMailAsync()
         {
             await _confirmEmailService.SendConfirmMailAsync(UserId);
@@ -70,7 +70,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Authorize]
-        [Route("confirmemail")]
+        [Route("confirm-email")]
         public async Task<IActionResult> ConfirmEmailAsync([FromBody] UserConfirmEmailDTO confirmEmailDTO)
         {
             await _confirmEmailService.ConfirmEmailAsync(UserId, confirmEmailDTO);
@@ -102,7 +102,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Authorize]
-        [Route("change2fastatus")]
+        [Route("two-factor-auntification/enable")]
         public async Task<IActionResult> Change2faStatusAsync([FromBody] UserChange2faStatusDTO statusDTO)
         {
             await _userService.ChangeTwoFactorVerificationStatusAsync(UserId, statusDTO);
@@ -112,7 +112,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("checkistwofactor")]
+        [Route("two-factor-auntification/enable")]
         public async Task<IActionResult> CheckIsTwoFactorVerificationAsync()
         {
             var result = await _userService.CheckIsTwoFactorVerificationAsync(UserId);
@@ -122,7 +122,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("sendtwofactorcode")]
+        [Route("two-factor-auntification/code")]
         public async Task<IActionResult> SendTwoFactorCodeAsync()
         {
             await _userService.SendTwoFactorCodeAsync(UserId);
