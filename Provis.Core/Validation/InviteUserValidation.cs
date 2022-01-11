@@ -1,5 +1,5 @@
 ﻿using FluentValidation;
-using Provis.Core.DTO.workspaceDTO;
+using Provis.Core.DTO.WorkspaceDTO;
 
 namespace Provis.Core.Validation
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Provis.Core.DTO.userDTO
+namespace Provis.Core.DTO.UserDTO
 {
     public class UploadImageDTO
     {

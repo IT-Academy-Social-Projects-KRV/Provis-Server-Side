@@ -1,8 +1,8 @@
-﻿using Provis.Core.DTO.userDTO;
+﻿using Provis.Core.DTO.UserDTO;
 using System;
 using System.Collections.Generic;
 
-namespace Provis.Core.DTO.workspaceDTO
+namespace Provis.Core.DTO.WorkspaceDTO
 {
     public class TaskCreateDTO
     {
