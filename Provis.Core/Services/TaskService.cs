@@ -94,41 +94,42 @@ namespace Provis.Core.Services
             task.TaskCreatorId = user.Id;
 
             _mapper.Map(taskCreateDTO, task);
-            
-            var transaction = await _taskRepository.BeginTransactionAsync();
 
-            try
+            using (var transaction = await _taskRepository.BeginTransactionAsync())
             {
-                await _taskRepository.AddAsync(task);
-                await _taskRepository.SaveChangesAsync();
-
-                if (taskCreateDTO.AssignedUsers.Count != 0)
+                try
                 {
-                    List<UserTask> userTasks = new List<UserTask>();
-                    foreach (var item in taskCreateDTO.AssignedUsers)
+                    await _taskRepository.AddAsync(task);
+                    await _taskRepository.SaveChangesAsync();
+
+                    if (taskCreateDTO.AssignedUsers.Count != 0)
                     {
-                        if (userTasks.Exists(x => x.UserId == item.UserId))
+                        List<UserTask> userTasks = new List<UserTask>();
+                        foreach (var item in taskCreateDTO.AssignedUsers)
                         {
-                            throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                                "This user has already assigned");
+                            if (userTasks.Exists(x => x.UserId == item.UserId))
+                            {
+                                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                                    "This user has already assigned");
+                            }
+                            userTasks.Add(new UserTask
+                            {
+                                TaskId = task.Id,
+                                UserId = item.UserId,
+                                UserRoleTagId = item.RoleTagId
+                            });
                         }
-                        userTasks.Add(new UserTask
-                        {
-                            TaskId = task.Id,
-                            UserId = item.UserId,
-                            UserRoleTagId = item.RoleTagId
-                        });
+                        await _userTaskRepository.AddRangeAsync(userTasks);
+                        await _userTaskRepository.SaveChangesAsync();
                     }
-                    await _userTaskRepository.AddRangeAsync(userTasks);
-                    await _userTaskRepository.SaveChangesAsync();
+                    await transaction.CommitAsync();
                 }
-                await transaction.CommitAsync();
-            }
-            catch (Exception)
-            {
-                transaction.Rollback();
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                    "Failed");
+                catch (Exception)
+                {
+                    transaction.Rollback();
+                    throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                        "Failed");
+                }
             }
             await Task.CompletedTask;
         }
