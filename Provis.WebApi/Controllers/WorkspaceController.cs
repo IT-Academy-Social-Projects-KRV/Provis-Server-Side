@@ -1,11 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Provis.Core.DTO.UserDTO;
 using Provis.Core.DTO.WorkspaceDTO;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using Provis.WebApi.Policy;
-using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 

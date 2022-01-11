@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using Provis.Core.DTO.UserDTO;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.Statuses;
 using System;
