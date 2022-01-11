@@ -303,22 +303,13 @@ namespace Provis.Core.Services
             }
         }
 
-        public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspId, string userId)
+        public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspaceId, string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "User with Id not exist");
-            }
-
-            var userWorkspace = _userWorkspaceRepository
+            var userWorkspace = await _userWorkspaceRepository
                 .Query()
-                .Where(x => x.WorkspaceId == workspId && x.UserId == userId)
+                .Where(x => x.WorkspaceId == workspaceId && x.UserId == userId)
                 .Include(x => x.Workspace)
-                .Include(x => x.Role)
-                .FirstOrDefault();
+                .FirstOrDefaultAsync();
 
             if (userWorkspace == null)
             {
@@ -329,6 +320,21 @@ namespace Provis.Core.Services
             var workspace = _mapper.Map<WorkspaceInfoDTO>(userWorkspace);
 
             return workspace;
+        }
+
+        public async Task<WorkspaceDescriptionDTO> GetWorkspaceDescriptionAsync(int workspaceId)
+        {
+            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
+
+            if (workspace == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "Workspace with this Id doesn't exist or you hasn't permissions");
+            }
+
+            var workspaceToReturn = _mapper.Map<WorkspaceDescriptionDTO>(workspace);
+
+            return workspaceToReturn;
         }
 
         public async Task<List<WorkspaceInviteInfoDTO>>
