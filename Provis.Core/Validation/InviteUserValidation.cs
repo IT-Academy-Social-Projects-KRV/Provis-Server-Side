@@ -3,7 +3,7 @@ using Provis.Core.DTO.WorkspaceDTO;
 
 namespace Provis.Core.Validation
 {
-    public class InviteUserValidation : AbstractValidator<InviteUserDTO>
+    public class InviteUserValidation : AbstractValidator<WorkspaceInviteUserDTO>
     {
         public InviteUserValidation()
         {

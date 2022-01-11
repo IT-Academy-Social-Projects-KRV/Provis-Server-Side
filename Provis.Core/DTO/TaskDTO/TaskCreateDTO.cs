@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Provis.Core.DTO.WorkspaceDTO
+namespace Provis.Core.DTO.TaskDTO
 {
     public class TaskCreateDTO
     {
@@ -11,6 +11,6 @@ namespace Provis.Core.DTO.WorkspaceDTO
         public DateTime DateOfEnd { get; set; }
         public int WorkspaceId { get; set; }
         public int StatusId { get; set; }
-        public List<AssignedUserOnTaskDTO>  AssignedUsers { get; set; }
+        public List<UserAssignedOnTaskDTO>  AssignedUsers { get; set; }
     }
 }

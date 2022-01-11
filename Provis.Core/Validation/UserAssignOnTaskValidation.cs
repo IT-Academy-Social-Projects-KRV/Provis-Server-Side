@@ -3,7 +3,7 @@ using Provis.Core.DTO.UserDTO;
 
 namespace Provis.Core.Validation
 {
-    public class UserAssignOnTaskValidation: AbstractValidator<AssignedUserOnTaskDTO>
+    public class UserAssignOnTaskValidation: AbstractValidator<UserAssignedOnTaskDTO>
     {
         public UserAssignOnTaskValidation()
         {

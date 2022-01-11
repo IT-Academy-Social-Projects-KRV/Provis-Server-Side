@@ -47,7 +47,7 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.FromUserName, act => act.MapFrom(srs => srs.FromUser.Name))
                 .ForMember(x => x.ToUserId, act => act.MapFrom(srs => srs.ToUserId));
 
-            CreateMap<UserWorkspace, ChangeRoleDTO>()
+            CreateMap<UserWorkspace, WorkspaceChangeRoleDTO>()
                 .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
                 .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.RoleId));
@@ -83,7 +83,7 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.ContentType, act => act.MapFrom(srs => srs.Details.ContentType))
                 .ForMember(x => x.Content, act => act.MapFrom(srs => srs.Content));
 
-            CreateMap<UserRoleTag, WorkerRoleDTO>()
+            CreateMap<UserRoleTag, TaskRoleDTO>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Id,  act => act.MapFrom(srs => srs.Id));
 
@@ -91,7 +91,7 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id));
 
-            CreateMap<Role, WorkspaceRolesDTO>()
+            CreateMap<Role, WorkspaceRoleDTO>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id));
         }

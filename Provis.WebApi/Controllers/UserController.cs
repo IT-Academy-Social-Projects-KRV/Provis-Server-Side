@@ -81,7 +81,7 @@ namespace Provis.WebApi.Controllers
         [HttpPut]
         [Authorize]
         [Route("image")]
-        public async Task<IActionResult> UpdateImageAsync([FromForm] UploadImageDTO uploadImage)
+        public async Task<IActionResult> UpdateImageAsync([FromForm] UserUploadImageDTO uploadImage)
         {
             await _userService.UpdateUserImageAsync(uploadImage.Image, UserId);
 

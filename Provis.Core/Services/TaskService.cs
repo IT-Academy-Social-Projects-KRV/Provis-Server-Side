@@ -55,7 +55,7 @@ namespace Provis.Core.Services
             _taskStatusRepository = taskStatusRepository;
         }
 
-        public async Task ChangeTaskStatusAsync(ChangeTaskStatusDTO changeTaskStatus)
+        public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
 
@@ -177,11 +177,11 @@ namespace Provis.Core.Services
             return result.Select(x => _mapper.Map<TaskStatusDTO>(x)).ToList();
         }
 
-        public async Task<List<WorkerRoleDTO>> GetWorkerRoles()
+        public async Task<List<TaskRoleDTO>> GetWorkerRoles()
         {
             var result = await _workerRoleRepository.GetAllAsync();
 
-            return result.Select(x => _mapper.Map<WorkerRoleDTO>(x)).ToList();
+            return result.Select(x => _mapper.Map<TaskRoleDTO>(x)).ToList();
         }
     }
 }

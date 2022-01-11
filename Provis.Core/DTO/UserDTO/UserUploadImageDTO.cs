@@ -2,7 +2,7 @@
 
 namespace Provis.Core.DTO.UserDTO
 {
-    public class UploadImageDTO
+    public class UserUploadImageDTO
     {
         public IFormFile Image { get; set; }
     }

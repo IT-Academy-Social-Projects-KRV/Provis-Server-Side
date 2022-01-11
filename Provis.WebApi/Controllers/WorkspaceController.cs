@@ -57,7 +57,7 @@ namespace Provis.WebApi.Controllers
         [HttpPost]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
         [Route("inviteuser")]
-        public async Task<IActionResult> SendInviteToUser([FromBody] InviteUserDTO inviteUser)
+        public async Task<IActionResult> SendInviteToUser([FromBody] WorkspaceInviteUserDTO inviteUser)
         {
             await _workspaceService.SendInviteAsync(inviteUser, UserId);
 
@@ -78,7 +78,7 @@ namespace Provis.WebApi.Controllers
         [Authorize]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
         [Route("changerole")]
-        public async Task<IActionResult> GetUserChangeRoleAsync([FromBody] ChangeRoleDTO userChangeRoleDTO)
+        public async Task<IActionResult> GetUserChangeRoleAsync([FromBody] WorkspaceChangeRoleDTO userChangeRoleDTO)
         {
             var changeRole = await _workspaceService.ChangeUserRoleAsync(UserId, userChangeRoleDTO);
 
