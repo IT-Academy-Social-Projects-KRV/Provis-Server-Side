@@ -23,7 +23,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [Route("addworkspace")]
+        [Route("workspace")]
         public async Task<IActionResult> AddWorkspaceAsync([FromBody] WorkspaceCreateDTO createDTO)
         {
             await _workspaceService.CreateWorkspaceAsync(createDTO, UserId);
@@ -54,7 +54,7 @@ namespace Provis.WebApi.Controllers
         [Authorize]
         [HttpPost]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
-        [Route("inviteuser")]
+        [Route("invite")]
         public async Task<IActionResult> SendInviteToUser([FromBody] InviteUserDTO inviteUser)
         {
             await _workspaceService.SendInviteAsync(inviteUser, UserId);
@@ -64,7 +64,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("getworlspacelist")]
+        [Route("workspaces")]
         public async Task<IActionResult> GetWorkspaceAsync()
         {
             var getList = await _workspaceService.GetWorkspaceListAsync(UserId);
@@ -75,7 +75,7 @@ namespace Provis.WebApi.Controllers
         [HttpPut]
         [Authorize]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
-        [Route("changerole")]
+        [Route("role")]
         public async Task<IActionResult> GetUserChangeRoleAsync([FromBody] ChangeRoleDTO userChangeRoleDTO)
         {
             var changeRole = await _workspaceService.ChangeUserRoleAsync(UserId, userChangeRoleDTO);
@@ -86,7 +86,7 @@ namespace Provis.WebApi.Controllers
         [HttpPut]
         [Authorize]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId })]
-        [Route("updateworkspace")]
+        [Route("workspace")]
         public async Task<IActionResult> UpdateWorkspaceAsync([FromBody] WorkspaceUpdateDTO workspaceUpdate)
         {
             await _workspaceService.UpdateWorkspaceAsync(workspaceUpdate, UserId);
@@ -142,7 +142,7 @@ namespace Provis.WebApi.Controllers
         [WorkspaceRoles(new WorkSpaceRoles[]{
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId ,
             WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
-        [Route("workspace/{workspaceId}/members")]
+        [Route("workspaces/{workspaceId}/members")]
         public async Task<IActionResult> GetWorkspaceMembersAsync(int workspaceId)
         {
             var members = await _workspaceService.GetWorkspaceMembersAsync(workspaceId);
