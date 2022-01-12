@@ -186,12 +186,12 @@ namespace Provis.Core.Services
 
         public async Task JoinTaskAsync(TaskAssignDTO taskAssign, string userId)
         {
-            var modifierTask = (await _userTaskRepository.Query().
-                SingleOrDefaultAsync(p => p.UserId == userId && 
-                    p.TaskId == taskAssign.Id)).Task;
-            var task = await _taskRepository
+            var task = await _taskRepository.
+                Query().
+                Include(x=>x.UserTasks).
+                SingleOrDefaultAsync(p => p.Id == taskAssign.Id);
 
-            if (modifierTask.TaskCreatorId == userId)
+            if (task.TaskCreatorId == userId) // If creator of task want to assign somebody
             {
                 List<UserTask> userTasks = new();
                 foreach (var item in taskAssign.AssignedUsers)
@@ -201,20 +201,39 @@ namespace Provis.Core.Services
                         throw new HttpException(System.Net.HttpStatusCode.Forbidden,
                             "This user has already assigned");
                     }
-                    if (modifierTask.UserTasks.Exists(x=>x.))
+                    if (task.UserTasks.Exists(x=>x.UserId == item.UserId))
                     {
-
+                        throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "This user alredy in this task");
                     }
                     userTasks.Add(new UserTask
                     {
-                        TaskId = modifierTask.Id,
+                        TaskId = task.Id,
                         UserId = item.UserId,
                         UserRoleTagId = item.RoleTagId
                     });
                 }
+                await _userTaskRepository.AddRangeAsync(userTasks);
+                await _userTaskRepository.SaveChangesAsync();
             }
+            else // If somebody want to assign himself on the task
+            {
+                if (task.UserTasks.Exists(x => x.UserId == userId))
+                {
+                    throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "You are alredy in this task");
+                }
 
-            
+                UserTask userTask = new()
+                {
+                    TaskId = task.Id,
+                    UserId = userId,
+                    UserRoleTagId = taskAssign.AssignedUsers.SingleOrDefault().RoleTagId
+                };
+                await _userTaskRepository.AddAsync(userTask);
+                await _userTaskRepository.SaveChangesAsync();
+            }
+            await Task.CompletedTask;
         }
     }
 }
