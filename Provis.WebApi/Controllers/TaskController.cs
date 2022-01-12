@@ -77,6 +77,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPut]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
         [Route("task")]
         public async Task<IActionResult> ChangeTaskAsync([FromBody] TaskChangeInfoDTO taskChangeInfoDTO)
         {
