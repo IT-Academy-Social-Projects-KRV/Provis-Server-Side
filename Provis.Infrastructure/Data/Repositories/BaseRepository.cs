@@ -64,9 +64,20 @@ namespace Provis.Infrastructure.Data.Repositories
             await _dbContext.AddRangeAsync(entities);
         }
 
+<<<<<<< HEAD
         public async Task<IDbContextTransaction> BeginTransactionAsync()
         {
             return (await _dbContext.Database.BeginTransactionAsync());
+=======
+        public async Task<IEnumerable<TEntity>> GetListByQueryAsync(IQuery<TEntity> query)
+        {
+            return await query.Query.ToListAsync();
+        }
+
+        public Task<IEnumerable<TEntity>> GetFirstByQueryAsync(IQuery<TEntity> query)
+        {
+            throw new NotImplementedException();
+>>>>>>> 73e500f... Encapsulate of query for getting workspace list.
         }
     }
 }

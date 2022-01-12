@@ -17,6 +17,11 @@ namespace Provis.Core.Interfaces.Repositories
         IQueryable<TEntity> Query(params Expression<Func<TEntity, object>>[] includes);
         Task<int> SaveChangesAsync();
         Task AddRangeAsync(List<TEntity> entities);
+<<<<<<< HEAD
         Task<IDbContextTransaction> BeginTransactionAsync();
+=======
+        Task<IEnumerable<TEntity>> GetListByQueryAsync(IQuery<TEntity> query);
+        Task<IEnumerable<TEntity>> GetFirstByQueryAsync(IQuery<TEntity> query);
+>>>>>>> 73e500f... Encapsulate of query for getting workspace list.
     }
 }
