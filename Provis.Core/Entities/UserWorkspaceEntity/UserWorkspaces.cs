@@ -1,18 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Provis.Core.Interfaces;
-using Provis.Core.Interfaces.Repositories;
+﻿using Ardalis.Specification;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace Provis.Core.Entities.UserWorkspaceEntity
 {
     public class UserWorkspaces
     {
-        internal class GetWorkspaceList : IQuery<UserWorkspace>
+        internal class GetWorkspaceList: Specification<UserWorkspace>
         {
-            public IQueryable<UserWorkspace> Query { get; }
-            public GetWorkspaceList(string userId, IRepository<UserWorkspace> repository)
+            public GetWorkspaceList(string userId)
             {
-                Query = repository.Query()
+                Query
                     .Where(y => y.UserId == userId)
                     .Include(x => x.Workspace)
                     .Include(x => x.Role)
@@ -20,6 +18,5 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
                     .ThenBy(x => x.Workspace.Name);
             }
         }
-
     }
 }

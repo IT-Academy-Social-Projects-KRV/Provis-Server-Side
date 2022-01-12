@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Ardalis.Specification;
+using Ardalis.Specification.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using Provis.Core.Interfaces;
 using Provis.Core.Interfaces.Repositories;
@@ -64,20 +66,30 @@ namespace Provis.Infrastructure.Data.Repositories
             await _dbContext.AddRangeAsync(entities);
         }
 
-<<<<<<< HEAD
-        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        public async Task<IEnumerable<TEntity>> GetListBySpecAsync(ISpecification<TEntity> specification)
         {
-            return (await _dbContext.Database.BeginTransactionAsync());
-=======
-        public async Task<IEnumerable<TEntity>> GetListByQueryAsync(IQuery<TEntity> query)
-        {
-            return await query.Query.ToListAsync();
+            return await ApplySpecification(specification).ToListAsync();
         }
 
-        public Task<IEnumerable<TEntity>> GetFirstByQueryAsync(IQuery<TEntity> query)
+        public async Task<TEntity> GetFirstBySpecAsync(ISpecification<TEntity> specification)
         {
-            throw new NotImplementedException();
->>>>>>> 73e500f... Encapsulate of query for getting workspace list.
+            return await ApplySpecification(specification).FirstOrDefaultAsync();
+        }
+
+        public async Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification)
+        {
+            return await ApplySpecification(specification).AnyAsync();
+        }
+
+        public async Task<bool> AllBySpecAsync(ISpecification<TEntity> specification, Expression<Func<TEntity, bool>> expression)
+        {
+            return await ApplySpecification(specification).AllAsync(expression);
+        }
+
+        private IQueryable<TEntity> ApplySpecification(ISpecification<TEntity> specification)
+        {
+            var evaluator = new SpecificationEvaluator();
+            return evaluator.GetQuery(_dbSet, specification);
         }
     }
 }
