@@ -189,6 +189,7 @@ namespace Provis.Core.Services
             var modifierTask = (await _userTaskRepository.Query().
                 SingleOrDefaultAsync(p => p.UserId == userId && 
                     p.TaskId == taskAssign.Id)).Task;
+            var task = await _taskRepository
 
             if (modifierTask.TaskCreatorId == userId)
             {
