@@ -183,5 +183,37 @@ namespace Provis.Core.Services
 
             return result.Select(x => _mapper.Map<WorkerRoleDTO>(x)).ToList();
         }
+
+        public async Task JoinTaskAsync(TaskAssignDTO taskAssign, string userId)
+        {
+            var modifierTask = (await _userTaskRepository.Query().
+                SingleOrDefaultAsync(p => p.UserId == userId && 
+                    p.TaskId == taskAssign.Id)).Task;
+
+            if (modifierTask.TaskCreatorId == userId)
+            {
+                List<UserTask> userTasks = new();
+                foreach (var item in taskAssign.AssignedUsers)
+                {
+                    if (userTasks.Exists(x => x.UserId == item.UserId))
+                    {
+                        throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "This user has already assigned");
+                    }
+                    if (modifierTask.UserTasks.Exists(x=>x.))
+                    {
+
+                    }
+                    userTasks.Add(new UserTask
+                    {
+                        TaskId = modifierTask.Id,
+                        UserId = item.UserId,
+                        UserRoleTagId = item.RoleTagId
+                    });
+                }
+            }
+
+            
+        }
     }
 }
