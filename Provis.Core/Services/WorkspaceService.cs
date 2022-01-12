@@ -218,9 +218,9 @@ namespace Provis.Core.Services
             //    .ThenBy(x => x.Workspace.Name)
             //    .ToListAsync();
 
-            var q = new UserWorkspaces.GetWorkspaceList(userid, _userWorkspaceRepository);
+            var specification = new UserWorkspaces.GetWorkspaceList(userid);
 
-            var listWorkspace = await _userWorkspaceRepository.GetListByQueryAsync(q);
+            var listWorkspace = await _userWorkspaceRepository.GetListBySpecAsync(specification);
 
             var listWorkspaceToReturn = _mapper.Map<List<WorkspaceInfoDTO>>(listWorkspace);
 
