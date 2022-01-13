@@ -8,11 +8,15 @@ namespace Provis.Core.Validation
     {
         public TaskChangeInfoValidation()
         {
+
+            RuleFor(task => task.Id)
+                .NotNull();
+
             RuleFor(task => task.Name)
                 .NotEmpty()
                 .NotNull();
 
-            RuleFor(task => task.Description)
+            RuleFor(task => task.WorkspaceId)
                 .NotEmpty()
                 .NotNull();
 

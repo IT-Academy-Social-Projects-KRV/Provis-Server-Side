@@ -201,8 +201,6 @@ namespace Provis.Core.Services
             await _taskRepository.UpdateAsync(workspaceTask);
 
             await _taskRepository.SaveChangesAsync();
-
-            await Task.CompletedTask;
         }
     }
 }
