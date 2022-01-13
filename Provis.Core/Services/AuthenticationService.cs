@@ -159,7 +159,7 @@ namespace Provis.Core.Services
 
         public async Task<UserAutorizationDTO> RefreshTokenAsync(UserAutorizationDTO userTokensDTO)
         {
-            var specification = new RefreshTokens.SerchRefreshToken(userTokensDTO.RefreshToken);
+            var specification = new RefreshTokens.SearchRefreshToken(userTokensDTO.RefreshToken);
             var refeshTokenFromDb = await _refreshTokenRepository.GetFirstBySpecAsync(specification);
 
             if(refeshTokenFromDb == null)
@@ -186,7 +186,7 @@ namespace Provis.Core.Services
 
         public async Task LogoutAsync(UserAutorizationDTO userTokensDTO)
         {
-            var specification = new RefreshTokens.SerchRefreshToken(userTokensDTO.RefreshToken);
+            var specification = new RefreshTokens.SearchRefreshToken(userTokensDTO.RefreshToken);
             var refeshTokenFromDb = await _refreshTokenRepository.GetFirstBySpecAsync(specification);
 
             if (refeshTokenFromDb == null)

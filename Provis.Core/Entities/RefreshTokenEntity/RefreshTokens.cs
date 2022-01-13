@@ -4,9 +4,9 @@ namespace Provis.Core.Entities.RefreshTokenEntity
 {
     public class RefreshTokens
     {
-        internal class SerchRefreshToken: Specification<RefreshToken>
+        internal class SearchRefreshToken: Specification<RefreshToken>
         {
-            public SerchRefreshToken(string refreshToken)
+            public SearchRefreshToken(string refreshToken)
             {
                 Query
                     .Where(x => x.Token == refreshToken);
