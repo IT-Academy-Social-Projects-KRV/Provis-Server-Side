@@ -191,6 +191,8 @@ namespace Provis.Core.Services
                 Include(x=>x.UserTasks).
                 SingleOrDefaultAsync(p => p.Id == taskAssign.Id);
 
+            var worksp = await _workspaceRepository.GetByKeyAsync(taskAssign.WorkspaceId);
+
             if (task.TaskCreatorId == userId) // If creator of task want to assign somebody
             {
                 List<UserTask> userTasks = new();
@@ -201,10 +203,15 @@ namespace Provis.Core.Services
                         throw new HttpException(System.Net.HttpStatusCode.Forbidden,
                             "This user has already assigned");
                     }
-                    if (task.UserTasks.Exists(x=>x.UserId == item.UserId))
+                    if (task.UserTasks.Exists(x => x.UserId == item.UserId))
                     {
                         throw new HttpException(System.Net.HttpStatusCode.Forbidden,
                             "This user alredy in this task");
+                    }
+                    if (!worksp.UserWorkspaces.Exists(c => c.UserId == item.UserId))
+                    {
+                        throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "This user doesnt member of workspace");
                     }
                     userTasks.Add(new UserTask
                     {

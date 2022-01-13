@@ -17,6 +17,8 @@ using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RoleEntity;
+using Provis.Core.Entities.WorkspaceTaskEntity;
+using Provis.Core.Entities.UserTaskEntity;
 
 namespace Provis.Core.Services
 {
@@ -29,6 +31,7 @@ namespace Provis.Core.Services
         protected readonly IRepository<InviteUser> _inviteUserRepository;
         protected readonly IRepository<User> _userRepository;
         protected readonly IRepository<Role> _userRoleRepository;
+        protected readonly IRepository<UserTask> _userTaskRepository;
         protected readonly IMapper _mapper;
         protected readonly RoleAccess _roleAccess;
 
@@ -39,6 +42,7 @@ namespace Provis.Core.Services
             IRepository<InviteUser> inviteUser,
             IRepository<Role> userRoleRepository,
             IEmailSenderService emailSenderService,
+            IRepository<UserTask> userTasksRepository,
             IMapper mapper,
             RoleAccess roleAccess
             )
@@ -52,6 +56,7 @@ namespace Provis.Core.Services
             _mapper = mapper;
             _roleAccess = roleAccess;
             _userRoleRepository = userRoleRepository;
+            _userTaskRepository = userTasksRepository;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -374,13 +379,21 @@ namespace Provis.Core.Services
 
         public async Task DeleteFromWorkspaceAsync(int workspaceId, string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            var userWorksp = _userWorkspaceRepository
+            var userWorksp = await _userWorkspaceRepository
                 .Query()
-                .FirstOrDefault(x => x.WorkspaceId == workspaceId && x.User.Id == user.Id);
+                .FirstOrDefaultAsync(x => x.WorkspaceId == workspaceId 
+                    && x.User.Id == userId);
 
-            var userTasks = user.UserTasks.Where(o => o.Task.WorkspaceId == workspaceId);
+            var user = await _userRepository
+                .Query()
+                .Include(u => u.UserTasks) 
+                .FirstOrDefaultAsync(x => x.Id == userId);
+
+            var userTasks = await _userTaskRepository
+                .Query()
+                .Where(x => x.Task.WorkspaceId == userWorksp.WorkspaceId 
+                    && x.UserId == userId)
+                .ToListAsync();
 
             if (userTasks != null)
             {
