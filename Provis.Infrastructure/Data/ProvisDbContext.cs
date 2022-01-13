@@ -11,6 +11,7 @@ using Provis.Core.Entities.UserRoleTagEntity;
 using Provis.Core.Entities.UserTaskEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
+using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Infrastructure.Data.SeedData;
 
@@ -39,6 +40,7 @@ namespace Provis.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new UserWorkspaceConfiguration());
             modelBuilder.ApplyConfiguration(new WorkspaceConfiguration());
             modelBuilder.ApplyConfiguration(new WorkspaceTaskConfiguration());
+            modelBuilder.ApplyConfiguration(new WorkspaceTaskAttachmentConfiguration());
 
             modelBuilder.Seed();
         }
@@ -54,5 +56,6 @@ namespace Provis.Infrastructure.Data
         public DbSet<UserWorkspace> UserWorkspaces { get; set; }
         public DbSet<Workspace> Workspaces { get; set; }
         public DbSet<WorkspaceTask> Tasks { get; set; }
+        public DbSet<WorkspaceTaskAttachment> TaskAttachments { get; set; }
     }
 }
