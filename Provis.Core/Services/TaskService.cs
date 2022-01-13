@@ -94,11 +94,8 @@ namespace Provis.Core.Services
 
             foreach (var item in taskCreateDTO.AssignedUsers)
             {
-                var assignedUser = await _userManager.FindByIdAsync(item.UserId);
-
-                var userWorkspace = await _userWorkspaceRepository.Query().FirstOrDefaultAsync(u =>
-                u.WorkspaceId == workspace.Id &&
-                u.UserId == assignedUser.Id);
+                var specification = new UserWorkspaces.WorkspaceMember(item.UserId, workspace.Id);
+                var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
 
                 _ = userWorkspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "User in workspace not found");
