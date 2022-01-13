@@ -80,8 +80,6 @@ namespace Provis.Core.Services
         {
             var refeshToken = _jwtService.CreateRefreshToken();
 
-            var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x => x.UserId == user.Id);
-
             RefreshToken rt = new RefreshToken()
             {
                 Token = refeshToken,
@@ -161,7 +159,8 @@ namespace Provis.Core.Services
 
         public async Task<UserAutorizationDTO> RefreshTokenAsync(UserAutorizationDTO userTokensDTO)
         {
-            var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x=>x.Token == userTokensDTO.RefreshToken);
+            var specification = new RefreshTokens.SerchRefreshToken(userTokensDTO.RefreshToken);
+            var refeshTokenFromDb = await _refreshTokenRepository.GetFirstBySpecAsync(specification);
 
             if(refeshTokenFromDb == null)
             {
@@ -187,7 +186,8 @@ namespace Provis.Core.Services
 
         public async Task LogoutAsync(UserAutorizationDTO userTokensDTO)
         {
-            var refeshTokenFromDb = await _refreshTokenRepository.Query().FirstOrDefaultAsync(x => x.Token == userTokensDTO.RefreshToken);
+            var specification = new RefreshTokens.SerchRefreshToken(userTokensDTO.RefreshToken);
+            var refeshTokenFromDb = await _refreshTokenRepository.GetFirstBySpecAsync(specification);
 
             if (refeshTokenFromDb == null)
             {

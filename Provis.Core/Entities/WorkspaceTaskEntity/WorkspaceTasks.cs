@@ -1,30 +1,22 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Ardalis.Specification;
+using System;
 using System.Linq;
 
 namespace Provis.Core.Entities.WorkspaceTaskEntity
 {
     public class WorkspaceTasks
     {
-        internal class GetUserTasks
+        internal class UnassignedTaskList : Specification<WorkspaceTask, Tuple<int, WorkspaceTask>>
         {
-            private readonly string userId;
-            private readonly int workspaceId;
-            public IQueryable<WorkspaceTask> Query { get; }
-            //public GetUserTasks(string userId, int workspaceId)
-            //{
-            //    this.userId = userId;
-            //    this.workspaceId = workspaceId;
-
-            //    Query
-            //        .Include(x => x.Task)
-            //        .Where(x => x.UserId == userId && x.Task.WorkspaceId == workspaceId)
-            //        .OrderBy(x => x.Task.StatusId)
-            //        .Select(x => new Tuple<int, TaskDTO>(
-            //            x.Task.StatusId,
-            //            _mapper.Map<TaskDTO>(x)))
-            //        .ToListAsync();
-            //}
+            public UnassignedTaskList(int workspaceId)
+            {
+                Query
+                    .Select(x => new Tuple<int, WorkspaceTask>(
+                        x.StatusId,
+                        x))
+                    .Where(x => x.WorkspaceId == workspaceId && !x.UserTasks.Any())
+                    .OrderBy(x => x.StatusId);
+            }
         }
-
     }
 }

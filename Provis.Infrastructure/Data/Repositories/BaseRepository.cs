@@ -66,19 +66,34 @@ namespace Provis.Infrastructure.Data.Repositories
             await _dbContext.AddRangeAsync(entities);
         }
 
+        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        {
+            return (await _dbContext.Database.BeginTransactionAsync());
+        }
+
         public async Task<IEnumerable<TEntity>> GetListBySpecAsync(ISpecification<TEntity> specification)
+        {
+            return await ApplySpecification(specification).ToListAsync();
+        }
+        public async Task<IEnumerable<TReturn>> GetListBySpecAsync<TReturn>(ISpecification<TEntity, TReturn> specification)
         {
             return await ApplySpecification(specification).ToListAsync();
         }
 
         public async Task<TEntity> GetFirstBySpecAsync(ISpecification<TEntity> specification)
         {
-            return await ApplySpecification(specification).FirstOrDefaultAsync();
+            var res = await ApplySpecification(specification).FirstOrDefaultAsync();
+            return res;
         }
 
         public async Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification)
         {
             return await ApplySpecification(specification).AnyAsync();
+        }
+
+        public async Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification, Expression<Func<TEntity, bool>> expression)
+        {
+            return await ApplySpecification(specification).AnyAsync(expression);
         }
 
         public async Task<bool> AllBySpecAsync(ISpecification<TEntity> specification, Expression<Func<TEntity, bool>> expression)
@@ -87,6 +102,12 @@ namespace Provis.Infrastructure.Data.Repositories
         }
 
         private IQueryable<TEntity> ApplySpecification(ISpecification<TEntity> specification)
+        {
+            var evaluator = new SpecificationEvaluator();
+            return evaluator.GetQuery(_dbSet, specification);
+        }
+
+        private IQueryable<TReturn> ApplySpecification<TReturn>(ISpecification<TEntity, TReturn> specification)
         {
             var evaluator = new SpecificationEvaluator();
             return evaluator.GetQuery(_dbSet, specification);
