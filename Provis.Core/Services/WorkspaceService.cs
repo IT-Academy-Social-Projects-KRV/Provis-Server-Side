@@ -384,6 +384,12 @@ namespace Provis.Core.Services
                 .FirstOrDefaultAsync(x => x.WorkspaceId == workspaceId 
                     && x.User.Id == userId);
 
+            if (userWorksp.RoleId == 1)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    "Owner can't leave workspace");
+            }
+
             var user = await _userRepository
                 .Query()
                 .Include(u => u.UserTasks) 
