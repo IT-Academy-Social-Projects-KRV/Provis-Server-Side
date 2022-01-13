@@ -17,7 +17,8 @@ namespace Provis.Core.Validation
             RuleFor(task => task.DateOfEnd)
                 .NotEmpty()
                 .NotNull()
-                .GreaterThan(DateTime.UtcNow);
+                .GreaterThan(DateTime.UtcNow)
+                .WithMessage("Due date should be not in the past");
 
             RuleFor(task => task.WorkspaceId)
                 .NotEmpty()

@@ -8,6 +8,7 @@ using Provis.Core.Entities.StatusHistoryEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.UserRoleTagEntity;
 using Provis.Core.Entities.UserTaskEntity;
+using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
@@ -27,6 +28,7 @@ namespace Provis.Core.Services
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<WorkspaceTask> _taskRepository;
         protected readonly IRepository<UserTask> _userTaskRepository;
+        protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
         protected readonly IRepository<StatusHistory> _statusHistoryRepository;
         protected readonly IRepository<Status> _taskStatusRepository;
         protected readonly IRepository<UserRoleTag> _workerRoleRepository;
@@ -37,6 +39,7 @@ namespace Provis.Core.Services
             IRepository<WorkspaceTask> task,
             IRepository<Workspace> workspace,
             IRepository<Status> taskStatusRepository,
+            IRepository<UserWorkspace> userWorkspace,
             IMapper mapper,
             IRepository<StatusHistory> statusHistoryRepository,
             IRepository<UserTask> userTask,
@@ -47,6 +50,7 @@ namespace Provis.Core.Services
             _userManager = userManager;
             _userRepository = user;
             _taskRepository = task;
+            _userWorkspaceRepository = userWorkspace;
             _workspaceRepository = workspace;
             _userTaskRepository = userTask;
             _mapper = mapper;
@@ -83,10 +87,22 @@ namespace Provis.Core.Services
             _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "User with Id not exist");
 
-            var workspaceRec = await _workspaceRepository.GetByKeyAsync(taskCreateDTO.WorkspaceId);
+            var workspace = await _workspaceRepository.GetByKeyAsync(taskCreateDTO.WorkspaceId);
 
-            _ = workspaceRec ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+            _ = workspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "Workspace with Id not found");
+
+            foreach (var item in taskCreateDTO.AssignedUsers)
+            {
+                var assignedUser = await _userManager.FindByIdAsync(item.UserId);
+
+                var userWorkspace = await _userWorkspaceRepository.Query().FirstOrDefaultAsync(u =>
+                u.WorkspaceId == workspace.Id &&
+                u.UserId == assignedUser.Id);
+
+                _ = userWorkspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "User in workspace not found");
+            }
 
             var task = new WorkspaceTask();
 
