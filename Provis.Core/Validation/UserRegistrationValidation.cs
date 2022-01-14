@@ -7,7 +7,7 @@ using Provis.Core.Entities.UserEntity;
 
 namespace Provis.Core.Validation
 {
-    public class UserRegistrationValidation : AbstractValidator<UserRegDTO>
+    public class UserRegistrationValidation : AbstractValidator<UserRegistrationDTO>
     {
         protected readonly UserManager<User> _userManager;
 

@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Provis.Core.DTO.userDTO;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Interfaces.Services;
 using System.Security.Claims;
@@ -82,7 +81,7 @@ namespace Provis.WebApi.Controllers
         [HttpPut]
         [Authorize]
         [Route("image")]
-        public async Task<IActionResult> UpdateImageAsync([FromForm] UploadImageDTO uploadImage)
+        public async Task<IActionResult> UpdateImageAsync([FromForm] UserUploadImageDTO uploadImage)
         {
             await _userService.UpdateUserImageAsync(uploadImage.Image, UserId);
 

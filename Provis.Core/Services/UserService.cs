@@ -66,7 +66,7 @@ namespace Provis.Core.Services
 
             if (userObject != null && userObject.Id != userId)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, 
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
                     "This username already exists");
             }
 
@@ -92,9 +92,8 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
             }
 
-            var inviteListInfo = await _inviteUserRepository.Query()
-                .Where(u => u.ToUserId == userId).Include(w => w.Workspace).Include(u => u.FromUser)
-                .OrderBy(d => d.Date ).ToListAsync();
+            var specification = new InviteUsers.InviteList(userId);
+            var inviteListInfo = await _inviteUserRepository.GetListBySpecAsync(specification);
 
             var userInviteListInfoToReturn = _mapper.Map<List<UserInviteInfoDTO>>(inviteListInfo);
 
@@ -112,8 +111,8 @@ namespace Provis.Core.Services
             }
             var userActiveInviteDTO = new UserActiveInviteDTO();
 
-            userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.Query()
-                .AnyAsync(u => u.ToUserId == userId && u.IsConfirm == null);
+            var specification = new InviteUsers.ActiveInvites(userId);
+            userActiveInviteDTO.IsActiveInvite = await _inviteUserRepository.AnyBySpecAsync(specification);
 
             return userActiveInviteDTO;
         }

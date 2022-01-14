@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
-using Provis.Core.DTO.userDTO;
-using Provis.Core.DTO.workspaceDTO;
+using Provis.Core.DTO.TaskDTO;
 using Provis.Core.Statuses;
 using System;
 
@@ -17,7 +16,8 @@ namespace Provis.Core.Validation
             RuleFor(task => task.DateOfEnd)
                 .NotEmpty()
                 .NotNull()
-                .GreaterThan(DateTime.UtcNow);
+                .GreaterThan(DateTime.UtcNow)
+                .WithMessage("Due date should be not in the past");
 
             RuleFor(task => task.WorkspaceId)
                 .NotEmpty()
