@@ -2,6 +2,5 @@
 {
     public class Users
     {
-        internal class UsersTasks
     }
 }
