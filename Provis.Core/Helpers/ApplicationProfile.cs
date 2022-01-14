@@ -100,6 +100,13 @@ namespace Provis.Core.Helpers
             CreateMap<Role, WorkspaceRoleDTO>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id));
+
+            CreateMap<TaskChangeInfoDTO, WorkspaceTask>()
+              .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
+              .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
+              .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
+              .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
+              .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.Deadline));
         }
     }
 }
