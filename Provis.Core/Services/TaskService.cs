@@ -206,58 +206,43 @@ namespace Provis.Core.Services
             var workspaceSpecification = new Workspaces.WorkspaceById(taskAssign.WorkspaceId);
             var worksp = await _workspaceRepository.GetFirstBySpecAsync(workspaceSpecification);
 
-            if (task.TaskCreatorId == userId) // If creator of task want to assign somebody
+            if (task.TaskCreatorId != userId && taskAssign.AssignedUsers.Single().UserId != userId)
             {
-                List<UserTask> userTasks = new();
-                foreach (var item in taskAssign.AssignedUsers)
-                {
-                    if (userTasks.Exists(x => x.UserId == item.UserId))
-                    {
-                        throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                            "This user has already assigned");
-                    }
-                    if (!worksp.UserWorkspaces.Exists(c => c.UserId == item.UserId))
-                    {
-                        throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                            "This user doesnt member of workspace");
-                    }
-                    if (task.UserTasks.Exists(x => x.UserId == item.UserId && x.IsUserDeleted == false))
-                    {
-                        throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                            "This user alredy in this task");
-                    }
-                    else
-                    {
-                        userTasks.Add(new UserTask
-                        {
-                            TaskId = task.Id,
-                            UserId = item.UserId,
-                            UserRoleTagId = item.RoleTagId
-                        });
-                    }
-
-                }
-                await _userTaskRepository.AddRangeAsync(userTasks);
-                await _userTaskRepository.SaveChangesAsync();
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                        "Only creator of the task can assign another users");
             }
-            else // If somebody want to assign himself on the task
+
+            List<UserTask> userTasks = new();
+            foreach (var item in taskAssign.AssignedUsers)
             {
-                if (task.UserTasks.Exists(x => x.UserId == userId && x.IsUserDeleted == false))
+                if (userTasks.Exists(x => x.UserId == item.UserId))
                 {
                     throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                            "You are alredy in this task");
+                        "This user has already assigned");
                 }
-
-                UserTask userTask = new()
+                if (!worksp.UserWorkspaces.Exists(c => c.UserId == item.UserId))
                 {
-                    TaskId = task.Id,
-                    UserId = userId,
-                    UserRoleTagId = taskAssign.AssignedUsers.SingleOrDefault().RoleTagId
-                };
-                await _userTaskRepository.AddAsync(userTask);
-                await _userTaskRepository.SaveChangesAsync();
+                    throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                        "This user doesn't member of current workspace");
+                }
+                if (task.UserTasks.Exists(x => x.UserId == item.UserId && x.IsUserDeleted == false))
+                {
+                    throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                        "This user alredy in this task");
+                }
+                else
+                {
+                    userTasks.Add(new UserTask
+                    {
+                        TaskId = task.Id,
+                        UserId = item.UserId,
+                        UserRoleTagId = item.RoleTagId
+                    });
+                }
             }
-            await Task.CompletedTask;
+            await _userTaskRepository.AddRangeAsync(userTasks);
+            await _userTaskRepository.SaveChangesAsync();
+            
         }
     }
 }
