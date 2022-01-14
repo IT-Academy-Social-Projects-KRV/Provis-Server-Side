@@ -348,10 +348,11 @@ namespace Provis.Core.Services
 
         public async Task DeleteFromWorkspaceAsync(int workspaceId, string userId)
         {
+            var userSpecification = new Users.
             var user = await _userManager.FindByIdAsync(userId);
 
-            var specification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
-            var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
+            var userWorkspSpecification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
+            var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspSpecification);
 
             var userTasks = user.UserTasks.Where(o => o.Task.WorkspaceId == workspaceId);
 
