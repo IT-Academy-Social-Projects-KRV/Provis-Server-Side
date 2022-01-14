@@ -80,8 +80,8 @@ namespace Provis.WebApi.Controllers
             WorkSpaceRoles.OwnerId,
             WorkSpaceRoles.ManagerId, 
             WorkSpaceRoles.MemberId })]
-        [Route("join-task")]
-        public async Task<IActionResult> JoinTask([FromBody] TaskAssignDTO taskAssign)
+        [Route("assign")]
+        public async Task<IActionResult> AssignTask([FromBody] TaskAssignDTO taskAssign)
         {
             await _taskService.JoinTaskAsync(taskAssign, UserId);
             return Ok();
