@@ -206,22 +206,31 @@ namespace Provis.Core.Services
                         throw new HttpException(System.Net.HttpStatusCode.Forbidden,
                             "This user has already assigned");
                     }
-                    if (task.UserTasks.Exists(x => x.UserId == item.UserId && x.IsUserDeleted == false))
-                    {
-                        throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                            "This user alredy in this task");
-                    }
                     if (!worksp.UserWorkspaces.Exists(c => c.UserId == item.UserId))
                     {
                         throw new HttpException(System.Net.HttpStatusCode.Forbidden,
                             "This user doesnt member of workspace");
                     }
-                    userTasks.Add(new UserTask
+                    if (task.UserTasks.Exists(x => x.UserId == item.UserId && x.IsUserDeleted == false))
                     {
-                        TaskId = task.Id,
-                        UserId = item.UserId,
-                        UserRoleTagId = item.RoleTagId
-                    });
+                        throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "This user alredy in this task");
+                    }
+                    if (task.UserTasks.Exists(x => x.UserId == item.UserId && x.IsUserDeleted == true))
+                    {
+                        var usTask = task.UserTasks.Single(x => x.UserId == item.UserId && x.IsUserDeleted == true);
+                        usTask.IsUserDeleted = false;
+                    }
+                    else
+                    {
+                        userTasks.Add(new UserTask
+                        {
+                            TaskId = task.Id,
+                            UserId = item.UserId,
+                            UserRoleTagId = item.RoleTagId
+                        });
+                    }
+
                 }
                 await _userTaskRepository.AddRangeAsync(userTasks);
                 await _userTaskRepository.SaveChangesAsync();
