@@ -1,5 +1,4 @@
 ﻿using Ardalis.Specification;
-using Provis.Core.Entities.WorkspaceTaskEntity;
 using System;
 
 namespace Provis.Core.Entities.UserTaskEntity
