@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Provis.Core.DTO.workspaceDTO;
+using Provis.Core.DTO.WorkspaceDTO;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using Provis.WebApi.Policy;
@@ -55,7 +55,7 @@ namespace Provis.WebApi.Controllers
         [HttpPost]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
         [Route("invite")]
-        public async Task<IActionResult> SendInviteToUser([FromBody] InviteUserDTO inviteUser)
+        public async Task<IActionResult> SendInviteToUser([FromBody] WorkspaceInviteUserDTO inviteUser)
         {
             await _workspaceService.SendInviteAsync(inviteUser, UserId);
 
@@ -76,7 +76,7 @@ namespace Provis.WebApi.Controllers
         [Authorize]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId })]
         [Route("role")]
-        public async Task<IActionResult> GetUserChangeRoleAsync([FromBody] ChangeRoleDTO userChangeRoleDTO)
+        public async Task<IActionResult> GetUserChangeRoleAsync([FromBody] WorkspaceChangeRoleDTO userChangeRoleDTO)
         {
             var changeRole = await _workspaceService.ChangeUserRoleAsync(UserId, userChangeRoleDTO);
 

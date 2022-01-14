@@ -1,6 +1,6 @@
 ﻿namespace Provis.Core.DTO.TaskDTO
 {
-    public class ChangeTaskStatusDTO
+    public class TaskChangeStatusDTO
     {
         public int WorkspaceId { get; set; }
         public int StatusId { get; set; }
