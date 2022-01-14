@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Provis.Core.DTO.WorkspaceDTO;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
@@ -304,28 +303,35 @@ namespace Provis.Core.Services
             }
         }
 
-        public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspId, string userId)
+        public async Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int workspaceId, string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "User with Id not exist");
-            }
-
-            var specification = new UserWorkspaces.WorkspaceInfo(userId, workspId);
+            var specification = new UserWorkspaces.WorkspaceInfo(userId, workspaceId);
             var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
 
             if (userWorkspace == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "Workspace with this Id doesn't exist or you hasn't permissions");
+                    "Workspace with this Id doesn't exist");
             }
 
             var workspace = _mapper.Map<WorkspaceInfoDTO>(userWorkspace);
 
             return workspace;
+        }
+
+        public async Task<WorkspaceDescriptionDTO> GetWorkspaceDescriptionAsync(int workspaceId)
+        {
+            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
+
+            if (workspace == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "Workspace with this Id doesn't exist or you hasn't permissions");
+            }
+
+            var workspaceToReturn = _mapper.Map<WorkspaceDescriptionDTO>(workspace);
+
+            return workspaceToReturn;
         }
 
         public async Task<List<WorkspaceInviteInfoDTO>>

@@ -13,7 +13,6 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
                 Query
                     .Where(y => y.UserId == userId)
                     .Include(x => x.Workspace)
-                    .Include(x => x.Role)
                     .OrderBy(x => x.RoleId)
                     .ThenBy(x => x.Workspace.Name);
             }
@@ -47,8 +46,7 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
                 Query
                     .Where(x => x.WorkspaceId == workspaceId
                            && x.UserId == userId)
-                    .Include(x => x.Workspace)
-                    .Include(x => x.Role);
+                    .Include(x => x.Workspace);
             }
         }
     }

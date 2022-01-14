@@ -13,7 +13,8 @@ namespace Provis.Core.Interfaces.Services
         Task SendInviteAsync(WorkspaceInviteUserDTO inviteUser, string userId);
         Task<WorkspaceChangeRoleDTO> ChangeUserRoleAsync(string userId, WorkspaceChangeRoleDTO userChangeRole);
         Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceDTO, string userId);
-        Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int id, string userEmail);
+        Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int id, string userId);
+        Task<WorkspaceDescriptionDTO> GetWorkspaceDescriptionAsync(int workspaceId);
         Task<List<WorkspaceInviteInfoDTO>> GetWorkspaceActiveInvitesAsync(int id, string userId);
         Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId);
         Task DeleteFromWorkspaceAsync(int workspId, string userId);

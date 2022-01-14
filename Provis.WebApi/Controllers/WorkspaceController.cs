@@ -96,12 +96,34 @@ namespace Provis.WebApi.Controllers
 
         [HttpGet]
         [Authorize]
-        [Route("workspace/{id}/info")]
-        public async Task<IActionResult> GetWorkspaceInfoAsync(int id)
+        [Route("{workspaceId}/info")]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId,
+            WorkSpaceRoles.ViewerId
+        })]
+        public async Task<IActionResult> GetWorkspaceInfoAsync(int workspaceId)
         {
-            var workspInfo = await _workspaceService.GetWorkspaceInfoAsync(id, UserId);
+            var workspaceInfo = await _workspaceService.GetWorkspaceInfoAsync(workspaceId, UserId);
 
-            return Ok(workspInfo);
+            return Ok(workspaceInfo);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId,
+            WorkSpaceRoles.ViewerId
+        })]
+        [Route("{workspaceId}/description")]
+        public async Task<IActionResult> GetWorkspaceDescriptionAsync(int workspaceId)
+        {
+            var workspaceDescription = await _workspaceService.GetWorkspaceDescriptionAsync(workspaceId);
+
+            return Ok(workspaceDescription);
         }
 
         [HttpGet]
@@ -159,9 +181,9 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpDelete]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
-            WorkSpaceRoles.ManagerId, 
-            WorkSpaceRoles.MemberId, 
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId,
             WorkSpaceRoles.ViewerId })]
         [Route("{workspaceId}/user")]
         public async Task<IActionResult> LeaveWorkspace(int workspaceId)
