@@ -93,11 +93,8 @@ namespace Provis.Core.Services
 
             foreach (var item in taskCreateDTO.AssignedUsers)
             {
-                var assignedUser = await _userManager.FindByIdAsync(item.UserId);
-
-                var userWorkspace = await _userWorkspaceRepository.Query().FirstOrDefaultAsync(u =>
-                u.WorkspaceId == workspace.Id &&
-                u.UserId == assignedUser.Id);
+                var specification = new UserWorkspaces.WorkspaceMember(item.UserId, workspace.Id);
+                var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
 
                 _ = userWorkspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "User in workspace not found");
@@ -153,19 +150,13 @@ namespace Provis.Core.Services
         {
             if (!String.IsNullOrEmpty(userId))
             {
-                var selection = await _userTaskRepository.Query()
-                    .Include(x => x.Task)
-                    .Where(x => x.UserId == userId && x.Task.WorkspaceId == workspaceId)
-                    .OrderBy(x => x.Task.StatusId)
-                    .Select(x => new Tuple<int, TaskDTO>(
-                        x.Task.StatusId,
-                        _mapper.Map<TaskDTO>(x)))
-                    .ToListAsync();
+                var specification = new UserTasks.UserTaskList(userId, workspaceId);
+                var selection = await _userTaskRepository.GetListBySpecAsync(specification);
 
                 var result = selection
                     .GroupBy(x => x.Item1)
                     .ToDictionary(k => k.Key,
-                        v => v.Select(x => x.Item2)
+                        v => v.Select(x => _mapper.Map<TaskDTO>(x.Item2))
                     .ToList());
 
                 return new TaskGroupByStatusDTO()
@@ -176,18 +167,13 @@ namespace Provis.Core.Services
             }
             else
             {
-                var selection = await _taskRepository.Query()
-                   .Where(x => x.WorkspaceId == workspaceId && !x.UserTasks.Any())
-                   .OrderBy(x => x.StatusId)
-                   .Select(x => new Tuple<int, TaskDTO>(
-                       x.StatusId,
-                       _mapper.Map<TaskDTO>(x)))
-                   .ToListAsync();
+                var specification = new WorkspaceTasks.UnassignedTaskList(workspaceId);
+                var selection = await _taskRepository.GetListBySpecAsync(specification);
 
                 var result = selection
                     .GroupBy(x => x.Item1)
                     .ToDictionary(k => k.Key,
-                        v => v.Select(x => x.Item2)
+                        v => v.Select(x => _mapper.Map<TaskDTO>(x.Item2))
                     .ToList());
 
                 return new TaskGroupByStatusDTO()
