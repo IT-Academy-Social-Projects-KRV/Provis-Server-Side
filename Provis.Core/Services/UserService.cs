@@ -27,6 +27,7 @@ namespace Provis.Core.Services
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
         private readonly IOptions<ImageSettings> _imageSettings;
+        protected readonly ITemplateService _templateService;
 
 
         public UserService(UserManager<User> userManager,
@@ -35,7 +36,8 @@ namespace Provis.Core.Services
             IMapper mapper,
             IEmailSenderService emailSenderService,
             IFileService fileService,
-            IOptions<ImageSettings> imageSettings)
+            IOptions<ImageSettings> imageSettings,
+            ITemplateService templateService)
         {
             _userManager = userManager;
             _userRepository = userRepository;
@@ -44,6 +46,7 @@ namespace Provis.Core.Services
             _fileService = fileService;
             _imageSettings = imageSettings;
             _emailSenderService = emailSenderService;
+            _templateService = templateService;
         }
 
         public async Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId)
@@ -205,7 +208,7 @@ namespace Provis.Core.Services
             {
                 ToEmail = user.Email,
                 Subject = "Provis 2fa code",
-                Body = $"<div><h1>Your code:</h1> <label>{twoFactorToken}</label></div>"
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode", twoFactorToken)
             };
 
             await _emailSenderService.SendEmailAsync(message);

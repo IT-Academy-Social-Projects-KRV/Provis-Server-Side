@@ -21,6 +21,7 @@ namespace Provis.Core.Services
         protected readonly RoleManager<IdentityRole> _roleManager;
         protected readonly IRepository<RefreshToken> _refreshTokenRepository;
         protected readonly IEmailSenderService _emailSenderService;
+        protected readonly ITemplateService _templateService;
 
         public AuthenticationService(
             UserManager<User> userManager,
@@ -28,7 +29,8 @@ namespace Provis.Core.Services
             IJwtService jwtService,
             RoleManager<IdentityRole> roleManager,
             IRepository<RefreshToken> refreshTokenRepository,
-            IEmailSenderService emailSenderService)
+            IEmailSenderService emailSenderService,
+            ITemplateService templateService)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -36,6 +38,7 @@ namespace Provis.Core.Services
             _roleManager = roleManager;
             _refreshTokenRepository = refreshTokenRepository;
             _emailSenderService = emailSenderService;
+            _templateService = templateService;
         }
 
         public async Task<UserAutorizationDTO> LoginAsync(string email, string password)
@@ -106,7 +109,7 @@ namespace Provis.Core.Services
             {
                 ToEmail = user.Email,
                 Subject = "Provis authentication code",
-                Body = $"<div><h1>Your code:</h1> <label>{twoFactorToken}</label></div>"
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode", twoFactorToken)
             };
 
             await _emailSenderService.SendEmailAsync(message);

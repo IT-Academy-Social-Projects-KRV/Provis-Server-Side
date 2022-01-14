@@ -1,0 +1,19 @@
+﻿@model Provis.Core.Helpers.Mails.ViewModels.WorkspaceInvite
+
+@{
+    Layout = "_MailLayout";
+}
+
+<table align="center" style="text-align:center;">
+    <tr>
+        <td>
+            <h1 style="color: white;">Owner: @Model.Owner</h1>
+            <h3 style="color: white;">Welcome to my workspace - @Model.WorkspaceName</h3>
+        </td>
+    </tr>
+</table>
+<div style="text-align:center;">
+    <a href="http://localhost:4200/user/workspaces" style="margin: 20px;">
+        <h1>Your workspaces</h1>
+    </a>
+</div>

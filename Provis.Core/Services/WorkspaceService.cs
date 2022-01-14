@@ -16,6 +16,7 @@ using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RoleEntity;
+using Provis.Core.Helpers.Mails.ViewModels;
 
 namespace Provis.Core.Services
 {
@@ -30,6 +31,7 @@ namespace Provis.Core.Services
         protected readonly IRepository<Role> _userRoleRepository;
         protected readonly IMapper _mapper;
         protected readonly RoleAccess _roleAccess;
+        protected readonly ITemplateService _templateService;
 
         public WorkspaceService(IRepository<User> user,
             UserManager<User> userManager,
@@ -39,8 +41,8 @@ namespace Provis.Core.Services
             IRepository<Role> userRoleRepository,
             IEmailSenderService emailSenderService,
             IMapper mapper,
-            RoleAccess roleAccess
-            )
+            RoleAccess roleAccess,
+            ITemplateService templateService)
         {
             _userRepository = user;
             _userManager = userManager;
@@ -51,6 +53,7 @@ namespace Provis.Core.Services
             _mapper = mapper;
             _roleAccess = roleAccess;
             _userRoleRepository = userRoleRepository;
+            _templateService = templateService;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -157,7 +160,8 @@ namespace Provis.Core.Services
             {
                 ToEmail = inviteDTO.UserEmail,
                 Subject = "Workspace invitation",
-                Body = $"Owner: {owner.UserName} - Welcome to my Workspace {workspace.Name}"
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/WorkspaceInvite", 
+                    new WorkspaceInvite() { Owner = owner.UserName, WorkspaceName = workspace.Name })
             });
 
             await Task.CompletedTask;

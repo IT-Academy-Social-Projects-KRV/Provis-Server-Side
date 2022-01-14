@@ -14,11 +14,15 @@ namespace Provis.Core.Services
     {
         private readonly UserManager<User> _userManager;
         private readonly IEmailSenderService _emailService;
+        protected readonly ITemplateService _templateService;
 
-        public ConfirmEmailService(UserManager<User> userManager, IEmailSenderService emailSender)
+        public ConfirmEmailService(UserManager<User> userManager, 
+            IEmailSenderService emailSender,
+            ITemplateService templateService)
         {
             _userManager = userManager;
             _emailService = emailSender;
+            _templateService = templateService;
         }
 
         public async Task SendConfirmMailAsync(string userId)
@@ -34,7 +38,7 @@ namespace Provis.Core.Services
             {
                 ToEmail = user.Email,
                 Subject = "Provis Confirm Email",
-                Body = $"<div><h1>Your code:</h1> <label>{encodedCode}</label></div>"
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/ConfirmEmail", encodedCode)
             });
 
             await Task.CompletedTask;
