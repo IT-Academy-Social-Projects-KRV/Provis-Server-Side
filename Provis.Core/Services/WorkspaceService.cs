@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Provis.Core.DTO.workspaceDTO;
+using Provis.Core.DTO.WorkspaceDTO;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
@@ -104,7 +104,7 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-        public async Task SendInviteAsync(InviteUserDTO inviteDTO, string ownerId)
+        public async Task SendInviteAsync(WorkspaceInviteUserDTO inviteDTO, string ownerId)
         {
             var owner = await _userManager.FindByIdAsync(ownerId);
 
@@ -264,7 +264,7 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-        public async Task<ChangeRoleDTO> ChangeUserRoleAsync(string userId, ChangeRoleDTO userChangeRole)
+        public async Task<WorkspaceChangeRoleDTO> ChangeUserRoleAsync(string userId, WorkspaceChangeRoleDTO userChangeRole)
         {
             var modifier = await _userWorkspaceRepository.Query()
                 .FirstOrDefaultAsync(p => p.UserId == userId &&
@@ -295,7 +295,7 @@ namespace Provis.Core.Services
             {
                 target.RoleId = userChangeRole.RoleId;
                 await _userWorkspaceRepository.SaveChangesAsync();
-                return _mapper.Map<ChangeRoleDTO>(target);
+                return _mapper.Map<WorkspaceChangeRoleDTO>(target);
             }
             else
             {
@@ -422,11 +422,11 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-        public async Task<List<WorkspaceRolesDTO>> GetAllowedRoles()
+        public async Task<List<WorkspaceRoleDTO>> GetAllowedRoles()
         {
             var result = await _userRoleRepository.GetAllAsync();
 
-            return result.Select(x => _mapper.Map<WorkspaceRolesDTO>(x)).ToList();
+            return result.Select(x => _mapper.Map<WorkspaceRoleDTO>(x)).ToList();
         }
     }
 

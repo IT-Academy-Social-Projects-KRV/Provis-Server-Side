@@ -1,6 +1,6 @@
-﻿namespace Provis.Core.DTO.workspaceDTO
+﻿namespace Provis.Core.DTO.WorkspaceDTO
 {
-    public class ChangeRoleDTO
+    public class WorkspaceChangeRoleDTO
     {
         public int WorkspaceId { get; set; }
         public string UserId { get; set; }
