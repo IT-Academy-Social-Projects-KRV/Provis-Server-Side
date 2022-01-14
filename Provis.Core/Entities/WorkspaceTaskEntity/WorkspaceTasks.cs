@@ -18,5 +18,15 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                     .OrderBy(x => x.StatusId);
             }
         }
+
+        internal class TaskById : Specification<WorkspaceTask>
+        {
+            public TaskById(int taskId)
+            {
+                Query
+                    .Where(p => p.Id == taskId)
+                    .Include(p => p.UserTasks);
+            }
+        }
     }
 }
