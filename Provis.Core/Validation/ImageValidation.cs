@@ -1,13 +1,13 @@
 ﻿using FluentValidation;
 using Microsoft.Extensions.Options;
-using Provis.Core.DTO.userDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Helpers;
 using System;
 using System.Linq;
 
 namespace Provis.Core.Validation
 {
-    public class ImageValidation: AbstractValidator<UploadImageDTO>
+    public class ImageValidation: AbstractValidator<UserUploadImageDTO>
     {
         private readonly IOptions<ImageSettings> options;
 

@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Ardalis.Specification;
 
 namespace Provis.Core.Interfaces.Repositories
 {
@@ -16,5 +18,12 @@ namespace Provis.Core.Interfaces.Repositories
         IQueryable<TEntity> Query(params Expression<Func<TEntity, object>>[] includes);
         Task<int> SaveChangesAsync();
         Task AddRangeAsync(List<TEntity> entities);
+        Task<IDbContextTransaction> BeginTransactionAsync();
+        Task<IEnumerable<TEntity>> GetListBySpecAsync(ISpecification<TEntity> specification);
+        Task<IEnumerable<TReturn>> GetListBySpecAsync<TReturn>(ISpecification<TEntity, TReturn> specification);
+        Task<TEntity> GetFirstBySpecAsync(ISpecification<TEntity> specification);
+        Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification);
+        Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification, Expression<Func<TEntity, bool>> anyExpression);
+        Task<bool> AllBySpecAsync(ISpecification<TEntity> specification, Expression<Func<TEntity, bool>> allExpression);
     }
 }

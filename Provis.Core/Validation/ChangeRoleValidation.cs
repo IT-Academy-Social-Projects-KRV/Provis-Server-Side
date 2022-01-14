@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
-using Provis.Core.DTO.workspaceDTO;
+using Provis.Core.DTO.WorkspaceDTO;
 
 namespace Provis.Core.Validation
 {
-    public class ChangeRoleValidation : AbstractValidator<ChangeRoleDTO>
+    public class ChangeRoleValidation : AbstractValidator<WorkspaceChangeRoleDTO>
     {
         public ChangeRoleValidation()
         {

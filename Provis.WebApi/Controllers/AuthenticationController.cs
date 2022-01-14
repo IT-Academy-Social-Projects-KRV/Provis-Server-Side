@@ -20,7 +20,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Route("login")]
-        public async Task<IActionResult> LoginAsync([FromBody] UserLogDTO logDTO)
+        public async Task<IActionResult> LoginAsync([FromBody] UserLoginDTO logDTO)
         {
             var tokens = await authenticationService.LoginAsync(logDTO.Email, logDTO.Password);
 
@@ -38,7 +38,7 @@ namespace Provis.WebApi.Controllers
 
         [HttpPost]
         [Route("registration")]
-        public async Task<IActionResult> RegistrationAsync([FromBody] UserRegDTO regDTO)
+        public async Task<IActionResult> RegistrationAsync([FromBody] UserRegistrationDTO regDTO)
         {
             var user = new User()
             {

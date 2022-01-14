@@ -1,4 +1,4 @@
-using Provis.Core.DTO.workspaceDTO;
+using Provis.Core.DTO.WorkspaceDTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,16 +10,17 @@ namespace Provis.Core.Interfaces.Services
         Task DenyInviteAsync(int id, string userid);
         Task AcceptInviteAsync(int id, string userid);
         Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid);
-        Task SendInviteAsync(InviteUserDTO inviteUser, string userId);
-        Task<ChangeRoleDTO> ChangeUserRoleAsync(string userId, ChangeRoleDTO userChangeRole);
+        Task SendInviteAsync(WorkspaceInviteUserDTO inviteUser, string userId);
+        Task<WorkspaceChangeRoleDTO> ChangeUserRoleAsync(string userId, WorkspaceChangeRoleDTO userChangeRole);
         Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceDTO, string userId);
-        Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int id, string userEmail);
+        Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int id, string userId);
+        Task<WorkspaceDescriptionDTO> GetWorkspaceDescriptionAsync(int workspaceId);
         Task<List<WorkspaceInviteInfoDTO>> GetWorkspaceActiveInvitesAsync(int id, string userId);
         Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId);
         Task DeleteFromWorkspaceAsync(int workspId, string userId);
         Task CancelInviteAsync(int id, int workspaceId, string userId);
 
-        Task<List<WorkspaceRolesDTO>> GetAllowedRoles();
+        Task<List<WorkspaceRoleDTO>> GetAllowedRoles();
     }
 }
 
