@@ -242,6 +242,17 @@ namespace Provis.Core.Services
 
             inviteUserRec.IsConfirm = true;
 
+            var userTaskSpecification = new UserTasks.UserTaskList(userid, inviteUserRec.WorkspaceId);
+            var userTasks = await _userTaskRepository.GetListBySpecAsync(userTaskSpecification);
+
+            if (userTasks != null)
+            {
+                foreach (var userTask in userTasks)
+                {
+                    userTask.Item2.IsUserDeleted = false;
+                }
+            }
+
             UserWorkspace userWorkspace = new()
             {
                 UserId = user.Id,
@@ -348,19 +359,23 @@ namespace Provis.Core.Services
 
         public async Task DeleteFromWorkspaceAsync(int workspaceId, string userId)
         {
-            var userSpecification = new Users.
-            var user = await _userManager.FindByIdAsync(userId);
-
             var userWorkspSpecification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
             var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspSpecification);
 
-            var userTasks = user.UserTasks.Where(o => o.Task.WorkspaceId == workspaceId);
+            if (userWorksp.RoleId == 1)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "Owner can't leave workspace");
+            }
+
+            var userTaskSpecification = new UserTasks.UserTaskList(userId, workspaceId);
+            var userTasks = await _userTaskRepository.GetListBySpecAsync(userTaskSpecification);
 
             if (userTasks != null)
             {
                 foreach (var userTask in userTasks)
                 {
-                    userTask.IsUserDeleted = true;
+                    userTask.Item2.IsUserDeleted = true;
                 }
             }
 

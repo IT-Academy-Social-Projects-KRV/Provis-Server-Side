@@ -200,15 +200,11 @@ namespace Provis.Core.Services
 
         public async Task JoinTaskAsync(TaskAssignDTO taskAssign, string userId)
         {
-            var task = await _taskRepository.
-                Query().
-                Include(x=>x.UserTasks).
-                SingleOrDefaultAsync(p => p.Id == taskAssign.Id);
+            var taskSpecification = new WorkspaceTasks.TaskById(taskAssign.Id);
+            var task = await _taskRepository.GetFirstBySpecAsync(taskSpecification);
 
-            var worksp = await _workspaceRepository
-                .Query()
-                .Include(x=>x.UserWorkspaces)
-                .SingleOrDefaultAsync(x=>x.Id == taskAssign.WorkspaceId);
+            var workspaceSpecification = new Workspaces.WorkspaceById(taskAssign.WorkspaceId);
+            var worksp = await _workspaceRepository.GetFirstBySpecAsync(workspaceSpecification);
 
             if (task.TaskCreatorId == userId) // If creator of task want to assign somebody
             {
@@ -229,11 +225,6 @@ namespace Provis.Core.Services
                     {
                         throw new HttpException(System.Net.HttpStatusCode.Forbidden,
                             "This user alredy in this task");
-                    }
-                    if (task.UserTasks.Exists(x => x.UserId == item.UserId && x.IsUserDeleted == true))
-                    {
-                        var usTask = task.UserTasks.Single(x => x.UserId == item.UserId && x.IsUserDeleted == true);
-                        usTask.IsUserDeleted = false;
                     }
                     else
                     {
