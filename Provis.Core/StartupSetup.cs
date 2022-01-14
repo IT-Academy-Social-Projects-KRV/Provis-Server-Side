@@ -21,7 +21,6 @@ namespace Provis.Core
             services.AddScoped<IWorkspaceService, WorkspaceService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddTransient<IEmailSenderService, EmailSenderService>();
-            services.AddScoped<ISmtpService, SmtpService>();
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IConfirmEmailService, ConfirmEmailService>();

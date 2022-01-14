@@ -1,35 +1,39 @@
 ﻿using Microsoft.Extensions.Options;
-using MimeKit;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Services;
+using SendGrid.Helpers.Mail;
 using System.Threading.Tasks;
+using SendGrid;
 
 namespace Provis.Core.Services
 {
     public class EmailSenderService : IEmailSenderService
     {
-        private readonly MailSettings _mailSettings;
-        private readonly ISmtpService _smtpService;
-        public EmailSenderService(IOptions<MailSettings> options, ISmtpService smtpService)
+        private readonly Helpers.Mails.MailSettings _mailSettings;
+        public EmailSenderService(IOptions<Helpers.Mails.MailSettings> options)
         {
             _mailSettings = options.Value;
-            _smtpService = smtpService;
         }
 
         public async Task SendEmailAsync(MailRequest mailRequest)
         {
-            await _smtpService.SendAsync(CreateEmailMessage(mailRequest), _mailSettings);
+            var client = new SendGridClient(_mailSettings.ApiKey);
+
+            await client.SendEmailAsync(CreateMessage(mailRequest));
         }
 
-        private MimeMessage CreateEmailMessage(MailRequest mailRequest)
+        private SendGridMessage CreateMessage(MailRequest mailRequest)
         {
-            var emailMessage = new MimeMessage();
-            emailMessage.From.Add(new MailboxAddress(_mailSettings.FromName, _mailSettings.FromAddress));
-            emailMessage.To.Add(MailboxAddress.Parse(mailRequest.ToEmail));
-            emailMessage.Subject = mailRequest.Subject;
-            emailMessage.Body = new TextPart(_mailSettings.TextFormat) { Text = mailRequest.Body };
+            SendGridMessage message = new SendGridMessage
+            {
+                From = new EmailAddress(_mailSettings.Email, _mailSettings.DisplayName),
+                Subject = mailRequest.Subject,
+                HtmlContent = mailRequest.Body,
+            };
 
-            return emailMessage;
+            message.AddTo(mailRequest.ToEmail);
+
+            return message;
         }
     }
 }
