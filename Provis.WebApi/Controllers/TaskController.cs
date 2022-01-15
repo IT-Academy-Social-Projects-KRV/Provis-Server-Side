@@ -84,5 +84,15 @@ namespace Provis.WebApi.Controllers
 
             return Ok();
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("task")]
+        public async Task<IActionResult> GetTaskInfoAndAssignedUsersAsync(int taskId)
+        {
+            var res = await _taskService.GetTaskInfoAsync(taskId);
+
+            return Ok(res);
+        }
     }
 }
