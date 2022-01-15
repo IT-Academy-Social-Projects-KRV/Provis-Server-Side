@@ -217,28 +217,25 @@ namespace Provis.Core.Services
             {
                 if (userTasks.Exists(x => x.UserId == item.UserId))
                 {
-                    throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
                         "This user has already assigned");
                 }
                 if (!worksp.UserWorkspaces.Exists(c => c.UserId == item.UserId))
                 {
-                    throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
                         "This user doesn't member of current workspace");
                 }
                 if (task.UserTasks.Exists(x => x.UserId == item.UserId && x.IsUserDeleted == false))
                 {
-                    throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
                         "This user alredy in this task");
                 }
-                else
-                {
                     userTasks.Add(new UserTask
                     {
                         TaskId = task.Id,
                         UserId = item.UserId,
                         UserRoleTagId = item.RoleTagId
                     });
-                }
             }
             await _userTaskRepository.AddRangeAsync(userTasks);
             await _userTaskRepository.SaveChangesAsync();
