@@ -55,15 +55,16 @@ namespace Provis.UnitTests.Core.Services
         [Test]
         public async Task GetUserPersonalInfoAsync_UserExist_ReturnUserPersonalInfoDTO()
         {
+            var userId = "1";
             var userMock = TestData.GetTestUser();
 
             _userRepositoryMock
-                .Setup(x => x.GetByKeyAsync("1"))
+                .Setup(x => x.GetByKeyAsync(userId))
                 .ReturnsAsync(userMock);
 
             var expectedUser = _mapper.Map<UserPersonalInfoDTO>(userMock);
 
-            var result = await _userService.GetUserPersonalInfoAsync("1");
+            var result = await _userService.GetUserPersonalInfoAsync(userId);
 
             Assert.NotNull(result);
             Assert.AreEqual(expectedUser.Email, result.Email);
