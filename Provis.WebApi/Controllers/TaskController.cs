@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Provis.Core.DTO.TaskDTO;
-using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using Provis.WebApi.Policy;
@@ -27,7 +26,7 @@ namespace Provis.WebApi.Controllers
         [HttpPut]
         [Route("status")]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
-        public async Task<IActionResult> ChangeTaskStatusAsync(ChangeTaskStatusDTO changeTaskStatus)
+        public async Task<IActionResult> ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus)
         {
             await _taskService.ChangeTaskStatusAsync(changeTaskStatus);
 
@@ -73,6 +72,17 @@ namespace Provis.WebApi.Controllers
             var res = await _taskService.GetWorkerRoles();
 
             return Ok(res);
+        }
+
+        [Authorize]
+        [HttpPut]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("task")]
+        public async Task<IActionResult> ChangeTaskAsync([FromBody] TaskChangeInfoDTO taskChangeInfoDTO)
+        {
+            await _taskService.ChangeTaskInfoAsync(taskChangeInfoDTO, UserId);
+
+            return Ok();
         }
     }
 }

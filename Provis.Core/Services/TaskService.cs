@@ -2,12 +2,12 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Provis.Core.DTO.TaskDTO;
-using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.Entities.StatusEntity;
 using Provis.Core.Entities.StatusHistoryEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.UserRoleTagEntity;
 using Provis.Core.Entities.UserTaskEntity;
+using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
@@ -27,6 +27,7 @@ namespace Provis.Core.Services
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<WorkspaceTask> _taskRepository;
         protected readonly IRepository<UserTask> _userTaskRepository;
+        protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
         protected readonly IRepository<StatusHistory> _statusHistoryRepository;
         protected readonly IRepository<Status> _taskStatusRepository;
         protected readonly IRepository<UserRoleTag> _workerRoleRepository;
@@ -37,6 +38,7 @@ namespace Provis.Core.Services
             IRepository<WorkspaceTask> task,
             IRepository<Workspace> workspace,
             IRepository<Status> taskStatusRepository,
+            IRepository<UserWorkspace> userWorkspace,
             IMapper mapper,
             IRepository<StatusHistory> statusHistoryRepository,
             IRepository<UserTask> userTask,
@@ -47,6 +49,7 @@ namespace Provis.Core.Services
             _userManager = userManager;
             _userRepository = user;
             _taskRepository = task;
+            _userWorkspaceRepository = userWorkspace;
             _workspaceRepository = workspace;
             _userTaskRepository = userTask;
             _mapper = mapper;
@@ -55,7 +58,7 @@ namespace Provis.Core.Services
             _taskStatusRepository = taskStatusRepository;
         }
 
-        public async Task ChangeTaskStatusAsync(ChangeTaskStatusDTO changeTaskStatus)
+        public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
 
@@ -83,10 +86,19 @@ namespace Provis.Core.Services
             _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "User with Id not exist");
 
-            var workspaceRec = await _workspaceRepository.GetByKeyAsync(taskCreateDTO.WorkspaceId);
+            var workspace = await _workspaceRepository.GetByKeyAsync(taskCreateDTO.WorkspaceId);
 
-            _ = workspaceRec ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+            _ = workspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "Workspace with Id not found");
+
+            foreach (var item in taskCreateDTO.AssignedUsers)
+            {
+                var specification = new UserWorkspaces.WorkspaceMember(item.UserId, workspace.Id);
+                var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
+
+                _ = userWorkspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "User in workspace not found");
+            }
 
             var task = new WorkspaceTask();
 
@@ -138,19 +150,13 @@ namespace Provis.Core.Services
         {
             if (!String.IsNullOrEmpty(userId))
             {
-                var selection = await _userTaskRepository.Query()
-                    .Include(x => x.Task)
-                    .Where(x => x.UserId == userId && x.Task.WorkspaceId == workspaceId)
-                    .OrderBy(x => x.Task.StatusId)
-                    .Select(x => new Tuple<int, TaskDTO>(
-                        x.Task.StatusId,
-                        _mapper.Map<TaskDTO>(x)))
-                    .ToListAsync();
+                var specification = new UserTasks.UserTaskList(userId, workspaceId);
+                var selection = await _userTaskRepository.GetListBySpecAsync(specification);
 
                 var result = selection
                     .GroupBy(x => x.Item1)
                     .ToDictionary(k => k.Key,
-                        v => v.Select(x => x.Item2)
+                        v => v.Select(x => _mapper.Map<TaskDTO>(x.Item2))
                     .ToList());
 
                 return new TaskGroupByStatusDTO()
@@ -161,18 +167,13 @@ namespace Provis.Core.Services
             }
             else
             {
-                var selection = await _taskRepository.Query()
-                   .Where(x => x.WorkspaceId == workspaceId && !x.UserTasks.Any())
-                   .OrderBy(x => x.StatusId)
-                   .Select(x => new Tuple<int, TaskDTO>(
-                       x.StatusId,
-                       _mapper.Map<TaskDTO>(x)))
-                   .ToListAsync();
+                var specification = new WorkspaceTasks.UnassignedTaskList(workspaceId);
+                var selection = await _taskRepository.GetListBySpecAsync(specification);
 
                 var result = selection
                     .GroupBy(x => x.Item1)
                     .ToDictionary(k => k.Key,
-                        v => v.Select(x => x.Item2)
+                        v => v.Select(x => _mapper.Map<TaskDTO>(x.Item2))
                     .ToList());
 
                 return new TaskGroupByStatusDTO()
@@ -190,11 +191,30 @@ namespace Provis.Core.Services
             return result.Select(x => _mapper.Map<TaskStatusDTO>(x)).ToList();
         }
 
-        public async Task<List<WorkerRoleDTO>> GetWorkerRoles()
+        public async Task<List<TaskRoleDTO>> GetWorkerRoles()
         {
             var result = await _workerRoleRepository.GetAllAsync();
 
-            return result.Select(x => _mapper.Map<WorkerRoleDTO>(x)).ToList();
+            return result.Select(x => _mapper.Map<TaskRoleDTO>(x)).ToList();
+        }
+
+        public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
+        {
+            var workspaceTask = await _taskRepository.GetByKeyAsync(taskChangeInfoDTO.Id);
+
+            _ = workspaceTask ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Task with Id not found");
+
+            if(workspaceTask.TaskCreatorId != userId)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You are not the creator of the task");
+            }
+
+            _mapper.Map(taskChangeInfoDTO, workspaceTask);
+
+            await _taskRepository.UpdateAsync(workspaceTask);
+
+            await _taskRepository.SaveChangesAsync();
         }
     }
 }

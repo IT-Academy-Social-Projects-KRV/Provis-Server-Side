@@ -3,7 +3,7 @@ using Provis.Core.DTO.UserDTO;
 
 namespace Provis.Core.Validation
 {
-    public class UserLogValidation : AbstractValidator<UserLogDTO>
+    public class UserLogValidation : AbstractValidator<UserLoginDTO>
     {
         public UserLogValidation()
         {

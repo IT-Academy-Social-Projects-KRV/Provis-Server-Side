@@ -1,6 +1,6 @@
 ﻿namespace Provis.Core.DTO.UserDTO
 {
-    public class UserRegDTO
+    public class UserRegistrationDTO
     {
         public string Name { get; set; }
         public string Surname { get; set; }
