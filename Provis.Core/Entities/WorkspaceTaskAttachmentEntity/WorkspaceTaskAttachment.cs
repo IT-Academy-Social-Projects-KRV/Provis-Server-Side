@@ -8,9 +8,7 @@ namespace Provis.Core.Entities.WorkspaceTaskAttachmentEntity
     public class WorkspaceTaskAttachment : IBaseEntity
     {
         public int Id { get; set; } 
-
         public string AttachmentUrl { get; set; }
-
         public int TaskId { get; set; }
         public WorkspaceTask Task { get; set; }
     }
