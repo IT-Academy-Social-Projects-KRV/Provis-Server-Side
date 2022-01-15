@@ -28,7 +28,7 @@ namespace Provis.WebApi.Controllers
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
         public async Task<IActionResult> ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus)
         {
-            await _taskService.ChangeTaskStatusAsync(changeTaskStatus);
+            await _taskService.ChangeTaskStatusAsync(changeTaskStatus, UserId);
 
             return Ok();
         }
@@ -83,6 +83,16 @@ namespace Provis.WebApi.Controllers
             await _taskService.ChangeTaskInfoAsync(taskChangeInfoDTO, UserId);
 
             return Ok();
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("statusHistory")]
+        public async Task<IActionResult> GetStatusHistory(int taskId)
+        {
+            var res = await _taskService.GetStatusHistories(taskId);
+
+            return Ok(res);
         }
     }
 }
