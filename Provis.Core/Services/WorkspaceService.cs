@@ -368,8 +368,8 @@ namespace Provis.Core.Services
             var userWorkspSpecification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
             var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspSpecification);
 
-            int workspaceOwner = 1;
-            if (userWorksp.RoleId == workspaceOwner)
+            
+            if (userWorksp.RoleId == (int)WorkSpaceRoles.OwnerId)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound,
                     "Owner can't leave workspace");
