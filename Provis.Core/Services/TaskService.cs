@@ -244,5 +244,24 @@ namespace Provis.Core.Services
             await _userTaskRepository.SaveChangesAsync();
             
         }
+
+        public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
+        {
+            var workspaceTask = await _taskRepository.GetByKeyAsync(taskChangeInfoDTO.Id);
+
+            _ = workspaceTask ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Task with Id not found");
+
+            if(workspaceTask.TaskCreatorId != userId)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You are not the creator of the task");
+            }
+
+            _mapper.Map(taskChangeInfoDTO, workspaceTask);
+
+            await _taskRepository.UpdateAsync(workspaceTask);
+
+            await _taskRepository.SaveChangesAsync();
+        }
     }
 }

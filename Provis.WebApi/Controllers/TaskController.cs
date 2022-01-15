@@ -86,5 +86,16 @@ namespace Provis.WebApi.Controllers
             await _taskService.JoinTaskAsync(taskAssign, UserId);
             return Ok();
         }
+
+        [Authorize]
+        [HttpPut]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("task")]
+        public async Task<IActionResult> ChangeTaskAsync([FromBody] TaskChangeInfoDTO taskChangeInfoDTO)
+        {
+            await _taskService.ChangeTaskInfoAsync(taskChangeInfoDTO, UserId);
+
+            return Ok();
+        }
     }
 }
