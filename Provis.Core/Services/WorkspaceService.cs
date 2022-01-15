@@ -16,6 +16,7 @@ using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RoleEntity;
+using Provis.Core.DTO.workspaceDTO;
 
 namespace Provis.Core.Services
 {
@@ -400,6 +401,16 @@ namespace Provis.Core.Services
             var result = await _userRoleRepository.GetAllAsync();
 
             return result.Select(x => _mapper.Map<WorkspaceRoleDTO>(x)).ToList();
+        }
+
+        public async Task<List<WorkspaceDetailMemberDTO>> GetDetailMemberAsyns(int workspaceId)
+        {
+            var specification = new UserWorkspaces.WorkspaceMemberList(workspaceId);
+            var memberList = await _userWorkspaceRepository.GetListBySpecAsync(specification);
+
+            var memberListToReturn = _mapper.Map<List<WorkspaceDetailMemberDTO>>(memberList);
+
+            return memberListToReturn;
         }
     }
 }

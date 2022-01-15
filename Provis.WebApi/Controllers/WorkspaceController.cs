@@ -191,5 +191,14 @@ namespace Provis.WebApi.Controllers
             await _workspaceService.DeleteFromWorkspaceAsync(workspaceId, UserId);
             return Ok();
         }
+
+        [Authorize]
+        [HttpGet]
+        [Route("{workspaceId}/member/list")]
+        public async Task<IActionResult> GetWorkspaceDetailMember(int workspaceId)
+        {
+            var res = await _workspaceService.GetDetailMemberAsyns(workspaceId);
+            return Ok(res);
+        }
     }
 }
