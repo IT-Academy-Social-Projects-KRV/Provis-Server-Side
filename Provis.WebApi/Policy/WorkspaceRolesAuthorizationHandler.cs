@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
-using Provis.Core.Entities;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Interfaces.Repositories;
 using System.IO;
@@ -35,7 +35,7 @@ namespace Provis.WebApi.Policy
 
             int? workspaceId = null;
 
-            if (httpContextAccessor.HttpContext.Request.Method == "POST" || httpContextAccessor.HttpContext.Request.Method == "PUT")
+            if (httpContextAccessor.HttpContext.Request.ContentType == )
             {
                 var syncIoFeature = httpContextAccessor.HttpContext.Features.Get<IHttpBodyControlFeature>();
                 syncIoFeature.AllowSynchronousIO = true;
@@ -54,7 +54,14 @@ namespace Provis.WebApi.Policy
                 }
             }
 
-            if ((httpContextAccessor.HttpContext.Request.Method == "GET" || httpContextAccessor.HttpContext.Request.Method == "DELETE")
+            if (httpContextAccessor.HttpContext.Request.ContentType == "multipart/form-data"
+                && httpContextAccessor.HttpContext.Request.Form.TryGetValue("workspaceId", out StringValues formWorkspaceId)
+                && int.TryParse(formWorkspaceId, out int formWorkspaceIdInt))
+            {
+                workspaceId = formWorkspaceIdInt;
+            }
+
+            if (workspaceId == null
                 && httpContextAccessor.HttpContext.Request.RouteValues.TryGetValue("workspaceId", out object obj)
                 && int.TryParse(obj.ToString(), out int id))
             {
