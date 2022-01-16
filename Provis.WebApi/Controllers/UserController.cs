@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Interfaces.Services;
-using Provis.Core.Roles;
-using Provis.WebApi.Policy;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -83,7 +81,6 @@ namespace Provis.WebApi.Controllers
         [HttpPut]
         [Authorize]
         [Route("image")]
-        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
         public async Task<IActionResult> UpdateImageAsync([FromForm] UserUploadImageDTO uploadImage)
         {
             await _userService.UpdateUserImageAsync(uploadImage.Image, UserId);

@@ -35,7 +35,14 @@ namespace Provis.WebApi.Policy
 
             int? workspaceId = null;
 
-            if (httpContextAccessor.HttpContext.Request.ContentType == )
+            if (httpContextAccessor.HttpContext.Request.RouteValues.TryGetValue("workspaceId", out object obj)
+                && int.TryParse(obj.ToString(), out int id))
+            {
+                workspaceId = id;
+            }
+
+            if (workspaceId == null
+                && httpContextAccessor.HttpContext.Request.ContentType.StartsWith("application/json"))
             {
                 var syncIoFeature = httpContextAccessor.HttpContext.Features.Get<IHttpBodyControlFeature>();
                 syncIoFeature.AllowSynchronousIO = true;
@@ -54,18 +61,12 @@ namespace Provis.WebApi.Policy
                 }
             }
 
-            if (httpContextAccessor.HttpContext.Request.ContentType == "multipart/form-data"
+            if (workspaceId == null &&
+                httpContextAccessor.HttpContext.Request.ContentType.StartsWith("multipart/form-data")
                 && httpContextAccessor.HttpContext.Request.Form.TryGetValue("workspaceId", out StringValues formWorkspaceId)
                 && int.TryParse(formWorkspaceId, out int formWorkspaceIdInt))
             {
                 workspaceId = formWorkspaceIdInt;
-            }
-
-            if (workspaceId == null
-                && httpContextAccessor.HttpContext.Request.RouteValues.TryGetValue("workspaceId", out object obj)
-                && int.TryParse(obj.ToString(), out int id))
-            {
-                workspaceId = id;
             }
 
             if (!workspaceId.HasValue)
