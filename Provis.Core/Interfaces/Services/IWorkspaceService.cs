@@ -1,3 +1,4 @@
+using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.DTO.WorkspaceDTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -19,8 +20,8 @@ namespace Provis.Core.Interfaces.Services
         Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId);
         Task DeleteFromWorkspaceAsync(int workspId, string userId);
         Task CancelInviteAsync(int id, int workspaceId, string userId);
-
         Task<List<WorkspaceRoleDTO>> GetAllowedRoles();
+        Task<List<WorkspaceDetailMemberDTO>> GetDetailMemberAsyns(int workspaceId);
     }
 }
 

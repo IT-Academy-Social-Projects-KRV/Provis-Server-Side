@@ -9,6 +9,7 @@ using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Interfaces;
 using System;
 using System.Collections.Generic;
+using Provis.Core.Entities.StatusHistoryEntity;
 
 namespace Provis.Core.Entities.UserEntity
 {
@@ -26,6 +27,6 @@ namespace Provis.Core.Entities.UserEntity
         public List<Comment> Comments { get; set; } = new List<Comment>();
         public List<InviteUser> MyInvites { get; set; } = new List<InviteUser>();
         public List<InviteUser> Invites { get; set; } = new List<InviteUser>();
-
+        public List<StatusHistory> StatusHistories { get; set; } = new List<StatusHistory>();
     }
 }

@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.Entities.StatusEntity;
 using Provis.Core.Entities.StatusHistoryEntity;
@@ -58,7 +57,7 @@ namespace Provis.Core.Services
             _taskStatusRepository = taskStatusRepository;
         }
 
-        public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus)
+        public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
 
@@ -68,7 +67,8 @@ namespace Provis.Core.Services
             {
                 DateOfChange = DateTime.UtcNow,
                 StatusId = changeTaskStatus.StatusId,
-                TaskId = task.Id
+                TaskId = task.Id,
+                UserId = userId
             };
 
             await _statusHistoryRepository.AddAsync(statusHistory);
@@ -104,6 +104,12 @@ namespace Provis.Core.Services
 
             task.DateOfCreate = DateTime.UtcNow;
             task.TaskCreatorId = user.Id;
+            task.StatusHistories.Add(new StatusHistory()
+            {
+                StatusId = taskCreateDTO.StatusId,
+                DateOfChange = DateTime.UtcNow,
+                UserId = userId
+            });
 
             _mapper.Map(taskCreateDTO, task);
 
@@ -217,6 +223,16 @@ namespace Provis.Core.Services
             await _taskRepository.SaveChangesAsync();
         }
 
+        public async Task<List<TaskStatusHistoryDTO>> GetStatusHistories(int taskId)
+        {
+            var specification = new StatusHistories.StatusHistoresList(taskId);
+            var selection = await _statusHistoryRepository.GetListBySpecAsync(specification);
+
+            var statusHustoryList = _mapper.Map<List<TaskStatusHistoryDTO>>(selection);
+
+            return statusHustoryList;
+        }
+        
         public async Task<TaskInfoDTO> GetTaskInfoAsync(int taskId)
         {
             var task = await _taskRepository.GetByKeyAsync(taskId);

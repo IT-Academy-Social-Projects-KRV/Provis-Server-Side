@@ -33,6 +33,12 @@ namespace Provis.Core.Entities.StatusHistoryEntity
                 .WithMany(x => x.StatusHistories)
                 .HasForeignKey(x => x.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .HasOne(x => x.User)
+                .WithMany(x => x.StatusHistories)
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
