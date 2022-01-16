@@ -332,7 +332,7 @@ namespace Provis.Core.Services
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
             var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
 
-            _ = attachment.AttachmentPath ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
+            _ = attachment ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
 
             var file = await _fileService.GetFileAsync(attachment.AttachmentPath);
 
@@ -364,22 +364,16 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest,
                 $"You have exceeded limit of {_attachmentSettings.Value.MaxCount} attachments"); 
 
-            var files = taskAttachmentsDTO.Attachments;
+            var file = taskAttachmentsDTO.Attachment;
 
-            List<WorkspaceTaskAttachment> attachments = new List<WorkspaceTaskAttachment>();
-
-            foreach(var file in files)
-            {
-                string newPath = await _fileService.AddFileAsync(file.OpenReadStream(), _attachmentSettings.Value.Path, file.FileName);
-                WorkspaceTaskAttachment workspaceTaskAttachment = new WorkspaceTaskAttachment
-                {
+            string newPath = await _fileService.AddFileAsync(file.OpenReadStream(),
+                _attachmentSettings.Value.Path, file.FileName);
+           WorkspaceTaskAttachment workspaceTaskAttachment = new(){
                     AttachmentPath = newPath,
                     TaskId = taskAttachmentsDTO.TaskId
-                };
-                attachments.Add(workspaceTaskAttachment);
-            }
-
-            await _taskAttachmentRepository.AddRangeAsync(attachments);
+            };
+            
+            await _taskAttachmentRepository.AddAsync(workspaceTaskAttachment);
 
             await _taskAttachmentRepository.SaveChangesAsync();           
         }

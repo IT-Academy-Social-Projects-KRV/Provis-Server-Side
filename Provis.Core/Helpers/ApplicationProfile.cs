@@ -16,6 +16,7 @@ using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
+using System.IO;
 
 namespace Provis.Core.Helpers
 {
@@ -132,7 +133,10 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
                 .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId));
 
-            CreateMap<WorkspaceTaskAttachment, TaskAttachmentInfoDTO>();
+            CreateMap<WorkspaceTaskAttachment, TaskAttachmentInfoDTO>()
+                .ForMember(x => x.Name, act => act.MapFrom(srs=> Path.GetFileName(srs.AttachmentPath)));
+
+            
         }
     }
 }

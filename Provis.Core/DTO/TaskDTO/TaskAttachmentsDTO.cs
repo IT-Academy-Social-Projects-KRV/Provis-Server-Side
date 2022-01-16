@@ -6,7 +6,7 @@ namespace Provis.Core.DTO.TaskDTO
 {
     public class TaskAttachmentsDTO
     {
-        public List<IFormFile> Attachments { get; set; }
+        public IFormFile Attachment { get; set; }
         public int TaskId { get; set; }
         public int workspaceId { get; set; }
 

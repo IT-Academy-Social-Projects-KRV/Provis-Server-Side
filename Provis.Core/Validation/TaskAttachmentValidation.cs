@@ -25,55 +25,31 @@ namespace Provis.Core.Validation
                 .NotNull()
                 .NotEmpty();
 
-            RuleFor(x => x.Attachments)
+            RuleFor(x => x.Attachment)
                 .NotNull()
                 .NotEmpty();
 
-            RuleFor(x => x.Attachments)
+            RuleFor(x => x.Attachment)
                 .Must(IsTaskAttachment)
-                .WithMessage($"Files must not have one of these extenstion: " +
+                .WithMessage($"File must not have one of these extenstion: " +
                 $"{String.Join(", ", options.Value.SubtypesBlackList)}");
 
-            RuleFor(x => x.Attachments)
+            RuleFor(x => x.Attachment)
                 .Must(CheckSize)
                 .WithMessage($"Max size is {options.Value.MaxSize} Mb");
 
         }
 
-        private bool IsTaskAttachment(List<IFormFile> attachments)
-        {
-            bool isGood = true;
+        private bool IsTaskAttachment(IFormFile attachment)
+        {            
+            var type = attachment.ContentType.Split("/");
 
-            foreach (var item in attachments)
-            {
-                var type = item.ContentType.Split("/");
-
-                if(options.Value.SubtypesBlackList.Contains(type[1]))
-                {
-                    isGood = false;
-                    break;
-                }
-            }
-
-            return isGood;
-
+            return !(options.Value.SubtypesBlackList.Contains(type[1]));
         }
 
-        private bool CheckSize(List<IFormFile> attachments)
-        {
-            bool isGood = true;
-
-            foreach (var item in attachments)
-            {
-                if (item.Length >= options.Value.MaxSize * 1024 * 1024) 
-                {
-                    isGood = false;
-                    break;
-                }
-            }
-
-            return isGood;
-
+        private bool CheckSize(IFormFile attachment)
+        {  
+            return attachment.Length <= options.Value.MaxSize * 1024 * 1024;
         }
     }
 }
