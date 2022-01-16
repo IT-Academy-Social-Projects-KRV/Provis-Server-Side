@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.Entities.StatusEntity;
 using Provis.Core.Entities.StatusHistoryEntity;
@@ -58,7 +57,7 @@ namespace Provis.Core.Services
             _taskStatusRepository = taskStatusRepository;
         }
 
-        public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus)
+        public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
 
@@ -68,7 +67,8 @@ namespace Provis.Core.Services
             {
                 DateOfChange = DateTime.UtcNow,
                 StatusId = changeTaskStatus.StatusId,
-                TaskId = task.Id
+                TaskId = task.Id,
+                UserId = userId
             };
 
             await _statusHistoryRepository.AddAsync(statusHistory);
@@ -104,6 +104,12 @@ namespace Provis.Core.Services
 
             task.DateOfCreate = DateTime.UtcNow;
             task.TaskCreatorId = user.Id;
+            task.StatusHistories.Add(new StatusHistory()
+            {
+                StatusId = taskCreateDTO.StatusId,
+                DateOfChange = DateTime.UtcNow,
+                UserId = userId
+            });
 
             _mapper.Map(taskCreateDTO, task);
 
@@ -196,6 +202,65 @@ namespace Provis.Core.Services
             var result = await _workerRoleRepository.GetAllAsync();
 
             return result.Select(x => _mapper.Map<TaskRoleDTO>(x)).ToList();
+        }
+
+        public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
+        {
+            var workspaceTask = await _taskRepository.GetByKeyAsync(taskChangeInfoDTO.Id);
+
+            _ = workspaceTask ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Task with Id not found");
+
+            if(workspaceTask.TaskCreatorId != userId)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You are not the creator of the task");
+            }
+
+            _mapper.Map(taskChangeInfoDTO, workspaceTask);
+
+            await _taskRepository.UpdateAsync(workspaceTask);
+
+            await _taskRepository.SaveChangesAsync();
+        }
+
+        public async Task<List<TaskStatusHistoryDTO>> GetStatusHistories(int taskId)
+        {
+            var specification = new StatusHistories.StatusHistoresList(taskId);
+            var selection = await _statusHistoryRepository.GetListBySpecAsync(specification);
+
+            var statusHustoryList = _mapper.Map<List<TaskStatusHistoryDTO>>(selection);
+
+            return statusHustoryList;
+        }
+        
+        public async Task<TaskInfoDTO> GetTaskInfoAsync(int taskId)
+        {
+            var task = await _taskRepository.GetByKeyAsync(taskId);
+
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Task with Id not found");
+
+            TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+
+            _mapper.Map(task, taskInfoDTO);
+
+            var specification = new UserTasks.TaskUserList(taskId);
+
+            var taskUsers = await _userTaskRepository.GetListBySpecAsync(specification);
+
+            List<TaskAssignedUsersDTO> userList = new List<TaskAssignedUsersDTO>();
+
+            foreach (var item in taskUsers)
+            {
+                userList.Add(new TaskAssignedUsersDTO { 
+                    UserId = item.UserId, 
+                    UserName = item.User.UserName, 
+                    RoleTagId = item.UserRoleTagId });
+            }
+
+            taskInfoDTO.AssignedUsers = userList;
+
+            return taskInfoDTO;
         }
     }
 }
