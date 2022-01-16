@@ -22,6 +22,7 @@ namespace Provis.Core.Validation
             RuleFor(task => task.WorkspaceId)
                 .NotEmpty()
                 .NotNull();
+
             RuleFor(task => task.StatusId)
                 .NotEmpty()
                 .NotEmpty()

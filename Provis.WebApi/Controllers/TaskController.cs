@@ -28,14 +28,14 @@ namespace Provis.WebApi.Controllers
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
         public async Task<IActionResult> ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus)
         {
-            await _taskService.ChangeTaskStatusAsync(changeTaskStatus);
+            await _taskService.ChangeTaskStatusAsync(changeTaskStatus, UserId);
 
             return Ok();
         }
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.ViewerId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
         [Route("task")]
         public async Task<IActionResult> AddTaskAsync([FromBody] TaskCreateDTO createDTO)
         {
@@ -70,6 +70,50 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> GetWorkerRoles()
         {
             var res = await _taskService.GetWorkerRoles();
+
+            return Ok(res);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [WorkspaceRoles(new WorkSpaceRoles[] { 
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.MemberId })]
+        [Route("assign")]
+        public async Task<IActionResult> AssignTask([FromBody] TaskAssignDTO taskAssign)
+        {
+            await _taskService.JoinTaskAsync(taskAssign, UserId);
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpPut]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("task")]
+        public async Task<IActionResult> ChangeTaskAsync([FromBody] TaskChangeInfoDTO taskChangeInfoDTO)
+        {
+            await _taskService.ChangeTaskInfoAsync(taskChangeInfoDTO, UserId);
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpGet]
+        [Route("history")]
+        public async Task<IActionResult> GetStatusHistory(int taskId)
+        {
+            var res = await _taskService.GetStatusHistories(taskId);
+            
+             return Ok(res);
+        }
+        
+        [Authorize]
+        [HttpGet]
+        [Route("task/{taskId}")]
+        public async Task<IActionResult> GetTaskInfoAndAssignedUsersAsync(int taskId)
+        {
+            var res = await _taskService.GetTaskInfoAsync(taskId);
 
             return Ok(res);
         }
