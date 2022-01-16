@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json.Linq;
-using Provis.Core.Entities;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Interfaces.Repositories;
 using System.IO;
@@ -26,6 +26,8 @@ namespace Provis.WebApi.Policy
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, WorkspaceRolesRequirement requirement)
         {
+            var request = httpContextAccessor.HttpContext.Request;
+
             var userId = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (userId == null)
@@ -35,14 +37,21 @@ namespace Provis.WebApi.Policy
 
             int? workspaceId = null;
 
-            if (httpContextAccessor.HttpContext.Request.Method == "POST" || httpContextAccessor.HttpContext.Request.Method == "PUT")
+            if (request.RouteValues.TryGetValue("workspaceId", out object obj) &&
+                int.TryParse(obj.ToString(), out int id))
+            {
+                workspaceId = id;
+            }
+
+            if (workspaceId == null &&
+                request.ContentType.StartsWith("application/json"))
             {
                 var syncIoFeature = httpContextAccessor.HttpContext.Features.Get<IHttpBodyControlFeature>();
                 syncIoFeature.AllowSynchronousIO = true;
 
-                httpContextAccessor.HttpContext.Request.EnableBuffering();
+                request.EnableBuffering();
 
-                using (var reader = new StreamReader(httpContextAccessor.HttpContext.Request.Body, Encoding.UTF8, true, 1024, true))
+                using (var reader = new StreamReader(request.Body, Encoding.UTF8, true, 1024, true))
                 {
                     var bodyStr = "";
                     bodyStr = reader.ReadToEnd();
@@ -50,15 +59,16 @@ namespace Provis.WebApi.Policy
                     JObject jObj = JObject.Parse(bodyStr);
                     workspaceId = (int?)jObj["workspaceId"];
 
-                    httpContextAccessor.HttpContext.Request.Body.Position = 0;
+                    request.Body.Position = 0;
                 }
             }
 
-            if ((httpContextAccessor.HttpContext.Request.Method == "GET" || httpContextAccessor.HttpContext.Request.Method == "DELETE")
-                && httpContextAccessor.HttpContext.Request.RouteValues.TryGetValue("workspaceId", out object obj)
-                && int.TryParse(obj.ToString(), out int id))
+            if (workspaceId == null &&
+                request.ContentType.StartsWith("multipart/form-data") &&
+                request.Form.TryGetValue("workspaceId", out StringValues formWorkspaceId) &&
+                int.TryParse(formWorkspaceId, out int formWorkspaceIdInt))
             {
-                workspaceId = id;
+                workspaceId = formWorkspaceIdInt;
             }
 
             if (!workspaceId.HasValue)
@@ -69,9 +79,9 @@ namespace Provis.WebApi.Policy
             var userWorkspace = userWorkspaceRepository
                 .Query()
                 .FirstOrDefault(x =>
-                    x.UserId == userId
-                    && x.WorkspaceId == workspaceId
-                    && requirement.WorkspaceRolesId.Contains(x.RoleId));
+                    x.UserId == userId &&
+                    x.WorkspaceId == workspaceId &&
+                    requirement.WorkspaceRolesId.Contains(x.RoleId));
 
             if (userWorkspace != null)
             {
