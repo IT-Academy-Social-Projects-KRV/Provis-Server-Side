@@ -8,7 +8,7 @@ namespace Provis.Core.DTO.TaskDTO
     {
         public List<IFormFile> Attachments { get; set; }
         public int TaskId { get; set; }
-        public int WorkspaceId { get; set; }
+        public int workspaceId { get; set; }
 
     }
 }

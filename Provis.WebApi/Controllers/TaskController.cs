@@ -84,5 +84,49 @@ namespace Provis.WebApi.Controllers
 
             return Ok();
         }
+
+        [Authorize]
+        [HttpGet]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("task/{taskId}/workspace/{workspaceId}/attachments")]
+        public async Task<IActionResult> GetTaskAttachmentsAsync(int taskId, int workspaceId)
+        {
+            var res = await _taskService.GetTaskAttachmentsAsync(taskId);
+            
+            return Ok(res);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("task/workspace/{workspaceId}/attachment/{attachmentId}")]
+        public async Task<IActionResult> GetTaskAttachmentAsync(int workspaceId, int attachmentId)
+        {
+            var file = await _taskService.GetTaskAttachmentAsync(attachmentId);
+
+            return File(file.Content, file.ContentType, file.Name);
+        }
+        
+        [Authorize]
+        [HttpDelete]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("task/workspace/{workspaceId}/attachment/{attachmentId}")]
+        public async Task<IActionResult> DeleteTaskAttachmentAsync(int workspaceId, int attachmentId)
+        {
+            await _taskService.DeleteTaskAttachmentAsync(attachmentId);
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpPut]
+        //[WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("task/attachments")]
+        public async Task<IActionResult> SendTaskAttachmentsAsync([FromForm] TaskAttachmentsDTO taskAttachmentsDTO)
+        {
+            await _taskService.SendTaskAttachmentsAsync(taskAttachmentsDTO);
+
+            return Ok();
+        }
     }
 }

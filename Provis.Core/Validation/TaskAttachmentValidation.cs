@@ -21,7 +21,7 @@ namespace Provis.Core.Validation
                 .NotNull()
                 .NotEmpty();
 
-            RuleFor(x => x.WorkspaceId)
+            RuleFor(x => x.workspaceId)
                 .NotNull()
                 .NotEmpty();
 
@@ -48,13 +48,7 @@ namespace Provis.Core.Validation
             {
                 var type = item.ContentType.Split("/");
 
-                if (type[0] != options.Value.Type)
-                {
-                    isGood = false;
-                    break;
-                }
-
-                if(!options.Value.SubtypesBlackList.Contains(type[1]))
+                if(options.Value.SubtypesBlackList.Contains(type[1]))
                 {
                     isGood = false;
                     break;

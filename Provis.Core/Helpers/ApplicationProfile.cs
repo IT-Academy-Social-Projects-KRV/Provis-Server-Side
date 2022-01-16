@@ -13,6 +13,7 @@ using Provis.Core.Entities.UserTaskEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
+using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
 
 namespace Provis.Core.Helpers
 {
@@ -107,6 +108,8 @@ namespace Provis.Core.Helpers
               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
               .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
               .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.Deadline));
+
+            CreateMap<WorkspaceTaskAttachment, TaskAttachmentInfoDTO>();
         }
     }
 }
