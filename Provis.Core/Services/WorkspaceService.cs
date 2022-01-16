@@ -1,11 +1,21 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Provis.Core.DTO.WorkspaceDTO;
+using Provis.Core.Entities.InviteUserEntity;
+using Provis.Core.Entities.RoleEntity;
+using Provis.Core.Entities.UserEntity;
+using Provis.Core.Entities.UserWorkspaceEntity;
+using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Exeptions;
+using Provis.Core.Helpers;
+using Provis.Core.Helpers.Mails;
+using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using System;
-using AutoMapper;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -16,6 +26,7 @@ using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RoleEntity;
+using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Entities.UserTaskEntity;
 using Provis.Core.DTO.workspaceDTO;
@@ -34,6 +45,8 @@ namespace Provis.Core.Services
         protected readonly IRepository<UserTask> _userTaskRepository;
         protected readonly IMapper _mapper;
         protected readonly RoleAccess _roleAccess;
+        protected readonly ITemplateService _templateService;
+        protected readonly ClientUrl _clientUrl;
 
         public WorkspaceService(IRepository<User> user,
             UserManager<User> userManager,
@@ -44,8 +57,9 @@ namespace Provis.Core.Services
             IEmailSenderService emailSenderService,
             IRepository<UserTask> userTasksRepository,
             IMapper mapper,
-            RoleAccess roleAccess
-            )
+            RoleAccess roleAccess,
+            ITemplateService templateService,
+            IOptions<ClientUrl> options)
         {
             _userRepository = user;
             _userManager = userManager;
@@ -56,7 +70,9 @@ namespace Provis.Core.Services
             _mapper = mapper;
             _roleAccess = roleAccess;
             _userRoleRepository = userRoleRepository;
+            _templateService = templateService;
             _userTaskRepository = userTasksRepository;
+            _clientUrl = options.Value;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -143,7 +159,14 @@ namespace Provis.Core.Services
             {
                 ToEmail = inviteDTO.UserEmail,
                 Subject = "Workspace invitation",
-                Body = $"Owner: {owner.UserName} - Welcome to my Workspace {workspace.Name}"
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/WorkspaceInvite", 
+                    new WorkspaceInvite() 
+                    { 
+                        Owner = owner.UserName, 
+                        WorkspaceName = workspace.Name, 
+                        UserName = inviteUser.UserName,
+                        Uri = _clientUrl.ApplicationUrl
+                    })
             });
 
             await Task.CompletedTask;

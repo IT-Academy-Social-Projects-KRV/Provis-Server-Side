@@ -21,10 +21,10 @@ namespace Provis.Core
             services.AddScoped<IWorkspaceService, WorkspaceService>();
             services.AddScoped<IJwtService, JwtService>();
             services.AddTransient<IEmailSenderService, EmailSenderService>();
-            services.AddScoped<ISmtpService, SmtpService>();
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IConfirmEmailService, ConfirmEmailService>();
+            services.AddScoped<ITemplateService, TemplateService>();
         }
 
         public static void AddFileService(this IServiceCollection services, IConfiguration configuration)
@@ -60,6 +60,10 @@ namespace Provis.Core
             services.Configure<MailSettings>(configuration.GetSection("EmailSettings"));
         }
 
+        public static void ConfigureClientApplicationUrl(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<ClientUrl>(configuration.GetSection("ClientServer"));
+        }
 
         public static void ConfigureValidationSettings(this IServiceCollection services, IConfiguration configuration)
         {

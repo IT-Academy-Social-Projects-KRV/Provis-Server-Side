@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.RefreshTokenEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers.Mails;
+using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using System;
@@ -21,6 +22,8 @@ namespace Provis.Core.Services
         protected readonly RoleManager<IdentityRole> _roleManager;
         protected readonly IRepository<RefreshToken> _refreshTokenRepository;
         protected readonly IEmailSenderService _emailSenderService;
+        protected readonly ITemplateService _templateService;
+        protected readonly ClientUrl _clientUrl;
 
         public AuthenticationService(
             UserManager<User> userManager,
@@ -28,7 +31,9 @@ namespace Provis.Core.Services
             IJwtService jwtService,
             RoleManager<IdentityRole> roleManager,
             IRepository<RefreshToken> refreshTokenRepository,
-            IEmailSenderService emailSenderService)
+            IEmailSenderService emailSenderService,
+            ITemplateService templateService,
+            IOptions<ClientUrl> options)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -36,6 +41,8 @@ namespace Provis.Core.Services
             _roleManager = roleManager;
             _refreshTokenRepository = refreshTokenRepository;
             _emailSenderService = emailSenderService;
+            _templateService = templateService;
+            _clientUrl = options.Value;
         }
 
         public async Task<UserAutorizationDTO> LoginAsync(string email, string password)
@@ -102,7 +109,8 @@ namespace Provis.Core.Services
             {
                 ToEmail = user.Email,
                 Subject = "Provis authentication code",
-                Body = $"<div><h1>Your code:</h1> <label>{twoFactorToken}</label></div>"
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode",
+                    new UserToken() { Token = twoFactorToken, UserName = user.UserName, Uri = _clientUrl.ApplicationUrl })
             };
 
             await _emailSenderService.SendEmailAsync(message);
