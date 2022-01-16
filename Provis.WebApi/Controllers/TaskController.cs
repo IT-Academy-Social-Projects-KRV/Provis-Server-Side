@@ -100,7 +100,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("history")]
+        [Route("{taskId}/history")]
         public async Task<IActionResult> GetStatusHistory(int taskId)
         {
             var res = await _taskService.GetStatusHistories(taskId);
