@@ -153,7 +153,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPut]
-        //[WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
         [Route("task/attachments")]
         public async Task<IActionResult> SendTaskAttachmentsAsync([FromForm] TaskAttachmentsDTO taskAttachmentsDTO)
         {
