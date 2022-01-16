@@ -75,17 +75,56 @@ namespace Provis.UnitTests.Core.Services
         {
             var userMock = TestData.GetTestUser();
 
+            SetupUserGetByKeyAsync(null, null);
+
             _userRepositoryMock
                 .Setup(x => x.GetByKeyAsync(It.IsAny<string>()))
                 .Returns(Task.FromResult<User>(null));
 
-            var exeption = Assert.ThrowsAsync<HttpException>(() => _userService.GetUserPersonalInfoAsync("1"));
+            var exeption = Assert.ThrowsAsync<HttpException>(() => _userService.GetUserPersonalInfoAsync(It.IsAny<string>()));
 
+            //TODO use fluent assertions
             Assert.NotNull(exeption);
             Assert.AreEqual(exeption.StatusCode, HttpStatusCode.NotFound);
             Assert.AreEqual(exeption.Message, "User with Id not exist");
 
             return Task.CompletedTask;
         }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _userManagerMock.Verify();
+            _userRepositoryMock.Verify();
+            _inviteUserRepositoryMock.Verify();
+            _emailSenderServiceMock.Verify();
+            _fileServiceMock.Verify();
+            _imageSettingsMock.Verify();
+            //TODO Mapper here
+        }
+
+        //IT should be protected if this class have any children
+
+        /// <summary>
+        /// Mocks UserManager.GetByKeyAsync
+        /// </summary>
+        /// <param name="key">If value null it is going to use It.
+        /// IsAny<string>() for this parameter in mock setup</param>
+        /// <param name="userInstance">Object of user that should be returned</param>
+        private void SetupUserGetByKeyAsync(string key, User userInstance)
+        {
+            _userRepositoryMock
+                .Setup(x => x.GetByKeyAsync(key == null ? It.IsAny<string>() : key))
+                .Returns(Task.FromResult<User>(userInstance))
+                .Verifiable();
+        }
+
+
+        //TODO Local data should be configured here
+        //IT can be virtual
+        //private User WithUser()
+        //{
+        //    return new User();
+        //}
     }
 }
