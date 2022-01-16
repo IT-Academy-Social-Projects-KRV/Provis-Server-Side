@@ -3,10 +3,12 @@ using Azure.Storage.Blobs.Models;
 using Provis.Core.ApiModels;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.DTO.UserDTO;
+using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.DTO.WorkspaceDTO;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RoleEntity;
 using Provis.Core.Entities.StatusEntity;
+using Provis.Core.Entities.StatusHistoryEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.UserRoleTagEntity;
 using Provis.Core.Entities.UserTaskEntity;
@@ -108,6 +110,27 @@ namespace Provis.Core.Helpers
               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
               .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
               .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.Deadline));
+              
+            CreateMap<StatusHistory, TaskStatusHistoryDTO>()
+                .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
+                .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
+                .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
+                .ForMember(x => x.Status, act => act.MapFrom(srs => srs.Status.Name))
+                .ForMember(x => x.DateOfChange, act => act.MapFrom(srs => srs.DateOfChange));
+
+            CreateMap<UserWorkspace, WorkspaceDetailMemberDTO>()
+                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.UserId))
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.User.Name))
+                .ForMember(x => x.Surname, act => act.MapFrom(srs => srs.User.Surname))
+                .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
+                .ForMember(x => x.Email, act => act.MapFrom(srs => srs.User.Email))
+                .ForMember(x => x.Role, act => act.MapFrom(srs => srs.RoleId));
+
+            CreateMap<WorkspaceTask, TaskInfoDTO>()
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
+                .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
+                .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
+                .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId));
 
             CreateMap<WorkspaceTaskAttachment, TaskAttachmentInfoDTO>();
         }

@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Provis.Infrastructure.Data;
 
 namespace Provis.Infrastructure.Migrations
 {
     [DbContext(typeof(ProvisDbContext))]
-    partial class ProvisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220115091459_AddUserFieldInStatusHistoriesEntity")]
+    partial class AddUserFieldInStatusHistoriesEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -530,27 +532,6 @@ namespace Provis.Infrastructure.Migrations
                     b.ToTable("Workspaces");
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.WorkspaceTaskAttachmentEntity.WorkspaceTaskAttachment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("AttachmentPath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("TaskId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TaskId");
-
-                    b.ToTable("TaskAttachments");
-                });
-
             modelBuilder.Entity("Provis.Core.Entities.WorkspaceTaskEntity.WorkspaceTask", b =>
                 {
                     b.Property<int>("Id")
@@ -780,17 +761,6 @@ namespace Provis.Infrastructure.Migrations
                     b.Navigation("Workspace");
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.WorkspaceTaskAttachmentEntity.WorkspaceTaskAttachment", b =>
-                {
-                    b.HasOne("Provis.Core.Entities.WorkspaceTaskEntity.WorkspaceTask", "Task")
-                        .WithMany("Attachments")
-                        .HasForeignKey("TaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Task");
-                });
-
             modelBuilder.Entity("Provis.Core.Entities.WorkspaceTaskEntity.WorkspaceTask", b =>
                 {
                     b.HasOne("Provis.Core.Entities.StatusEntity.Status", "Status")
@@ -865,8 +835,6 @@ namespace Provis.Infrastructure.Migrations
 
             modelBuilder.Entity("Provis.Core.Entities.WorkspaceTaskEntity.WorkspaceTask", b =>
                 {
-                    b.Navigation("Attachments");
-
                     b.Navigation("Comments");
 
                     b.Navigation("StatusHistories");
