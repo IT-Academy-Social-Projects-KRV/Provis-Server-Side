@@ -216,5 +216,35 @@ namespace Provis.Core.Services
 
             await _taskRepository.SaveChangesAsync();
         }
+
+        public async Task<TaskInfoDTO> GetTaskInfoAsync(int taskId)
+        {
+            var task = await _taskRepository.GetByKeyAsync(taskId);
+
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Task with Id not found");
+
+            TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+
+            _mapper.Map(task, taskInfoDTO);
+
+            var specification = new UserTasks.TaskUserList(taskId);
+
+            var taskUsers = await _userTaskRepository.GetListBySpecAsync(specification);
+
+            List<TaskAssignedUsersDTO> userList = new List<TaskAssignedUsersDTO>();
+
+            foreach (var item in taskUsers)
+            {
+                userList.Add(new TaskAssignedUsersDTO { 
+                    UserId = item.UserId, 
+                    UserName = item.User.UserName, 
+                    RoleTagId = item.UserRoleTagId });
+            }
+
+            taskInfoDTO.AssignedUsers = userList;
+
+            return taskInfoDTO;
+        }
     }
 }
