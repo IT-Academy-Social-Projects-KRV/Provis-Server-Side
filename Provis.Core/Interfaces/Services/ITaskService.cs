@@ -13,5 +13,6 @@ namespace Provis.Core.Interfaces.Services
         Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId);
         Task<List<TaskRoleDTO>> GetWorkerRoles();
         Task<List<TaskStatusHistoryDTO>> GetStatusHistories(int taskId);
+        Task<TaskInfoDTO> GetTaskInfoAsync(int taskId);
     }
 }

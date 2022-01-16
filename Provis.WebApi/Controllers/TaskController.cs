@@ -91,6 +91,16 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> GetStatusHistory(int taskId)
         {
             var res = await _taskService.GetStatusHistories(taskId);
+            
+             return Ok(res);
+        }
+        
+        [Authorize]
+        [HttpGet]
+        [Route("task/{taskId}")]
+        public async Task<IActionResult> GetTaskInfoAndAssignedUsersAsync(int taskId)
+        {
+            var res = await _taskService.GetTaskInfoAsync(taskId);
 
             return Ok(res);
         }
