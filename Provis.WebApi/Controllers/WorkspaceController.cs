@@ -194,7 +194,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [Route("{workspaceId}/member/list")]
+        [Route("{workspaceId}/members")]
         public async Task<IActionResult> GetWorkspaceDetailMember(int workspaceId)
         {
             var res = await _workspaceService.GetDetailMemberAsyns(workspaceId);
