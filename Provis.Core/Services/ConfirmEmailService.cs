@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Exeptions;
@@ -13,17 +14,20 @@ namespace Provis.Core.Services
 {
     public class ConfirmEmailService : IConfirmEmailService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly IEmailSenderService _emailService;
+        protected readonly UserManager<User> _userManager;
+        protected readonly IEmailSenderService _emailService;
         protected readonly ITemplateService _templateService;
+        protected readonly ClientUrl _clientUrl;
 
         public ConfirmEmailService(UserManager<User> userManager, 
             IEmailSenderService emailSender,
-            ITemplateService templateService)
+            ITemplateService templateService,
+            IOptions<ClientUrl> options)
         {
             _userManager = userManager;
             _emailService = emailSender;
             _templateService = templateService;
+            _clientUrl = options.Value;
         }
 
         public async Task SendConfirmMailAsync(string userId)
@@ -40,7 +44,7 @@ namespace Provis.Core.Services
                 ToEmail = user.Email,
                 Subject = "Provis Confirm Email",
                 Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/ConfirmEmail", 
-                    new UserToken() { Token = encodedCode, UserName = user.UserName })
+                    new UserToken() { Token = encodedCode, UserName = user.UserName, Uri = _clientUrl.ApplicationUrl })
             });
 
             await Task.CompletedTask;

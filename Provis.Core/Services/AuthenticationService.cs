@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.RefreshTokenEntity;
 using Provis.Core.Entities.UserEntity;
@@ -23,6 +23,7 @@ namespace Provis.Core.Services
         protected readonly IRepository<RefreshToken> _refreshTokenRepository;
         protected readonly IEmailSenderService _emailSenderService;
         protected readonly ITemplateService _templateService;
+        protected readonly ClientUrl _clientUrl;
 
         public AuthenticationService(
             UserManager<User> userManager,
@@ -31,7 +32,8 @@ namespace Provis.Core.Services
             RoleManager<IdentityRole> roleManager,
             IRepository<RefreshToken> refreshTokenRepository,
             IEmailSenderService emailSenderService,
-            ITemplateService templateService)
+            ITemplateService templateService,
+            IOptions<ClientUrl> options)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -40,6 +42,7 @@ namespace Provis.Core.Services
             _refreshTokenRepository = refreshTokenRepository;
             _emailSenderService = emailSenderService;
             _templateService = templateService;
+            _clientUrl = options.Value;
         }
 
         public async Task<UserAutorizationDTO> LoginAsync(string email, string password)
@@ -111,7 +114,7 @@ namespace Provis.Core.Services
                 ToEmail = user.Email,
                 Subject = "Provis authentication code",
                 Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode",
-                    new UserToken() { Token = twoFactorToken, UserName = user.UserName })
+                    new UserToken() { Token = twoFactorToken, UserName = user.UserName, Uri = _clientUrl.ApplicationUrl })
             };
 
             await _emailSenderService.SendEmailAsync(message);

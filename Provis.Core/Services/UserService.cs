@@ -1,21 +1,19 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Provis.Core.DTO.UserDTO;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Provis.Core.ApiModels;
+using Provis.Core.DTO.UserDTO;
+using Provis.Core.Entities.InviteUserEntity;
+using Provis.Core.Entities.UserEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers;
 using Provis.Core.Helpers.Mails;
+using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Provis.Core.Entities.UserEntity;
-using Provis.Core.Entities.InviteUserEntity;
-using Provis.Core.Helpers.Mails.ViewModels;
 
 namespace Provis.Core.Services
 {
@@ -29,6 +27,7 @@ namespace Provis.Core.Services
         private readonly IFileService _fileService;
         private readonly IOptions<ImageSettings> _imageSettings;
         protected readonly ITemplateService _templateService;
+        protected readonly ClientUrl _clientUrl;
 
 
         public UserService(UserManager<User> userManager,
@@ -38,7 +37,8 @@ namespace Provis.Core.Services
             IEmailSenderService emailSenderService,
             IFileService fileService,
             IOptions<ImageSettings> imageSettings,
-            ITemplateService templateService)
+            ITemplateService templateService,
+            IOptions<ClientUrl> clientUrl)
         {
             _userManager = userManager;
             _userRepository = userRepository;
@@ -48,6 +48,7 @@ namespace Provis.Core.Services
             _imageSettings = imageSettings;
             _emailSenderService = emailSenderService;
             _templateService = templateService;
+            _clientUrl = clientUrl.Value;
         }
 
         public async Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId)
@@ -210,7 +211,7 @@ namespace Provis.Core.Services
                 ToEmail = user.Email,
                 Subject = "Provis 2fa code",
                 Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode", 
-                    new UserToken() { Token = twoFactorToken, UserName = user.UserName })
+                    new UserToken() { Token = twoFactorToken, UserName = user.UserName, Uri = _clientUrl.ApplicationUrl })
             };
 
             await _emailSenderService.SendEmailAsync(message);

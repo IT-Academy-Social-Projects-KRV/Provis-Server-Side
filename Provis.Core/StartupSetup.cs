@@ -60,6 +60,10 @@ namespace Provis.Core
             services.Configure<MailSettings>(configuration.GetSection("EmailSettings"));
         }
 
+        public static void ConfigureClientApplicationUrl(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<ClientUrl>(configuration.GetSection("ClientServer"));
+        }
 
         public static void ConfigureValidationSettings(this IServiceCollection services, IConfiguration configuration)
         {

@@ -42,6 +42,7 @@ namespace Provis.WebApi
             services.AddJwtAuthentication(Configuration);
             services.AddCors();
             services.AddMvcCore().AddRazorViewEngine();
+            services.ConfigureClientApplicationUrl(Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

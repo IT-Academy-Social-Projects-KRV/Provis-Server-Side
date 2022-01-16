@@ -2,12 +2,14 @@
 
 @{
     Layout = "_MailLayout";
+    ViewData["UserName"] = Model.UserName;
+    ViewData["ClientUrl"] = Model.Uri;
 }
 
 <table align="center">
     <tr>
         <td>
-            <h1>Your Code:</h1>
+            <h1>That's your two factor code:</h1>
         </td>
         <td align="right">
             <h1 style="color: dodgerblue;">@Model.Token</h1>

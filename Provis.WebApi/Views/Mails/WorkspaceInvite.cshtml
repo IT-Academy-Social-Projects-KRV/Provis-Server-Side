@@ -2,18 +2,20 @@
 
 @{
     Layout = "_MailLayout";
+    ViewData["UserName"] = Model.UserName;
+    ViewData["ClientUrl"] = Model.Uri;
 }
 
 <table align="center" style="text-align:center;">
     <tr>
-        <td>
-            <h1 style="color: white;">Owner: @Model.Owner</h1>
-            <h3 style="color: white;">Welcome to my workspace - @Model.WorkspaceName</h3>
+        <td style="color: white;">
+            <h1>Owner: @Model.Owner has invited you to their workspace</h1>
+            <h3>Welcome to my workspace - @Model.WorkspaceName</h3>
         </td>
     </tr>
 </table>
 <div style="text-align:center;">
-    <a href="http://localhost:4200/user/workspaces" style="margin: 20px;">
+    <a href=@Model.Uri style="margin: 20px;">
         <h1>Your workspaces</h1>
     </a>
 </div>
