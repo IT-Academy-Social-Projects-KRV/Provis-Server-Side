@@ -34,6 +34,7 @@ namespace Provis.WebApi
             services.ConfigureMailSettings(Configuration);
             services.ConfigureValidationSettings(Configuration);
             services.ConfigureImageSettings(Configuration);
+            services.ConfigureTaskAttachmentSettings(Configuration);
             services.ConfigureFileSettings(Configuration);
             services.AddAutoMapper();
             services.AddFileService(Configuration);

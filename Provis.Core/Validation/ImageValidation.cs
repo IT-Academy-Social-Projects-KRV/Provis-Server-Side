@@ -20,7 +20,7 @@ namespace Provis.Core.Validation
                 .NotEmpty();
 
             RuleFor(x => x.Image.Length)
-                .LessThanOrEqualTo(options.Value.MaxSize * 1024 * 1204)
+                .LessThanOrEqualTo(options.Value.MaxSize * 1024 * 1024)
                 .WithMessage($"Max size is {options.Value.MaxSize} Mb");
 
             RuleFor(x => x.Image.ContentType)

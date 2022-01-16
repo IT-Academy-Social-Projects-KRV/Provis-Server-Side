@@ -77,6 +77,10 @@ namespace Provis.Core
         {
             services.Configure<ImageSettings>(configuration.GetSection("ImageSettings"));
         }
+        public static void ConfigureTaskAttachmentSettings(this IServiceCollection services, IConfiguration configuration)
+        {
+            services.Configure<TaskAttachmentSettings>(configuration.GetSection("TaskAttachmentSettings"));
+        }
 
         public static void ConfigureFileSettings(this IServiceCollection services, IConfiguration configuration)
         {

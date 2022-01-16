@@ -9,6 +9,7 @@ using Provis.Core.Entities.UserTaskEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
+using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
@@ -16,6 +17,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Provis.Core.ApiModels;
+using Provis.Core.Helpers;
+using Microsoft.Extensions.Options;
 
 namespace Provis.Core.Services
 {
@@ -30,8 +34,10 @@ namespace Provis.Core.Services
         protected readonly IRepository<StatusHistory> _statusHistoryRepository;
         protected readonly IRepository<Status> _taskStatusRepository;
         protected readonly IRepository<UserRoleTag> _workerRoleRepository;
+        protected readonly IRepository<WorkspaceTaskAttachment> _taskAttachmentRepository;
         protected readonly IMapper _mapper;
-
+        private readonly IFileService _fileService;
+        private readonly IOptions<TaskAttachmentSettings> _attachmentSettings;
 
         public TaskService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
@@ -42,6 +48,9 @@ namespace Provis.Core.Services
             IRepository<StatusHistory> statusHistoryRepository,
             IRepository<UserTask> userTask,
             IRepository<UserRoleTag> workerRoleRepository,
+            IRepository<WorkspaceTaskAttachment> taskAttachmentRepository,
+            IFileService fileService,
+            IOptions<TaskAttachmentSettings> attachmentSettings,
             UserManager<User> userManager
             )
         {
@@ -55,6 +64,9 @@ namespace Provis.Core.Services
             _statusHistoryRepository = statusHistoryRepository;
             _workerRoleRepository = workerRoleRepository;
             _taskStatusRepository = taskStatusRepository;
+            _taskAttachmentRepository = taskAttachmentRepository;
+            _attachmentSettings = attachmentSettings;
+            _fileService = fileService;
         }
 
         public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
@@ -246,7 +258,7 @@ namespace Provis.Core.Services
             }
             await _userTaskRepository.AddRangeAsync(userTasks);
             await _userTaskRepository.SaveChangesAsync();
-            
+
         }
 
         public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
@@ -256,7 +268,7 @@ namespace Provis.Core.Services
             _ = workspaceTask ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "Task with Id not found");
 
-            if(workspaceTask.TaskCreatorId != userId)
+            if (workspaceTask.TaskCreatorId != userId)
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You are not the creator of the task");
             }
@@ -277,7 +289,7 @@ namespace Provis.Core.Services
 
             return statusHustoryList;
         }
-        
+
         public async Task<TaskInfoDTO> GetTaskInfoAsync(int taskId)
         {
             var task = await _taskRepository.GetByKeyAsync(taskId);
@@ -297,15 +309,79 @@ namespace Provis.Core.Services
 
             foreach (var item in taskUsers)
             {
-                userList.Add(new TaskAssignedUsersDTO { 
-                    UserId = item.UserId, 
-                    UserName = item.User.UserName, 
-                    RoleTagId = item.UserRoleTagId });
+                userList.Add(new TaskAssignedUsersDTO
+                {
+                    UserId = item.UserId,
+                    UserName = item.User.UserName,
+                    RoleTagId = item.UserRoleTagId
+                });
             }
 
             taskInfoDTO.AssignedUsers = userList;
 
             return taskInfoDTO;
+        }
+
+        public async Task<List<TaskAttachmentInfoDTO>> GetTaskAttachmentsAsync(int taskId)
+        {
+            var specification = new WorkspaceTaskAttachments.TaskAttachments(taskId);
+            var listAttachments = await _taskAttachmentRepository.GetListBySpecAsync(specification);
+
+            return listAttachments.Select(x => _mapper.Map<TaskAttachmentInfoDTO>(x)).ToList();
+        }
+        public async Task<DownloadFile> GetTaskAttachmentAsync(int attachmentId)
+        {
+            var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
+            var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
+
+            _ = attachment ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
+
+            var file = await _fileService.GetFileAsync(attachment.AttachmentPath);
+
+            return file;
+        }
+        public async Task DeleteTaskAttachmentAsync(int attachmentId)
+        {
+            var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
+            var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
+
+            _ = attachment ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
+
+            if (attachment.AttachmentPath != null)
+            {
+                await _fileService.DeleteFileAsync(attachment.AttachmentPath);
+            }
+
+            await _taskAttachmentRepository.DeleteAsync(attachment);
+            await _taskAttachmentRepository.SaveChangesAsync();
+        }
+        public async Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO)
+        {
+            var specification = new WorkspaceTaskAttachments.TaskAttachments(taskAttachmentsDTO.TaskId);
+            var result = await _taskAttachmentRepository.GetListBySpecAsync(specification);
+
+            var listAttachmentsAlready = result.ToList();
+
+            if (listAttachmentsAlready.Count == _attachmentSettings.Value.MaxCount)
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    $"You have exceeded limit of {_attachmentSettings.Value.MaxCount} attachments");
+
+            var file = taskAttachmentsDTO.Attachment;
+
+            string newPath = await _fileService.AddFileAsync(file.OpenReadStream(),
+                _attachmentSettings.Value.Path, file.FileName);
+
+            WorkspaceTaskAttachment workspaceTaskAttachment = new()
+            {
+                AttachmentPath = newPath,
+                TaskId = taskAttachmentsDTO.TaskId
+            };
+
+            await _taskAttachmentRepository.AddAsync(workspaceTaskAttachment);
+
+            await _taskAttachmentRepository.SaveChangesAsync();
+
+            return _mapper.Map<TaskAttachmentInfoDTO>(workspaceTaskAttachment);
         }
     }
 }

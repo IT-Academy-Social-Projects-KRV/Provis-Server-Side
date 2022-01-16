@@ -1,5 +1,5 @@
-using Provis.Core.DTO.TaskDTO;
-using System.Collections.Generic;
+using Provis.Core.ApiModels;
+using Provis.Core.DTO.TaskDTO;using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Provis.Core.Interfaces.Services
@@ -15,5 +15,9 @@ namespace Provis.Core.Interfaces.Services
         Task<List<TaskRoleDTO>> GetWorkerRoles();
         Task<List<TaskStatusHistoryDTO>> GetStatusHistories(int taskId);
         Task<TaskInfoDTO> GetTaskInfoAsync(int taskId);
+        Task<List<TaskAttachmentInfoDTO>> GetTaskAttachmentsAsync(int taskId);
+        Task<DownloadFile> GetTaskAttachmentAsync(int attachmentId);
+        Task DeleteTaskAttachmentAsync(int attachmentId);
+        Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO);
     }
 }
