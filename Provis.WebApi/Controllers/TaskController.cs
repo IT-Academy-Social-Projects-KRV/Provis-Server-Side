@@ -120,8 +120,8 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [WorkspaceRoles(new WorkSpaceRoles[] {
-            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
         [Route("task/{taskId}/workspace/{workspaceId}/attachments")]
         public async Task<IActionResult> GetTaskAttachmentsAsync(int taskId, int workspaceId)
         {
@@ -132,8 +132,8 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [WorkspaceRoles(new WorkSpaceRoles[] {
-            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
         [Route("task/workspace/{workspaceId}/attachment/{attachmentId}")]
         public async Task<IActionResult> GetTaskAttachmentAsync(int workspaceId, int attachmentId)
         {
@@ -144,8 +144,8 @@ namespace Provis.WebApi.Controllers
         
         [Authorize]
         [HttpDelete]
-        [WorkspaceRoles(new WorkSpaceRoles[] {
-            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
         [Route("task/workspace/{workspaceId}/attachment/{attachmentId}")]
         public async Task<IActionResult> DeleteTaskAttachmentAsync(int workspaceId, int attachmentId)
         {
@@ -156,8 +156,8 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
-            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
         [Route("task/attachments")]
         public async Task<IActionResult> SendTaskAttachmentsAsync([FromForm] TaskAttachmentsDTO taskAttachmentsDTO)
         {

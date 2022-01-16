@@ -258,7 +258,7 @@ namespace Provis.Core.Services
             }
             await _userTaskRepository.AddRangeAsync(userTasks);
             await _userTaskRepository.SaveChangesAsync();
-            
+
         }
 
         public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
@@ -268,7 +268,7 @@ namespace Provis.Core.Services
             _ = workspaceTask ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "Task with Id not found");
 
-            if(workspaceTask.TaskCreatorId != userId)
+            if (workspaceTask.TaskCreatorId != userId)
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You are not the creator of the task");
             }
@@ -289,7 +289,7 @@ namespace Provis.Core.Services
 
             return statusHustoryList;
         }
-        
+
         public async Task<TaskInfoDTO> GetTaskInfoAsync(int taskId)
         {
             var task = await _taskRepository.GetByKeyAsync(taskId);
@@ -309,10 +309,12 @@ namespace Provis.Core.Services
 
             foreach (var item in taskUsers)
             {
-                userList.Add(new TaskAssignedUsersDTO { 
-                    UserId = item.UserId, 
-                    UserName = item.User.UserName, 
-                    RoleTagId = item.UserRoleTagId });
+                userList.Add(new TaskAssignedUsersDTO
+                {
+                    UserId = item.UserId,
+                    UserName = item.User.UserName,
+                    RoleTagId = item.UserRoleTagId
+                });
             }
 
             taskInfoDTO.AssignedUsers = userList;
@@ -345,7 +347,7 @@ namespace Provis.Core.Services
 
             _ = attachment ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
 
-            if (attachment.AttachmentPath!= null)
+            if (attachment.AttachmentPath != null)
             {
                 await _fileService.DeleteFileAsync(attachment.AttachmentPath);
             }
@@ -360,19 +362,21 @@ namespace Provis.Core.Services
 
             var listAttachmentsAlready = result.ToList();
 
-            if(listAttachmentsAlready.Count==_attachmentSettings.Value.MaxCount)
+            if (listAttachmentsAlready.Count == _attachmentSettings.Value.MaxCount)
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                $"You have exceeded limit of {_attachmentSettings.Value.MaxCount} attachments"); 
+                    $"You have exceeded limit of {_attachmentSettings.Value.MaxCount} attachments");
 
             var file = taskAttachmentsDTO.Attachment;
 
             string newPath = await _fileService.AddFileAsync(file.OpenReadStream(),
                 _attachmentSettings.Value.Path, file.FileName);
-           WorkspaceTaskAttachment workspaceTaskAttachment = new(){
-                    AttachmentPath = newPath,
-                    TaskId = taskAttachmentsDTO.TaskId
+
+            WorkspaceTaskAttachment workspaceTaskAttachment = new()
+            {
+                AttachmentPath = newPath,
+                TaskId = taskAttachmentsDTO.TaskId
             };
-            
+
             await _taskAttachmentRepository.AddAsync(workspaceTaskAttachment);
 
             await _taskAttachmentRepository.SaveChangesAsync();

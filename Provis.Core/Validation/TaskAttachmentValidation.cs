@@ -31,8 +31,8 @@ namespace Provis.Core.Validation
 
             RuleFor(x => x.Attachment)
                 .Must(IsTaskAttachment)
-                .WithMessage($"File must not have one of these extenstion: " +
-                $"{String.Join(", ", options.Value.SubtypesBlackList)}");
+                .WithMessage("File must not have one of these extenstion: " +
+                    $"{String.Join(", ", options.Value.SubtypesBlackList)}");
 
             RuleFor(x => x.Attachment)
                 .Must(CheckSize)
