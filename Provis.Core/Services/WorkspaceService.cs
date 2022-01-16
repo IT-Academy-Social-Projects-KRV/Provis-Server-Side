@@ -56,11 +56,6 @@ namespace Provis.Core.Services
         {
             var user = await _userManager.FindByIdAsync(userid);
 
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
-            }
-
             Workspace workspace = new Workspace()
             {
                 DateOfCreate = DateTime.UtcNow,
@@ -84,15 +79,8 @@ namespace Provis.Core.Services
 
         public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "User with Id not exist");
-
             var workspaceRec = await _workspaceRepository.GetByKeyAsync(workspaceUpdateDTO.WorkspaceId);
-
-            _ = workspaceRec ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Workspace with with Id not found");
+            workspaceRec.WorkspaceNullChecking();
 
             _mapper.Map(workspaceUpdateDTO, workspaceRec);
 
@@ -113,18 +101,10 @@ namespace Provis.Core.Services
             }
 
             var inviteUser = await _userManager.FindByEmailAsync(inviteDTO.UserEmail);
-
-            if (inviteUser == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Email not exist");
-            }
+            inviteUser.UserNullChecking();
 
             var workspace = await _workspaceRepository.GetByKeyAsync(inviteDTO.WorkspaceId);
-
-            if (workspace == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Not found this workspace");
-            }
+            workspace.WorkspaceNullChecking();
 
             var inviteUserListSpecification = new InviteUsers.InviteList(inviteUser.Id, workspace.Id);
             if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x=>x.IsConfirm == null))
@@ -165,19 +145,8 @@ namespace Provis.Core.Services
 
         public async Task DenyInviteAsync(int id, string userid)
         {
-            var user = await _userManager.FindByIdAsync(userid);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
-            }
-
             var inviteUserRec = await _inviteUserRepository.GetByKeyAsync(id);
-
-            if (inviteUserRec == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Invite with with Id not found");
-            }
+            inviteUserRec.InviteNullChecking();
 
             if (inviteUserRec.ToUserId != userid)
             {
@@ -193,13 +162,6 @@ namespace Provis.Core.Services
 
         public async Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid)
         {
-            var user = await _userManager.FindByIdAsync(userid);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
-            }
-
             var specification = new UserWorkspaces.WorkspaceList(userid);
             var listWorkspace = await _userWorkspaceRepository.GetListBySpecAsync(specification);
 
@@ -210,19 +172,8 @@ namespace Provis.Core.Services
 
         public async Task AcceptInviteAsync(int inviteId, string userid)
         {
-            var user = await _userManager.FindByIdAsync(userid);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Id doesn't exist");
-            }
-
             var inviteUserRec = await _inviteUserRepository.GetByKeyAsync(inviteId);
-
-            if (inviteUserRec == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Invite with this Id not found");
-            }
+            inviteUserRec.InviteNullChecking();
 
             if (inviteUserRec.ToUserId != userid)
             {
@@ -238,7 +189,7 @@ namespace Provis.Core.Services
 
             UserWorkspace userWorkspace = new()
             {
-                UserId = user.Id,
+                UserId = userid,
                 WorkspaceId = inviteUserRec.WorkspaceId,
                 RoleId = (int)WorkSpaceRoles.MemberId
             };
@@ -253,22 +204,13 @@ namespace Provis.Core.Services
         {
             var modifierSpecification = new UserWorkspaces.WorkspaceMember(userId, userChangeRole.WorkspaceId);
             var modifier = await _userWorkspaceRepository.GetFirstBySpecAsync(modifierSpecification);
+            modifier.User.UserNullChecking();
 
             var targetSpecification = new UserWorkspaces.WorkspaceMember(userChangeRole.UserId, userChangeRole.WorkspaceId);
             var target = await _userWorkspaceRepository.GetFirstBySpecAsync(targetSpecification);
-
-            if (modifier.UserId == null)
-                throw new HttpException(
-                    System.Net.HttpStatusCode.Forbidden,
-                    "User with this Id doesn't exist");
-
-            if (target.UserId == null)
-                throw new HttpException(
-                    System.Net.HttpStatusCode.NotFound,
-                    "User with this Id doesn't exist");
+            target.User.UserNullChecking();
 
             var roleId = (WorkSpaceRoles)modifier.RoleId;
-
 
             if (_roleAccess.RolesAccess.ContainsKey(roleId) &&
                 _roleAccess.RolesAccess[roleId]
@@ -291,12 +233,7 @@ namespace Provis.Core.Services
         {
             var specification = new UserWorkspaces.WorkspaceInfo(userId, workspaceId);
             var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
-
-            if (userWorkspace == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "Workspace with this Id doesn't exist");
-            }
+            userWorkspace.UserWorkspaceNullChecking();
 
             var workspace = _mapper.Map<WorkspaceInfoDTO>(userWorkspace);
 
@@ -306,12 +243,7 @@ namespace Provis.Core.Services
         public async Task<WorkspaceDescriptionDTO> GetWorkspaceDescriptionAsync(int workspaceId)
         {
             var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
-
-            if (workspace == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "Workspace with this Id doesn't exist or you hasn't permissions");
-            }
+            workspace.WorkspaceNullChecking();
 
             var workspaceToReturn = _mapper.Map<WorkspaceDescriptionDTO>(workspace);
 
@@ -332,12 +264,7 @@ namespace Provis.Core.Services
         public async Task<List<WorkspaceMemberDTO>> GetWorkspaceMembersAsync(int workspaceId)
         {
             var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
-
-            if (workspace == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "Workspace with current Id not found");
-            }
+            workspace.WorkspaceNullChecking();
 
             var specification = new UserWorkspaces.WorkspaceMemberList(workspaceId);
             var workspaceMembers = await _userWorkspaceRepository.GetListBySpecAsync(specification);

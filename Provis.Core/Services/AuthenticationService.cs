@@ -41,11 +41,7 @@ namespace Provis.Core.Services
         public async Task<UserAutorizationDTO> LoginAsync(string email, string password)
         {
             var user = await _userManager.FindByEmailAsync(email);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.Unauthorized, "Incorrect login or password!");
-            }
+            user.UserNullChecking();
 
             if(!await _userManager.CheckPasswordAsync(user, password))
             {
@@ -117,11 +113,7 @@ namespace Provis.Core.Services
         public async Task<UserAutorizationDTO> LoginTwoStepAsync(UserTwoFactorDTO twoFactorDTO)
         {
             var user = await _userManager.FindByEmailAsync(twoFactorDTO.Email);
-
-            if(user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Invalid Request");
-            }
+            user.UserNullChecking();
 
             var validVerification = await _userManager.VerifyTwoFactorTokenAsync(user, twoFactorDTO.Provider, twoFactorDTO.Token);
 

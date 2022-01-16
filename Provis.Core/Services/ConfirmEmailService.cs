@@ -62,10 +62,7 @@ namespace Provis.Core.Services
 
         private void CheckUserAndEmailConfirmed(User user)
         {
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "This user not found");
-            }
+            user.UserNullChecking();
 
             if (user.EmailConfirmed)
             {
