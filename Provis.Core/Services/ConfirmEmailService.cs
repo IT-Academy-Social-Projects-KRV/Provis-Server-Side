@@ -3,6 +3,7 @@ using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers.Mails;
+using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Interfaces.Services;
 using System;
 using System.Text;
@@ -38,7 +39,8 @@ namespace Provis.Core.Services
             {
                 ToEmail = user.Email,
                 Subject = "Provis Confirm Email",
-                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/ConfirmEmail", encodedCode)
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/ConfirmEmail", 
+                    new UserToken() { Token = encodedCode, UserName = user.UserName })
             });
 
             await Task.CompletedTask;

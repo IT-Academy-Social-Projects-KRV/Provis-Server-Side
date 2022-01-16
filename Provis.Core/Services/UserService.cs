@@ -15,6 +15,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.InviteUserEntity;
+using Provis.Core.Helpers.Mails.ViewModels;
 
 namespace Provis.Core.Services
 {
@@ -208,7 +209,8 @@ namespace Provis.Core.Services
             {
                 ToEmail = user.Email,
                 Subject = "Provis 2fa code",
-                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode", twoFactorToken)
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode", 
+                    new UserToken() { Token = twoFactorToken, UserName = user.UserName })
             };
 
             await _emailSenderService.SendEmailAsync(message);

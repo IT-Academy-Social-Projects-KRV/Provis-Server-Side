@@ -5,6 +5,7 @@ using Provis.Core.Entities.RefreshTokenEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers.Mails;
+using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using System;
@@ -109,7 +110,8 @@ namespace Provis.Core.Services
             {
                 ToEmail = user.Email,
                 Subject = "Provis authentication code",
-                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode", twoFactorToken)
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode",
+                    new UserToken() { Token = twoFactorToken, UserName = user.UserName })
             };
 
             await _emailSenderService.SendEmailAsync(message);

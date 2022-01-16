@@ -29,7 +29,7 @@ namespace Provis.Core.Services
             this._tempDataProvider = tempDataProvider;
         }
 
-        public async Task<string> GetTemplateHtmlAsStringAsync<T>(string viewName, T model)
+        public async Task<string> GetTemplateHtmlAsStringAsync<T>(string viewName, T model) where T : class, new()
         {
             var httpContext = new DefaultHttpContext() { RequestServices = _serviceProvider };
             var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());

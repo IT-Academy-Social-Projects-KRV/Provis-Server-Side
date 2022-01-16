@@ -1,4 +1,4 @@
-﻿@model string
+﻿@model Provis.Core.Helpers.Mails.ViewModels.UserToken
 
 @{
     Layout = "_MailLayout";
@@ -10,7 +10,7 @@
             <h1>Your Code:</h1>
         </td>
         <td align="right">
-            <h1 style="color: dodgerblue;">@Model</h1>
+            <h1 style="color: dodgerblue;">@Model.Token</h1>
         </td>
     </tr>
 </table>

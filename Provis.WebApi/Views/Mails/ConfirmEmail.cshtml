@@ -1,4 +1,4 @@
-﻿@model string
+﻿@model Provis.Core.Helpers.Mails.ViewModels.UserToken
 
 @{
     Layout = "_MailLayout";
@@ -6,5 +6,5 @@
 
 <form style="text-align: center;">
     <h1>Your Code:</h1>
-    <label style="justify-content: space-between;">@Model</label>
+    <label style="justify-content: space-between;">@Model.Token</label>
 </form>
