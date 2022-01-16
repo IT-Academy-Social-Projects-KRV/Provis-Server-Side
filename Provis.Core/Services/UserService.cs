@@ -49,12 +49,6 @@ namespace Provis.Core.Services
         public async Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId)
         {
             var user = await _userRepository.GetByKeyAsync(userId);
-
-            if(user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
-            }
-
             var userPersonalInfo = _mapper.Map<UserPersonalInfoDTO>(user);
 
             return userPersonalInfo;
@@ -85,13 +79,6 @@ namespace Provis.Core.Services
 
         public async Task<List<UserInviteInfoDTO>> GetUserInviteInfoListAsync(string userId)
         {
-            var user = await _userRepository.GetByKeyAsync(userId);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
-            }
-
             var specification = new InviteUsers.InviteList(userId);
             var inviteListInfo = await _inviteUserRepository.GetListBySpecAsync(specification);
 
@@ -102,13 +89,6 @@ namespace Provis.Core.Services
 
         public async Task<UserActiveInviteDTO> IsActiveInviteAsync(string userId)
         {
-            var user = await _userRepository.GetByKeyAsync(userId);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with Id not exist");
-
-            }
             var userActiveInviteDTO = new UserActiveInviteDTO();
 
             var specification = new InviteUsers.ActiveInvites(userId);
@@ -148,12 +128,6 @@ namespace Provis.Core.Services
         {
             var user = await _userManager.FindByIdAsync(userId);
 
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "User with Id not exist");
-            }
-
             if (!user.EmailConfirmed)
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest,
@@ -166,12 +140,6 @@ namespace Provis.Core.Services
         public async Task ChangeTwoFactorVerificationStatusAsync(string userId, UserChange2faStatusDTO statusDTO)
         {
             var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "User with Id not exist");
-            }
 
             var isUserToken = await _userManager.VerifyTwoFactorTokenAsync(user, "Email", statusDTO.Token);
 
@@ -193,12 +161,6 @@ namespace Provis.Core.Services
         public async Task SendTwoFactorCodeAsync(string userId)
         {
             var user = await _userManager.FindByIdAsync(userId);
-
-            if (user == null)
-            {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "User with Id not exist");
-            }
 
             var twoFactorToken = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
             var message = new MailRequest
