@@ -11,7 +11,7 @@ namespace Provis.Core.Entities.WorkspaceTaskAttachmentEntity
                 .HasKey(x => x.Id);
 
             builder
-                .Property(x => x.AttachmentUrl)
+                .Property(x => x.AttachmentPath)
                 .IsRequired();
 
             builder

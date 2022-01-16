@@ -241,9 +241,9 @@ namespace Provis.Core.Services
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
             var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
 
-            _ = attachment.AttachmentUrl ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
+            _ = attachment.AttachmentPath ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
 
-            var file = await _fileService.GetFileAsync(attachment.AttachmentUrl);
+            var file = await _fileService.GetFileAsync(attachment.AttachmentPath);
 
             return file;
         }
@@ -254,9 +254,9 @@ namespace Provis.Core.Services
 
             _ = attachment ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
 
-            if (attachment.AttachmentUrl!= null)
+            if (attachment.AttachmentPath!= null)
             {
-                await _fileService.DeleteFileAsync(attachment.AttachmentUrl);
+                await _fileService.DeleteFileAsync(attachment.AttachmentPath);
             }
 
             await _taskAttachmentRepository.DeleteAsync(attachment);
@@ -282,7 +282,7 @@ namespace Provis.Core.Services
                 string newPath = await _fileService.AddFileAsync(file.OpenReadStream(), _attachmentSettings.Value.Path, file.FileName);
                 WorkspaceTaskAttachment workspaceTaskAttachment = new WorkspaceTaskAttachment
                 {
-                    AttachmentUrl = newPath,
+                    AttachmentPath = newPath,
                     TaskId = taskAttachmentsDTO.TaskId
                 };
                 attachments.Add(workspaceTaskAttachment);

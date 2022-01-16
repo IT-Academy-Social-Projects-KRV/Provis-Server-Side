@@ -12,7 +12,7 @@ namespace Provis.Core.Entities.WorkspaceTaskAttachmentEntity
             {
                 Query
                     .Where(x => x.TaskId == taskId)
-                    .OrderBy(x => x.AttachmentUrl);
+                    .OrderBy(x => x.AttachmentPath);
             }
         }
         internal class TaskAttachmentInfo : Specification<WorkspaceTaskAttachment>
