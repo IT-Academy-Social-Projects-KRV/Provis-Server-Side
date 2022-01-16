@@ -16,6 +16,8 @@ using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RoleEntity;
+using Provis.Core.Entities.WorkspaceTaskEntity;
+using Provis.Core.Entities.UserTaskEntity;
 using Provis.Core.DTO.workspaceDTO;
 
 namespace Provis.Core.Services
@@ -29,6 +31,7 @@ namespace Provis.Core.Services
         protected readonly IRepository<InviteUser> _inviteUserRepository;
         protected readonly IRepository<User> _userRepository;
         protected readonly IRepository<Role> _userRoleRepository;
+        protected readonly IRepository<UserTask> _userTaskRepository;
         protected readonly IMapper _mapper;
         protected readonly RoleAccess _roleAccess;
 
@@ -39,6 +42,7 @@ namespace Provis.Core.Services
             IRepository<InviteUser> inviteUser,
             IRepository<Role> userRoleRepository,
             IEmailSenderService emailSenderService,
+            IRepository<UserTask> userTasksRepository,
             IMapper mapper,
             RoleAccess roleAccess
             )
@@ -52,6 +56,7 @@ namespace Provis.Core.Services
             _mapper = mapper;
             _roleAccess = roleAccess;
             _userRoleRepository = userRoleRepository;
+            _userTaskRepository = userTasksRepository;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -237,6 +242,17 @@ namespace Provis.Core.Services
 
             inviteUserRec.IsConfirm = true;
 
+            var userTaskSpecification = new UserTasks.UserTaskList(userid, inviteUserRec.WorkspaceId);
+            var userTasks = await _userTaskRepository.GetListBySpecAsync(userTaskSpecification);
+
+            if (userTasks != null)
+            {
+                foreach (var userTask in userTasks)
+                {
+                    userTask.Item2.IsUserDeleted = false;
+                }
+            }
+
             UserWorkspace userWorkspace = new()
             {
                 UserId = user.Id,
@@ -350,18 +366,24 @@ namespace Provis.Core.Services
 
         public async Task DeleteFromWorkspaceAsync(int workspaceId, string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
+            var userWorkspSpecification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
+            var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspSpecification);
 
-            var specification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
-            var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
+            
+            if (userWorksp.RoleId == (int)WorkSpaceRoles.OwnerId)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                    "Owner can't leave workspace");
+            }
 
-            var userTasks = user.UserTasks.Where(o => o.Task.WorkspaceId == workspaceId);
+            var userTaskSpecification = new UserTasks.UserTaskList(userId, workspaceId);
+            var userTasks = await _userTaskRepository.GetListBySpecAsync(userTaskSpecification);
 
             if (userTasks != null)
             {
                 foreach (var userTask in userTasks)
                 {
-                    userTask.IsUserDeleted = true;
+                    userTask.Item2.IsUserDeleted = true;
                 }
             }
 

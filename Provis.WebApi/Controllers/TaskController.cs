@@ -35,7 +35,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.ViewerId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
         [Route("task")]
         public async Task<IActionResult> AddTaskAsync([FromBody] TaskCreateDTO createDTO)
         {
@@ -72,6 +72,19 @@ namespace Provis.WebApi.Controllers
             var res = await _taskService.GetWorkerRoles();
 
             return Ok(res);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [WorkspaceRoles(new WorkSpaceRoles[] { 
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.MemberId })]
+        [Route("assign")]
+        public async Task<IActionResult> AssignTask([FromBody] TaskAssignDTO taskAssign)
+        {
+            await _taskService.JoinTaskAsync(taskAssign, UserId);
+            return Ok();
         }
 
         [Authorize]

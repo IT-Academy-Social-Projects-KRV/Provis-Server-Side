@@ -11,6 +11,7 @@ namespace Provis.Core.Interfaces.Services
         Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId);
         Task<List<TaskStatusDTO>> GetTaskStatuses();
         Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId);
+        Task JoinTaskAsync(TaskAssignDTO taskAssignDTO, string userId);
         Task<List<TaskRoleDTO>> GetWorkerRoles();
         Task<List<TaskStatusHistoryDTO>> GetStatusHistories(int taskId);
         Task<TaskInfoDTO> GetTaskInfoAsync(int taskId);

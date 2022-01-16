@@ -204,6 +204,51 @@ namespace Provis.Core.Services
             return result.Select(x => _mapper.Map<TaskRoleDTO>(x)).ToList();
         }
 
+        public async Task JoinTaskAsync(TaskAssignDTO taskAssign, string userId)
+        {
+            var taskSpecification = new WorkspaceTasks.TaskById(taskAssign.Id);
+            var task = await _taskRepository.GetFirstBySpecAsync(taskSpecification);
+
+            var workspaceSpecification = new Workspaces.WorkspaceById(taskAssign.WorkspaceId);
+            var worksp = await _workspaceRepository.GetFirstBySpecAsync(workspaceSpecification);
+
+            if (task.TaskCreatorId != userId && taskAssign.AssignedUsers.Single().UserId != userId)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                        "Only creator of the task can assign another users");
+            }
+
+            List<UserTask> userTasks = new();
+            foreach (var item in taskAssign.AssignedUsers)
+            {
+                if (userTasks.Exists(x => x.UserId == item.UserId))
+                {
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                        "This user has already assigned");
+                }
+                if (!worksp.UserWorkspaces.Exists(c => c.UserId == item.UserId))
+                {
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                        "This user doesn't member of current workspace");
+                }
+                if (task.UserTasks.Exists(x => x.UserId == item.UserId && !x.IsUserDeleted))
+                {
+                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                        "This user alredy in this task");
+                }
+
+                userTasks.Add(new UserTask
+                {
+                    TaskId = task.Id,
+                    UserId = item.UserId,
+                    UserRoleTagId = item.RoleTagId
+                });
+            }
+            await _userTaskRepository.AddRangeAsync(userTasks);
+            await _userTaskRepository.SaveChangesAsync();
+            
+        }
+
         public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
         {
             var workspaceTask = await _taskRepository.GetByKeyAsync(taskChangeInfoDTO.Id);
