@@ -21,7 +21,7 @@ namespace Provis.Core.Validation
                 .NotNull()
                 .NotEmpty();
 
-            RuleFor(x => x.workspaceId)
+            RuleFor(x => x.WorkspaceId)
                 .NotNull()
                 .NotEmpty();
 

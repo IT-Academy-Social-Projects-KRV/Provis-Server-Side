@@ -353,7 +353,7 @@ namespace Provis.Core.Services
             await _taskAttachmentRepository.DeleteAsync(attachment);
             await _taskAttachmentRepository.SaveChangesAsync();
         }
-        public async Task SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO)
+        public async Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachments(taskAttachmentsDTO.TaskId);
             var result = await _taskAttachmentRepository.GetListBySpecAsync(specification);
@@ -375,7 +375,9 @@ namespace Provis.Core.Services
             
             await _taskAttachmentRepository.AddAsync(workspaceTaskAttachment);
 
-            await _taskAttachmentRepository.SaveChangesAsync();           
+            await _taskAttachmentRepository.SaveChangesAsync();
+
+            return _mapper.Map<TaskAttachmentInfoDTO>(workspaceTaskAttachment);
         }
     }
 }
