@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace Provis.UnitTests.Base
 {
-    public class MockUserManager
+    public class UserManagerMock
     {
         public static Mock<UserManager<TUser>> GetUserManager<TUser>()
-        where TUser : class
+            where TUser : class
         {
             var store = new Mock<IUserStore<TUser>>();
             var passwordHasher = new Mock<IPasswordHasher<TUser>>();

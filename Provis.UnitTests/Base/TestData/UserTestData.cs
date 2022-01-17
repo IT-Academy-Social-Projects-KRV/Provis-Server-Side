@@ -1,8 +1,8 @@
 ﻿using Provis.Core.Entities.UserEntity;
 
-namespace Provis.UnitTests.Base
+namespace Provis.UnitTests.Base.TestData
 {
-    public class TestData
+    public class UserTestData
     {
         public static User GetTestUser()
         {

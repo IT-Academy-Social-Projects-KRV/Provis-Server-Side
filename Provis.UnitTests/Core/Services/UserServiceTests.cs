@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -12,6 +13,8 @@ using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Services;
 using Provis.UnitTests.Base;
+using Provis.UnitTests.Base.TestData;
+using System;
 using System.Net;
 using System.Threading.Tasks;
 
@@ -20,75 +23,73 @@ namespace Provis.UnitTests.Core.Services
     [TestFixture]
     public class UserServiceTests
     {
-        private UserService _userService;
+        protected UserService _userService;
 
-        private Mock<UserManager<User>> _userManagerMock;
-        private Mock<IRepository<User>> _userRepositoryMock;
-        private Mock<IRepository<InviteUser>> _inviteUserRepositoryMock;
-        private Mock<IEmailSenderService> _emailSenderServiceMock;
-        private Mock<IFileService> _fileServiceMock;
-        private Mock<IOptions<ImageSettings>> _imageSettingsMock;
-        private IMapper _mapper;
+        protected Mock<UserManager<User>> _userManagerMock;
+        protected Mock<IRepository<User>> _userRepositoryMock;
+        protected Mock<IRepository<InviteUser>> _inviteUserRepositoryMock;
+        protected Mock<IMapper> _mapperMock;
+        protected Mock<IEmailSenderService> _emailSenderServiceMock;
+        protected Mock<IFileService> _fileServiceMock;
+        protected Mock<IOptions<ImageSettings>> _imageSettingsMock;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
-            _userManagerMock = MockUserManager.GetUserManager<User>();
+            _userManagerMock = UserManagerMock.GetUserManager<User>();
             _userRepositoryMock = new Mock<IRepository<User>>();
             _inviteUserRepositoryMock = new Mock<IRepository<InviteUser>>();
+            _mapperMock = new Mock<IMapper>();
             _emailSenderServiceMock = new Mock<IEmailSenderService>();
             _fileServiceMock = new Mock<IFileService>();
             _imageSettingsMock = new Mock<IOptions<ImageSettings>>();
-
-            _mapper = MapperForTests.GetMapper();
 
             _userService = new UserService(
                 _userManagerMock.Object,
                 _userRepositoryMock.Object,
                 _inviteUserRepositoryMock.Object,
-                _mapper,
+                _mapperMock.Object,
                 _emailSenderServiceMock.Object,
                 _fileServiceMock.Object,
                 _imageSettingsMock.Object);
         }
 
         [Test]
-        public async Task GetUserPersonalInfoAsync_UserExist_ReturnUserPersonalInfoDTO()
+        [TestCase("1")]
+        public async Task GetUserPersonalInfoAsync_UserExist_ReturnUserPersonalInfoDTO(string userId)
         {
-            var userId = "1";
-            var userMock = TestData.GetTestUser();
+            var userMock = UserTestData.GetTestUser();
+            var expectedUser = new UserPersonalInfoDTO()
+            {
+                Name = userMock.Name,
+                Surname = userMock.Surname,
+                Email = userMock.Email,
+                Username = userMock.UserName
+            };
 
-            _userRepositoryMock
-                .Setup(x => x.GetByKeyAsync(userId))
-                .ReturnsAsync(userMock);
-
-            var expectedUser = _mapper.Map<UserPersonalInfoDTO>(userMock);
+            SetupUserGetByKeyAsync(userId, userMock);
+            _mapperMock.SetupMap(userMock, expectedUser);
 
             var result = await _userService.GetUserPersonalInfoAsync(userId);
 
-            Assert.NotNull(result);
-            Assert.AreEqual(expectedUser.Email, result.Email);
+            result.Should().NotBeNull();
+            result.Should().Be(expectedUser);
         }
 
         [Test]
-        public Task GetUserPersonalInfoAsync_UserNotExist_ThrowHttpException()
+        public async Task GetUserPersonalInfoAsync_UserNotExist_ThrowHttpException()
         {
-            var userMock = TestData.GetTestUser();
+            var userMock = UserTestData.GetTestUser();
 
             SetupUserGetByKeyAsync(null, null);
 
-            _userRepositoryMock
-                .Setup(x => x.GetByKeyAsync(It.IsAny<string>()))
-                .Returns(Task.FromResult<User>(null));
+            Func<Task> act = () =>
+                _userService.GetUserPersonalInfoAsync(It.IsAny<string>());
 
-            var exeption = Assert.ThrowsAsync<HttpException>(() => _userService.GetUserPersonalInfoAsync(It.IsAny<string>()));
-
-            //TODO use fluent assertions
-            Assert.NotNull(exeption);
-            Assert.AreEqual(exeption.StatusCode, HttpStatusCode.NotFound);
-            Assert.AreEqual(exeption.Message, "User with Id not exist");
-
-            return Task.CompletedTask;
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x=>x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage("User with Id not exist");
         }
 
         [TearDown]
@@ -97,34 +98,27 @@ namespace Provis.UnitTests.Core.Services
             _userManagerMock.Verify();
             _userRepositoryMock.Verify();
             _inviteUserRepositoryMock.Verify();
+            _mapperMock.Verify();
             _emailSenderServiceMock.Verify();
             _fileServiceMock.Verify();
             _imageSettingsMock.Verify();
-            //TODO Mapper here
         }
-
-        //IT should be protected if this class have any children
 
         /// <summary>
         /// Mocks UserManager.GetByKeyAsync
         /// </summary>
         /// <param name="key">If value null it is going to use It.
-        /// IsAny<string>() for this parameter in mock setup</param>
+        /// IsAny<string>() For this parameter in mock setup</param>
         /// <param name="userInstance">Object of user that should be returned</param>
-        private void SetupUserGetByKeyAsync(string key, User userInstance)
+        protected void SetupUserGetByKeyAsync(string key, User userInstance)
         {
             _userRepositoryMock
-                .Setup(x => x.GetByKeyAsync(key == null ? It.IsAny<string>() : key))
-                .Returns(Task.FromResult<User>(userInstance))
+                .Setup(x => x.GetByKeyAsync(key ?? It.IsAny<string>()))
+                .Returns(Task.FromResult(userInstance))
                 .Verifiable();
         }
 
-
         //TODO Local data should be configured here
         //IT can be virtual
-        //private User WithUser()
-        //{
-        //    return new User();
-        //}
     }
 }
