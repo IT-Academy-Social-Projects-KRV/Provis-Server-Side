@@ -3,7 +3,6 @@ using Azure.Storage.Blobs.Models;
 using Provis.Core.ApiModels;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.DTO.UserDTO;
-using Provis.Core.DTO.workspaceDTO;
 using Provis.Core.DTO.WorkspaceDTO;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RoleEntity;
