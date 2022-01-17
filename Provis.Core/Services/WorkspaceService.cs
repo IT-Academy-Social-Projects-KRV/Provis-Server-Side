@@ -18,18 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using Provis.Core.Helpers.Mails;
-using Provis.Core.Helpers;
-using Provis.Core.Entities.UserEntity;
-using Provis.Core.Entities.WorkspaceEntity;
-using Provis.Core.Entities.UserWorkspaceEntity;
-using Provis.Core.Entities.InviteUserEntity;
-using Provis.Core.Entities.RoleEntity;
-using Provis.Core.Helpers.Mails.ViewModels;
-using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Entities.UserTaskEntity;
-using Provis.Core.DTO.workspaceDTO;
 
 namespace Provis.Core.Services
 {
