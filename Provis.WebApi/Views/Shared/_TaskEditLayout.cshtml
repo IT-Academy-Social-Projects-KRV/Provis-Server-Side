@@ -13,7 +13,16 @@
         </tr>
         <tr>
             <td bgcolor="#6E67A9" style="padding: 40px 0 30px 0;" align="center">
-                @RenderBody()
+                <table align="center">
+                    <tr>
+                        <td align="center">
+                            <h1 style="color: white;">@ViewData["ViewInfo"]</h1>
+                            <p style="font-weight: bolder;">by @ViewData["ChangedBy"]</p>
+                            @RenderBody()
+                            <p style="color: white; font-weight: bolder;">Workspace &gt; @ViewData["WorkspaceName"]</p>
+                        </td>
+                    </tr>
+                </table>
             </td>
         </tr>
         <tr>

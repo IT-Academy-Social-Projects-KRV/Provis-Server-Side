@@ -28,11 +28,12 @@ namespace Provis.Core.Entities.UserTaskEntity
                     .OrderBy(o => o.UserRoleTagId);
             }
         }     
-        internal class TaskAssignedUserList : Specification<UserTask>
+        internal class TaskAssignedUserEmailList : Specification<UserTask, string>
         {
-            public TaskAssignedUserList(int taskId)
+            public TaskAssignedUserEmailList(int taskId)
             {
                 Query
+                    .Select(x => x.User.Email)
                     .Where(t => t.TaskId == taskId)
                     .Include(u => u.User);
             }

@@ -15,8 +15,6 @@ namespace Provis.Core.Helpers.Mails.ViewModels
 
         public string TaskName { get; set; }
 
-        public string UserName { get; set; }
-
         public string WorkspaceName { get; set; }
     }
 }

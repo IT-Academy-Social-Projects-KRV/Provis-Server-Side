@@ -1,8 +1,20 @@
-﻿@model Provis.Core.Helpers.Mails.ViewModels.TaskChangeStatus
+﻿@model Provis.Core.Helpers.Mails.ViewModels.TaskEdited
 
 @{
     Layout = "_TaskEditLayout";
     ViewData["ClientUrl"] = Model.Uri;
+    ViewData["ChangedBy"] = Model.WhoEditUserName;
+    ViewData["WorkspaceName"] = Model.WorkspaceName;
+    ViewData["ViewInfo"] = $"Task {Model.TaskChangeInfo.Name} changed";
 }
 
-<h1 style="color: white">Task changed by @Model.WhoChangedUserName</h1>
+<h2 style="color: white">Task info now</h2>
+<table align="center">
+    <tr>
+        <td>
+            <h2>Name: <b style="color: white;">@Model.TaskChangeInfo.Name</b></h2>
+            <h2>Description: <b style="color: white;">@Model.TaskChangeInfo.Description</b></h2>
+            <h2>Deadline: <b style="color: white;">@Model.TaskChangeInfo.Deadline.Date.ToString("d")</b></h2>
+        </td>
+    </tr>
+</table>

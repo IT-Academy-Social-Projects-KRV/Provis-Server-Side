@@ -85,30 +85,27 @@ namespace Provis.Core.Services
 
             if(task.StatusId != changeTaskStatus.StatusId)
             {
-                await Task.Factory.StartNew(async () =>
+                var user = await _userRepository.GetByKeyAsync(userId);
+
+                var workspace = await _workspaceRepository.GetByKeyAsync(changeTaskStatus.WorkspaceId);
+
+                var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
+                    new UserTasks.TaskAssignedUserEmailList(changeTaskStatus.TaskId));
+
+                await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChangeStatus>()
                 {
-                    var user = await _userRepository.GetByKeyAsync(userId);
-
-                    var workspace = await _workspaceRepository.GetByKeyAsync(changeTaskStatus.WorkspaceId);
-
-                    var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
-                        new UserTasks.TaskAssignedUserList(changeTaskStatus.TaskId));
-
-                    await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChangeStatus>()
+                    Emails = assignedUsers,
+                    Subject = $"Changed status of {task.Name} task",
+                    Body = "TaskStatusChange",
+                    ViewModel = new TaskChangeStatus()
                     {
-                        Emails = assignedUsers.Select(x => x.User.Email),
-                        Subject = $"Changed status of {task.Name} task",
-                        Body = "TaskStatusChange",
-                        ViewModel = new TaskChangeStatus()
-                        {
-                            Uri = _clientUrl.Value.ApplicationUrl,
-                            WhoChangedUserName = user.Name,
-                            FromStatus = (TaskStatuses)task.StatusId,
-                            ToStatus = (TaskStatuses)changeTaskStatus.StatusId,
-                            TaskName = task.Name,
-                            WorkspaceName = workspace.Name
-                        }
-                    });
+                        Uri = _clientUrl.Value.ApplicationUrl,
+                        WhoChangedUserName = user.Name,
+                        FromStatus = (TaskStatuses)task.StatusId,
+                        ToStatus = (TaskStatuses)changeTaskStatus.StatusId,
+                        TaskName = task.Name,
+                        WorkspaceName = workspace.Name
+                    }
                 });
 
                 var statusHistory = new StatusHistory
@@ -316,18 +313,22 @@ namespace Provis.Core.Services
             {
                 var user = await _userRepository.GetByKeyAsync(userId);
 
-                var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
-                    new UserTasks.TaskAssignedUserList(taskChangeInfoDTO.Id));
+                var workspace = await _workspaceRepository.GetByKeyAsync(taskChangeInfoDTO.WorkspaceId);
 
-                await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChangeStatus>()
+                var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
+                    new UserTasks.TaskAssignedUserEmailList(taskChangeInfoDTO.Id));
+
+                await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskEdited>()
                 {
-                    Emails = assignedUsers.Select(x => x.User.Email),
-                    Subject = $"Changed status of {workspaceTask.Name} task",
+                    Emails = assignedUsers,
+                    Subject = $"Task {workspaceTask.Name} was edited",
                     Body = "TaskChange",
-                    ViewModel = new TaskChangeStatus() 
-                    { 
+                    ViewModel = new TaskEdited()
+                    {
                         Uri = _clientUrl.Value.ApplicationUrl,
-                        WhoChangedUserName = user.Name
+                        WhoEditUserName = user.Name,
+                        TaskChangeInfo = taskChangeInfoDTO,
+                        WorkspaceName = workspace.Name
                     }
                 });
 
