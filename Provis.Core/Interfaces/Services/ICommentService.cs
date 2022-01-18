@@ -1,16 +1,13 @@
-﻿using Provis.Core.DTO.CommentsDTO;
-using Provis.Core.Entities.CommentEntity;
-using System;
+﻿using Provis.Core.DTO.CommentDTO;
+using Provis.Core.DTO.CommentsDTO;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Provis.Core.Interfaces.Services
 {
     public interface ICommentService
     {
-        Task<List<CommentDTO>> GetComments(int taskId);
-        Task
+        Task<List<CommentListDTO>> GetCommentsAsync(int taskId);
+        Task CommentAsync(CreateCommentDTO commentDTO, string userId);
     }
 }

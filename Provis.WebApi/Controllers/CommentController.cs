@@ -22,23 +22,32 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
+        [WorkspaceRoles(new WorkSpaceRoles[] { 
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId, 
+            WorkSpaceRoles.ViewerId})]
         [Route("list")]
         public async Task<IActionResult> GetComments(int taskId)
         {
-            var getComments = await _commentService.GetComments(taskId);
+            var getComments = await _commentService.GetCommentsAsync(taskId);
 
             return Ok(getComments);
         }
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
+        [WorkspaceRoles(new WorkSpaceRoles[] { 
+            WorkSpaceRoles.OwnerId,
             WorkSpaceRoles.ManagerId,
-            WorkSpaceRoles.MemberId })]
+            WorkSpaceRoles.MemberId,
+            WorkSpaceRoles.ViewerId})]
         [Route("comment")]
-        public async Task<IActionResult> Comment([FromBody] CommentDTO commentDTO)
+        public async Task<IActionResult> CommentAsync([FromBody] CreateCommentDTO commentDTO)
         {
-            await _
+            await _commentService.CommentAsync(commentDTO, UserId);
+
+            return Ok();
         }
     }
 }

@@ -1,11 +1,14 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Provis.Core.DTO.CommentDTO;
 using Provis.Core.DTO.CommentsDTO;
 using Provis.Core.Entities.CommentEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
+using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -32,12 +35,26 @@ namespace Provis.Core.Services
             _mapper = mapper;
         }
 
-        public async Task<List<CommentDTO>> GetComments(int taskId)
+        public async Task CommentAsync(CreateCommentDTO commentDTO, string userId)
+        {
+            Comment comment = new()
+            {
+                CommentText = commentDTO.CommentText,
+                DateOfCreate = DateTime.UtcNow,
+                TaskId = commentDTO.TaskId,
+                UserId = userId
+            };
+
+            await _commentRepository.AddAsync(comment);
+            await _commentRepository.SaveChangesAsync();
+        }
+
+        public async Task<List<CommentListDTO>> GetCommentsAsync(int taskId)
         {
             var specification = new Comments.CommentTask(taskId);
             var commentList = await _commentRepository.GetListBySpecAsync(specification);
 
-            var listCommentsToReturn = _mapper.Map<List<CommentDTO>>(commentList);
+            var listCommentsToReturn = _mapper.Map<List<CommentListDTO>>(commentList);
 
             return listCommentsToReturn;
         }
