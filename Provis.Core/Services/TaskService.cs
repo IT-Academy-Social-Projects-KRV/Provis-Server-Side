@@ -125,7 +125,7 @@ namespace Provis.Core.Services
 
             _mapper.Map(taskCreateDTO, task);
 
-            using (var transaction = await _taskRepository.BeginTransactionAsync())
+            using (var transaction = await _taskRepository.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead))
             {
                 try
                 {

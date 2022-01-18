@@ -66,9 +66,9 @@ namespace Provis.Infrastructure.Data.Repositories
             await _dbContext.AddRangeAsync(entities);
         }
 
-        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        public async Task<IDbContextTransaction> BeginTransactionAsync(System.Data.IsolationLevel isolationLevel)
         {
-            return (await _dbContext.Database.BeginTransactionAsync());
+            return (await _dbContext.Database.BeginTransactionAsync(isolationLevel));
         }
 
         public async Task<IEnumerable<TEntity>> GetListBySpecAsync(ISpecification<TEntity> specification)
