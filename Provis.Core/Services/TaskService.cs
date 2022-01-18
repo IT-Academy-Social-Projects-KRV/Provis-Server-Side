@@ -281,7 +281,8 @@ namespace Provis.Core.Services
 
         public async Task<TaskInfoDTO> GetTaskInfoAsync(int taskId)
         {
-            var task = await _taskRepository.GetByKeyAsync(taskId);
+            var specificationTask = new WorkspaceTasks.TaskWithComments(taskId);
+            var task = await _taskRepository.GetFirstBySpecAsync(specificationTask);
             task.TaskNullChecking();
 
             TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
