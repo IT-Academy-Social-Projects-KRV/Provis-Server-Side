@@ -10,5 +10,6 @@ namespace Provis.Core.DTO.TaskDTO
         public DateTime Deadline { get; set; }
         public int StatusId { get; set; }
         public List<TaskAssignedUsersDTO> AssignedUsers { get; set; }
+        public int CommentCount { get; set; }
     }
 }
