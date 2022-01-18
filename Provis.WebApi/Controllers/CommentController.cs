@@ -64,5 +64,20 @@ namespace Provis.WebApi.Controllers
 
             return Ok();
         }
+
+        [Authorize]
+        [HttpDelete]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId,
+            WorkSpaceRoles.ViewerId})]
+        [Route("{id}/workspace/{workspaceId}")]
+        public async Task<IActionResult> DeleteCommentAsync(int id, int workspaceId)
+        {
+            await _commentService.DeleteCommentAsync(id, UserId, workspaceId);
+
+            return Ok();
+        }
     }
 }

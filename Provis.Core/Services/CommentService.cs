@@ -4,10 +4,13 @@ using Provis.Core.DTO.CommentDTO;
 using Provis.Core.DTO.CommentsDTO;
 using Provis.Core.Entities.CommentEntity;
 using Provis.Core.Entities.UserEntity;
+using Provis.Core.Entities.UserWorkspaceEntity;
+using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
+using Provis.Core.Roles;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -18,6 +21,8 @@ namespace Provis.Core.Services
     {
         protected readonly UserManager<User> _userManager;
         protected readonly IRepository<User> _userRepository;
+        protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
+        protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<WorkspaceTask> _taskRepository;
         protected readonly IRepository<Comment> _commentRepository;
         protected readonly IMapper _mapper;
@@ -25,10 +30,14 @@ namespace Provis.Core.Services
         public CommentService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
             IRepository<Comment> comment,
+            IRepository<UserWorkspace> userWorkspace,
+            IRepository<Workspace> workspace,
             UserManager<User> userManager,
             IMapper mapper)
         {
             _userManager = userManager;
+            _workspaceRepository = workspace;
+            _userWorkspaceRepository = userWorkspace;
             _userRepository = user;
             _taskRepository = task;
             _commentRepository = comment;
@@ -73,6 +82,24 @@ namespace Provis.Core.Services
             comment.CommentText = editComment.CommentText;
 
             await _commentRepository.UpdateAsync(comment);
+            await _commentRepository.SaveChangesAsync();
+        }
+
+        public async Task DeleteCommentAsync(int id, string userId, int workspaceId)
+        {
+            var specification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
+            var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
+
+            var comment = await _commentRepository.GetByKeyAsync(id);
+
+            if (!(comment.UserId == userId || 
+                userWorkspace.RoleId == (int)WorkSpaceRoles.OwnerId))
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                    "Only cretor or workspace owner can delete comments");
+            }
+
+            await _commentRepository.DeleteAsync(comment);
             await _commentRepository.SaveChangesAsync();
         }
     }

@@ -10,5 +10,6 @@ namespace Provis.Core.Interfaces.Services
         Task<List<CommentListDTO>> GetCommentsAsync(int taskId);
         Task CommentAsync(CreateCommentDTO commentDTO, string userId);
         Task EditCommentAsync(EditCommentDTO editCommentDTO, string userID);
+        Task DeleteCommentAsync(int id, string userId, int workspaceId);
     }
 }
