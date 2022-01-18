@@ -1,8 +1,8 @@
-﻿@model Provis.Core.Helpers.Mails.ViewModels.TaskChange
+﻿@model Provis.Core.Helpers.Mails.ViewModels.TaskChangeStatus
 
 @{
-    Layout = "_MailLayout";
+    Layout = "_TaskEditLayout";
     ViewData["ClientUrl"] = Model.Uri;
 }
 
-<h1>Task changed</h1>
+<h1 style="color: white">Task changed by @Model.WhoChangedUserName</h1>

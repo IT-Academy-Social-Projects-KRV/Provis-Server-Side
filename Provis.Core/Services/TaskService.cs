@@ -22,6 +22,7 @@ using Provis.Core.Helpers;
 using Microsoft.Extensions.Options;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Helpers.Mails.ViewModels;
+using Provis.Core.Statuses;
 
 namespace Provis.Core.Services
 {
@@ -40,9 +41,8 @@ namespace Provis.Core.Services
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
         private readonly IOptions<TaskAttachmentSettings> _attachmentSettings;
-        private readonly ClientUrl _clientUrl;
+        private readonly IOptions<ClientUrl> _clientUrl;
         private readonly IEmailSenderService _emailSenderService;
-        private readonly ITemplateService _templateService;
 
         public TaskService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
@@ -58,8 +58,7 @@ namespace Provis.Core.Services
             IOptions<TaskAttachmentSettings> attachmentSettings,
             UserManager<User> userManager,
             IOptions<ClientUrl> options,
-            IEmailSenderService emailSenderService,
-            ITemplateService templateService)
+            IEmailSenderService emailSenderService)
         {
             _userManager = userManager;
             _userRepository = user;
@@ -74,9 +73,8 @@ namespace Provis.Core.Services
             _taskAttachmentRepository = taskAttachmentRepository;
             _attachmentSettings = attachmentSettings;
             _fileService = fileService;
-            _clientUrl = options.Value;
+            _clientUrl = options;
             _emailSenderService = emailSenderService;
-            _templateService = templateService;
         }
 
         public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
@@ -87,15 +85,30 @@ namespace Provis.Core.Services
 
             if(task.StatusId != changeTaskStatus.StatusId)
             {
-                var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
-                    new UserTasks.TaskAssignedUser(changeTaskStatus.TaskId));
-
-                await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChange>()
+                await Task.Factory.StartNew(async () =>
                 {
-                    Emails = assignedUsers.Select(x => x.User.Email),
-                    Subject = $"Changed status of {task.Name} task",
-                    Body = "TaskStatusChange",
-                    ViewModel = new TaskChange() { Uri = _clientUrl.ApplicationUrl }
+                    var user = await _userRepository.GetByKeyAsync(userId);
+
+                    var workspace = await _workspaceRepository.GetByKeyAsync(changeTaskStatus.WorkspaceId);
+
+                    var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
+                        new UserTasks.TaskAssignedUserList(changeTaskStatus.TaskId));
+
+                    await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChangeStatus>()
+                    {
+                        Emails = assignedUsers.Select(x => x.User.Email),
+                        Subject = $"Changed status of {task.Name} task",
+                        Body = "TaskStatusChange",
+                        ViewModel = new TaskChangeStatus()
+                        {
+                            Uri = _clientUrl.Value.ApplicationUrl,
+                            WhoChangedUserName = user.Name,
+                            FromStatus = (TaskStatuses)task.StatusId,
+                            ToStatus = (TaskStatuses)changeTaskStatus.StatusId,
+                            TaskName = task.Name,
+                            WorkspaceName = workspace.Name
+                        }
+                    });
                 });
 
                 var statusHistory = new StatusHistory
@@ -301,15 +314,21 @@ namespace Provis.Core.Services
                 || workspaceTask.Description != taskChangeInfoDTO.Description 
                 || workspaceTask.DateOfEnd != taskChangeInfoDTO.Deadline)
             {
-                var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
-                    new UserTasks.TaskAssignedUser(taskChangeInfoDTO.Id));
+                var user = await _userRepository.GetByKeyAsync(userId);
 
-                await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChange>()
+                var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
+                    new UserTasks.TaskAssignedUserList(taskChangeInfoDTO.Id));
+
+                await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChangeStatus>()
                 {
                     Emails = assignedUsers.Select(x => x.User.Email),
                     Subject = $"Changed status of {workspaceTask.Name} task",
                     Body = "TaskChange",
-                    ViewModel = new TaskChange() { Uri = _clientUrl.ApplicationUrl }
+                    ViewModel = new TaskChangeStatus() 
+                    { 
+                        Uri = _clientUrl.Value.ApplicationUrl,
+                        WhoChangedUserName = user.Name
+                    }
                 });
 
                 _mapper.Map(taskChangeInfoDTO, workspaceTask);
