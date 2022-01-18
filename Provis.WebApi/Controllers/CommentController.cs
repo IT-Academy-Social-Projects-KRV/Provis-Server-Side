@@ -27,10 +27,9 @@ namespace Provis.WebApi.Controllers
             WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId,
             WorkSpaceRoles.ViewerId})]
-        [Route("comment")]
         public async Task<IActionResult> CommentAsync([FromBody] CreateCommentDTO commentDTO)
         {
-            await _commentService.CommentAsync(commentDTO, UserId);
+            await _commentService.AddCommentAsync(commentDTO, UserId);
 
             return Ok();
         }
@@ -42,10 +41,9 @@ namespace Provis.WebApi.Controllers
             WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId,
             WorkSpaceRoles.ViewerId})]
-        [Route("list")]
-        public async Task<IActionResult> GetComments(int taskId)
+        public async Task<IActionResult> GetCommentsListAsync(int taskId)
         {
-            var getComments = await _commentService.GetCommentsAsync(taskId);
+            var getComments = await _commentService.GetCommentListsAsync(taskId);
 
             return Ok(getComments);
         }
@@ -57,7 +55,6 @@ namespace Provis.WebApi.Controllers
             WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId,
             WorkSpaceRoles.ViewerId})]
-        [Route("edit")]
         public async Task<IActionResult> EditCommentAsync([FromBody] EditCommentDTO commentDTO)
         {
             await _commentService.EditCommentAsync(commentDTO, UserId);
