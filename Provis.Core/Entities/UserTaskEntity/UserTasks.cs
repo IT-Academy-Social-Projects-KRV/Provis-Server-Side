@@ -34,8 +34,7 @@ namespace Provis.Core.Entities.UserTaskEntity
             {
                 Query
                     .Select(x => x.User.Email)
-                    .Where(t => t.TaskId == taskId)
-                    .Include(u => u.User);
+                    .Where(t => t.TaskId == taskId);
             }
         }
     }

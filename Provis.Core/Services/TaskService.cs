@@ -89,12 +89,12 @@ namespace Provis.Core.Services
 
                 var workspace = await _workspaceRepository.GetByKeyAsync(changeTaskStatus.WorkspaceId);
 
-                var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
+                var assignedUserEmails = await _userTaskRepository.GetListBySpecAsync(
                     new UserTasks.TaskAssignedUserEmailList(changeTaskStatus.TaskId));
 
                 await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChangeStatus>()
                 {
-                    Emails = assignedUsers,
+                    Emails = assignedUserEmails,
                     Subject = $"Changed status of {task.Name} task",
                     Body = "TaskStatusChange",
                     ViewModel = new TaskChangeStatus()
@@ -315,12 +315,12 @@ namespace Provis.Core.Services
 
                 var workspace = await _workspaceRepository.GetByKeyAsync(taskChangeInfoDTO.WorkspaceId);
 
-                var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
+                var assignedUserEmails = await _userTaskRepository.GetListBySpecAsync(
                     new UserTasks.TaskAssignedUserEmailList(taskChangeInfoDTO.Id));
 
                 await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskEdited>()
                 {
-                    Emails = assignedUsers,
+                    Emails = assignedUserEmails,
                     Subject = $"Task {workspaceTask.Name} was edited",
                     Body = "TaskChange",
                     ViewModel = new TaskEdited()
