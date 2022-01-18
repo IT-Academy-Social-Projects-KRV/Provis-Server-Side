@@ -4,6 +4,7 @@ namespace Provis.Core.DTO.CommentDTO
 {
     public class CommentListDTO
     {
+        public int Id { get; set; }
         public string CommentText { get; set; }
         public DateTime dateTime { get; set; }
         public int TaskId { get; set; }

@@ -21,21 +21,6 @@ namespace Provis.WebApi.Controllers
         }
 
         [Authorize]
-        [HttpGet]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
-            WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId,
-            WorkSpaceRoles.MemberId, 
-            WorkSpaceRoles.ViewerId})]
-        [Route("list")]
-        public async Task<IActionResult> GetComments(int taskId)
-        {
-            var getComments = await _commentService.GetCommentsAsync(taskId);
-
-            return Ok(getComments);
-        }
-
-        [Authorize]
         [HttpPost]
         [WorkspaceRoles(new WorkSpaceRoles[] { 
             WorkSpaceRoles.OwnerId,
@@ -46,6 +31,36 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> CommentAsync([FromBody] CreateCommentDTO commentDTO)
         {
             await _commentService.CommentAsync(commentDTO, UserId);
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpGet]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId,
+            WorkSpaceRoles.ViewerId})]
+        [Route("list")]
+        public async Task<IActionResult> GetComments(int taskId)
+        {
+            var getComments = await _commentService.GetCommentsAsync(taskId);
+
+            return Ok(getComments);
+        }
+
+        [Authorize]
+        [HttpPut]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId,
+            WorkSpaceRoles.ViewerId})]
+        [Route("edit")]
+        public async Task<IActionResult> EditCommentAsync([FromBody] EditCommentDTO commentDTO)
+        {
+            await _commentService.EditCommentAsync(commentDTO, UserId);
 
             return Ok();
         }

@@ -58,5 +58,22 @@ namespace Provis.Core.Services
 
             return listCommentsToReturn;
         }
+
+        public async Task EditCommentAsync(EditCommentDTO editComment, string creatorId)
+        {
+            var comment = await _commentRepository.GetByKeyAsync(editComment.CommentId);
+
+            if (comment.UserId != creatorId)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                    "Only creator can edit his comment");
+            }
+
+            comment.DateOfCreate = DateTime.Now;
+            comment.CommentText = editComment.CommentText;
+
+            await _commentRepository.UpdateAsync(comment);
+            await _commentRepository.SaveChangesAsync();
+        }
     }
 }
