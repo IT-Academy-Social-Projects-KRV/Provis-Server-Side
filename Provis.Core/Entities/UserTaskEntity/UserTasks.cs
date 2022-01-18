@@ -27,6 +27,15 @@ namespace Provis.Core.Entities.UserTaskEntity
                     .Include(u => u.User)
                     .OrderBy(o => o.UserRoleTagId);
             }
+        }     
+        internal class TaskAssignedUser : Specification<UserTask>
+        {
+            public TaskAssignedUser(int taskId)
+            {
+                Query
+                    .Where(t => t.TaskId == taskId)
+                    .Include(u => u.User);
+            }
         }
     }
 }

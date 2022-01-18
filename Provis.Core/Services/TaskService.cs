@@ -20,6 +20,8 @@ using System.Threading.Tasks;
 using Provis.Core.ApiModels;
 using Provis.Core.Helpers;
 using Microsoft.Extensions.Options;
+using Provis.Core.Helpers.Mails;
+using Provis.Core.Helpers.Mails.ViewModels;
 
 namespace Provis.Core.Services
 {
@@ -38,6 +40,9 @@ namespace Provis.Core.Services
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
         private readonly IOptions<TaskAttachmentSettings> _attachmentSettings;
+        private readonly ClientUrl _clientUrl;
+        private readonly IEmailSenderService _emailSenderService;
+        private readonly ITemplateService _templateService;
 
         public TaskService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
@@ -51,8 +56,10 @@ namespace Provis.Core.Services
             IRepository<WorkspaceTaskAttachment> taskAttachmentRepository,
             IFileService fileService,
             IOptions<TaskAttachmentSettings> attachmentSettings,
-            UserManager<User> userManager
-            )
+            UserManager<User> userManager,
+            IOptions<ClientUrl> options,
+            IEmailSenderService emailSenderService,
+            ITemplateService templateService)
         {
             _userManager = userManager;
             _userRepository = user;
@@ -67,6 +74,9 @@ namespace Provis.Core.Services
             _taskAttachmentRepository = taskAttachmentRepository;
             _attachmentSettings = attachmentSettings;
             _fileService = fileService;
+            _clientUrl = options.Value;
+            _emailSenderService = emailSenderService;
+            _templateService = templateService;
         }
 
         public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
@@ -75,20 +85,34 @@ namespace Provis.Core.Services
 
             _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task not found");
 
-            var statusHistory = new StatusHistory
+            if(task.StatusId != changeTaskStatus.StatusId)
             {
-                DateOfChange = DateTime.UtcNow,
-                StatusId = changeTaskStatus.StatusId,
-                TaskId = task.Id,
-                UserId = userId
-            };
+                var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
+                    new UserTasks.TaskAssignedUser(changeTaskStatus.TaskId));
 
-            await _statusHistoryRepository.AddAsync(statusHistory);
+                await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChange>()
+                {
+                    Emails = assignedUsers.Select(x => x.User.Email),
+                    Subject = $"Changed status of {task.Name} task",
+                    Body = "TaskStatusChange",
+                    ViewModel = new TaskChange() { Uri = _clientUrl.ApplicationUrl }
+                });
 
-            task.StatusId = changeTaskStatus.StatusId;
-            await _taskRepository.UpdateAsync(task);
+                var statusHistory = new StatusHistory
+                {
+                    DateOfChange = DateTime.UtcNow,
+                    StatusId = changeTaskStatus.StatusId,
+                    TaskId = task.Id,
+                    UserId = userId
+                };
 
-            await _taskRepository.SaveChangesAsync();
+                await _statusHistoryRepository.AddAsync(statusHistory);
+
+                task.StatusId = changeTaskStatus.StatusId;
+                await _taskRepository.UpdateAsync(task);
+
+                await _taskRepository.SaveChangesAsync();
+            }
         }
 
         public async Task CreateTaskAsync(TaskCreateDTO taskCreateDTO, string userId)
@@ -256,9 +280,9 @@ namespace Provis.Core.Services
                     UserRoleTagId = item.RoleTagId
                 });
             }
+
             await _userTaskRepository.AddRangeAsync(userTasks);
             await _userTaskRepository.SaveChangesAsync();
-
         }
 
         public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
@@ -273,11 +297,27 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You are not the creator of the task");
             }
 
-            _mapper.Map(taskChangeInfoDTO, workspaceTask);
+            if(workspaceTask.Name != taskChangeInfoDTO.Name 
+                || workspaceTask.Description != taskChangeInfoDTO.Description 
+                || workspaceTask.DateOfEnd != taskChangeInfoDTO.Deadline)
+            {
+                var assignedUsers = await _userTaskRepository.GetListBySpecAsync(
+                    new UserTasks.TaskAssignedUser(taskChangeInfoDTO.Id));
 
-            await _taskRepository.UpdateAsync(workspaceTask);
+                await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChange>()
+                {
+                    Emails = assignedUsers.Select(x => x.User.Email),
+                    Subject = $"Changed status of {workspaceTask.Name} task",
+                    Body = "TaskChange",
+                    ViewModel = new TaskChange() { Uri = _clientUrl.ApplicationUrl }
+                });
 
-            await _taskRepository.SaveChangesAsync();
+                _mapper.Map(taskChangeInfoDTO, workspaceTask);
+
+                await _taskRepository.UpdateAsync(workspaceTask);
+
+                await _taskRepository.SaveChangesAsync();
+            }           
         }
 
         public async Task<List<TaskStatusHistoryDTO>> GetStatusHistories(int taskId)
