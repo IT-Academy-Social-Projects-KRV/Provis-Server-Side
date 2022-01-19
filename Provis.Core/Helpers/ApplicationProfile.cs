@@ -16,6 +16,9 @@ using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
 using System.IO;
+using Provis.Core.Entities.CommentEntity;
+using Provis.Core.DTO.CommentDTO;
+using Provis.Core.DTO.CommentsDTO;
 
 namespace Provis.Core.Helpers
 {
@@ -140,6 +143,19 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
                 .ForMember(x => x.RoleTagId, act => act.MapFrom(srs => srs.UserRoleTagId));
+                
+            CreateMap<Comment, CommentListDTO>()
+                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
+                .ForMember(x => x.CommentText, act => act.MapFrom(srs => srs.CommentText))
+                .ForMember(x => x.DateTime, act => act.MapFrom(srs => srs.DateOfCreate))
+                .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.TaskId))
+                .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
+                .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName));
+
+            CreateMap<CreateCommentDTO, Comment>()
+                .ForMember(x => x.CommentText, act => act.MapFrom(srs => srs.CommentText))
+                .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.TaskId));
+                
         }
     }
 }
