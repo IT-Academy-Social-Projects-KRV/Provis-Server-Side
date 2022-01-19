@@ -36,6 +36,8 @@ namespace Provis.IntegrationTest.WebApi.Controllers
             _dbContext = _factory.Services.CreateScope().ServiceProvider
                 .GetRequiredService<ProvisDbContext>();
 
+            DatabaseInitialization.InitializeDatabase(_dbContext);
+
             _currentUserId = UsersData.currentUserId;
 
             FakePolicyEvaluator.claims = new[]
