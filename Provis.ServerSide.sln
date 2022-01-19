@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Provis.Infrastructure", "Pr
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Provis.Tests", "Provis.Tests", "{C6538AD8-185D-40BA-8E6A-467AD7AA21B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Provis.UnitTests", "Provis.UnitTests\Provis.UnitTests.csproj", "{0BFC7293-2D0D-4BBE-8CB5-86EEC298DAC6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Provis.UnitTests", "Provis.UnitTests\Provis.UnitTests.csproj", "{0BFC7293-2D0D-4BBE-8CB5-86EEC298DAC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Provis.IntegrationTest", "Provis.IntegrationTest\Provis.IntegrationTest.csproj", "{A345D14F-3D5E-4660-B0CD-4EA468CDA62D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -35,12 +37,17 @@ Global
 		{0BFC7293-2D0D-4BBE-8CB5-86EEC298DAC6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0BFC7293-2D0D-4BBE-8CB5-86EEC298DAC6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0BFC7293-2D0D-4BBE-8CB5-86EEC298DAC6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A345D14F-3D5E-4660-B0CD-4EA468CDA62D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A345D14F-3D5E-4660-B0CD-4EA468CDA62D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A345D14F-3D5E-4660-B0CD-4EA468CDA62D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A345D14F-3D5E-4660-B0CD-4EA468CDA62D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0BFC7293-2D0D-4BBE-8CB5-86EEC298DAC6} = {C6538AD8-185D-40BA-8E6A-467AD7AA21B8}
+		{A345D14F-3D5E-4660-B0CD-4EA468CDA62D} = {C6538AD8-185D-40BA-8E6A-467AD7AA21B8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {4217134E-BF1A-4946-8AE6-591EB85C3F10}
