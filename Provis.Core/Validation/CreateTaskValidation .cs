@@ -28,6 +28,10 @@ namespace Provis.Core.Validation
                 .NotEmpty()
                 .Must(IsStatusExist)
                 .WithMessage("This status not exist");
+
+            RuleFor(task => task.StoryPoints)
+                .InclusiveBetween(1, 99)
+                .WithMessage("Story Points most be greater than 0 and less 100");
         }
         public bool IsStatusExist(int StatusId)
         {
