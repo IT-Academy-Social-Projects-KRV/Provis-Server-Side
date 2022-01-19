@@ -29,15 +29,5 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                     .Include(p => p.UserTasks);
             }
         }
-
-        internal class TaskWithComments : Specification<WorkspaceTask>
-        {
-            public TaskWithComments(int taskId)
-            {
-                Query
-                    .Where(p => p.Id == taskId)
-                    .Include(p => p.Comments);
-            }
-        }
     }
 }
