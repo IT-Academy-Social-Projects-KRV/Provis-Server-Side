@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using Provis.Core.ApiModels;
 using Provis.Core.Helpers;
 using Microsoft.Extensions.Options;
+using Provis.Core.Helpers.Mails;
 
 namespace Provis.Core.Services
 {
@@ -72,8 +73,7 @@ namespace Provis.Core.Services
         public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
-
-            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task not found");
+            task.TaskNullChecking();
 
             var statusHistory = new StatusHistory
             {
@@ -93,29 +93,20 @@ namespace Provis.Core.Services
 
         public async Task CreateTaskAsync(TaskCreateDTO taskCreateDTO, string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "User with Id not exist");
-
             var workspace = await _workspaceRepository.GetByKeyAsync(taskCreateDTO.WorkspaceId);
-
-            _ = workspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Workspace with Id not found");
+            workspace.WorkspaceNullChecking();
 
             foreach (var item in taskCreateDTO.AssignedUsers)
             {
                 var specification = new UserWorkspaces.WorkspaceMember(item.UserId, workspace.Id);
                 var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
-
-                _ = userWorkspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "User in workspace not found");
+                userWorkspace.UserWorkspaceNullChecking();
             }
 
             var task = new WorkspaceTask();
 
             task.DateOfCreate = DateTime.UtcNow;
-            task.TaskCreatorId = user.Id;
+            task.TaskCreatorId = userId;
             task.StatusHistories.Add(new StatusHistory()
             {
                 StatusId = taskCreateDTO.StatusId,
@@ -264,9 +255,7 @@ namespace Provis.Core.Services
         public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
         {
             var workspaceTask = await _taskRepository.GetByKeyAsync(taskChangeInfoDTO.Id);
-
-            _ = workspaceTask ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Task with Id not found");
+            workspaceTask.TaskNullChecking();
 
             if (workspaceTask.TaskCreatorId != userId)
             {
@@ -309,6 +298,7 @@ namespace Provis.Core.Services
 
             return listAttachments.Select(x => _mapper.Map<TaskAttachmentInfoDTO>(x)).ToList();
         }
+        
         public async Task<DownloadFile> GetTaskAttachmentAsync(int attachmentId)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
@@ -320,6 +310,7 @@ namespace Provis.Core.Services
 
             return file;
         }
+        
         public async Task DeleteTaskAttachmentAsync(int attachmentId)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
@@ -335,6 +326,7 @@ namespace Provis.Core.Services
             await _taskAttachmentRepository.DeleteAsync(attachment);
             await _taskAttachmentRepository.SaveChangesAsync();
         }
+        
         public async Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachments(taskAttachmentsDTO.TaskId);
