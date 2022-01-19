@@ -80,8 +80,7 @@ namespace Provis.Core.Services
         public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
-
-            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task not found");
+            task.TaskNullChecking();
 
             if(task.StatusId != changeTaskStatus.StatusId)
             {
@@ -127,29 +126,20 @@ namespace Provis.Core.Services
 
         public async Task CreateTaskAsync(TaskCreateDTO taskCreateDTO, string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "User with Id not exist");
-
             var workspace = await _workspaceRepository.GetByKeyAsync(taskCreateDTO.WorkspaceId);
-
-            _ = workspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Workspace with Id not found");
+            workspace.WorkspaceNullChecking();
 
             foreach (var item in taskCreateDTO.AssignedUsers)
             {
                 var specification = new UserWorkspaces.WorkspaceMember(item.UserId, workspace.Id);
                 var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
-
-                _ = userWorkspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "User in workspace not found");
+                userWorkspace.UserWorkspaceNullChecking();
             }
 
             var task = new WorkspaceTask();
 
             task.DateOfCreate = DateTime.UtcNow;
-            task.TaskCreatorId = user.Id;
+            task.TaskCreatorId = userId;
             task.StatusHistories.Add(new StatusHistory()
             {
                 StatusId = taskCreateDTO.StatusId,
@@ -298,9 +288,7 @@ namespace Provis.Core.Services
         public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
         {
             var workspaceTask = await _taskRepository.GetByKeyAsync(taskChangeInfoDTO.Id);
-
-            _ = workspaceTask ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Task with Id not found");
+            workspaceTask.TaskNullChecking();
 
             if (workspaceTask.TaskCreatorId != userId)
             {
@@ -353,9 +341,7 @@ namespace Provis.Core.Services
         public async Task<TaskInfoDTO> GetTaskInfoAsync(int taskId)
         {
             var task = await _taskRepository.GetByKeyAsync(taskId);
-
-            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Task with Id not found");
+            task.TaskNullChecking();
 
             TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
 
