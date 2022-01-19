@@ -111,11 +111,6 @@ namespace Provis.WebApi.Controllers
         [Authorize]
         [HttpGet]
         [Route("task/{taskId}")]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
-            WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId, 
-            WorkSpaceRoles.MemberId, 
-            WorkSpaceRoles.ViewerId })]
         public async Task<IActionResult> GetTaskInfoAndAssignedUsersAsync(int taskId)
         {
             var res = await _taskService.GetTaskInfoAsync(taskId);

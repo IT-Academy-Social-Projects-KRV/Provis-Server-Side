@@ -14,6 +14,7 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                     .Select(x => new Tuple<int, WorkspaceTask>(
                         x.StatusId,
                         x))
+                    .Include(x => x.Comments)
                     .Where(x => x.WorkspaceId == workspaceId && !x.UserTasks.Any())
                     .OrderBy(x => x.StatusId);
             }
