@@ -11,6 +11,7 @@ namespace Provis.Core.Entities.CommentEntity
             public CommentTask(int taskId)
             {
                 Query
+                    .Include(x => x.User)
                     .Where(x => x.TaskId == taskId);
             }
         }

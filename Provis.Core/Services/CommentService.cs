@@ -89,14 +89,10 @@ namespace Provis.Core.Services
             var specification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
             var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
 
-            var taskSpecification = new WorkspaceTasks.TaskByComments(id);
-            var task = await _taskRepository.GetFirstBySpecAsync(taskSpecification);
-
             var comment = await _commentRepository.GetByKeyAsync(id);
 
             if (!(comment.UserId == userId || 
-                userWorkspace.RoleId == (int)WorkSpaceRoles.OwnerId || 
-                task.TaskCreatorId == userId))
+                userWorkspace.RoleId == (int)WorkSpaceRoles.OwnerId))
             {
                 throw new HttpException(System.Net.HttpStatusCode.Forbidden,
                     "Only cretor or workspace owner can delete comments");

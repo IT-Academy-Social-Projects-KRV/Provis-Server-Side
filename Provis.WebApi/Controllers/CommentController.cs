@@ -22,7 +22,7 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
+        [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId,
             WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId,
@@ -41,6 +41,7 @@ namespace Provis.WebApi.Controllers
             WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId,
             WorkSpaceRoles.ViewerId})]
+        [Route("{taskId}/workspace/{workspaceId}")]
         public async Task<IActionResult> GetCommentsListAsync(int taskId)
         {
             var getComments = await _commentService.GetCommentListsAsync(taskId);
