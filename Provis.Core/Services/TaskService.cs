@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 using Provis.Core.ApiModels;
 using Provis.Core.Helpers;
 using Microsoft.Extensions.Options;
+using Provis.Core.Roles;
 
 namespace Provis.Core.Services
 {
@@ -382,6 +383,78 @@ namespace Provis.Core.Services
             await _taskAttachmentRepository.SaveChangesAsync();
 
             return _mapper.Map<TaskAttachmentInfoDTO>(workspaceTaskAttachment);
+        }
+
+        public async Task ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId)
+        {
+            var taskSpecification = new WorkspaceTasks
+                    .TaskById(changeRoleDTO.TaskId);
+            var task = await _taskRepository
+                    .GetFirstBySpecAsync(taskSpecification);
+
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                   "Task not found");
+
+            var userTaskSpecification = new UserTasks
+                    .AssignedMember(changeRoleDTO.TaskId, changeRoleDTO.UserId);
+            var userTaskMember = await _userTaskRepository
+                    .GetFirstBySpecAsync(userTaskSpecification);
+
+            _ = userTaskMember ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                    "Assigned user not found");
+
+            var userSpecification = new UserWorkspaces
+                    .WorkspaceMember(userId, changeRoleDTO.WorkspaceId);
+            var user = await _userWorkspaceRepository
+                    .GetFirstBySpecAsync(userSpecification);
+
+            if (task.TaskCreatorId == userId ||
+                (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
+            {
+                userTaskMember.UserRoleTagId = changeRoleDTO.RoleId;
+                await _userTaskRepository.SaveChangesAsync();
+            }
+            else
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "You don't have permission to do this");
+            }
+        }
+
+        public async Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId)
+        {
+            var taskSpecification = new WorkspaceTasks
+                    .TaskById(taskId);
+            var task = await _taskRepository
+                    .GetFirstBySpecAsync(taskSpecification);
+
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                   "Task not found");
+
+            var userTaskSpecification = new UserTasks
+                    .AssignedMember(taskId, disUserId);
+            var userTaskMember = await _userTaskRepository
+                    .GetFirstBySpecAsync(userTaskSpecification);
+
+            _ = userTaskMember ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                    "Assigned user not found");
+
+            var userSpecification = new UserWorkspaces
+                    .WorkspaceMember(userId, workspaceId);
+            var user = await _userWorkspaceRepository
+                    .GetFirstBySpecAsync(userSpecification);
+
+            if (task.TaskCreatorId == userId ||
+                (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
+            {
+                await _userTaskRepository.DeleteAsync(userTaskMember);
+                await _userTaskRepository.SaveChangesAsync();
+            }
+            else
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "You don't have permission to do this");
+            }
         }
     }
 }
