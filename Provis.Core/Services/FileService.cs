@@ -1,11 +1,7 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Provis.Core.ApiModels;
-using Provis.Core.Exeptions.FileExceptions;
 using Provis.Core.Helpers;
 using Provis.Core.Interfaces.Services;
-using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -13,116 +9,60 @@ namespace Provis.Core.Services
 {
     public class FileService : IFileService
     {
-        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IOptions<FileSettings> _fileSettings;
+        private readonly IAzureBlobStorageService _azureBlobStorageService;
+        private readonly ILocaleStorageService _localeStorageService;
 
-        public FileService(IWebHostEnvironment webHostEnvironment, IOptions<FileSettings> fileSettings)
+        public FileService(IOptions<FileSettings> fileSettings,
+            IAzureBlobStorageService azureBlobStorageService,
+            ILocaleStorageService localeStorageService)
         {
-            _webHostEnvironment = webHostEnvironment;
             _fileSettings = fileSettings;
+            _azureBlobStorageService = azureBlobStorageService;
+            _localeStorageService = localeStorageService;
         }
 
         public async Task<string> AddFileAsync(Stream stream, string folderPath, string fileName)
         {
-            if (stream == null)
+            if(_fileSettings.Value.AllowStoreInAzureBlobStore)
             {
-                throw new FileIsEmptyException(fileName);
+                return await _azureBlobStorageService.AddFileAsync(stream, folderPath, fileName);
             }
-
-            await CreateDirectoryAsync(folderPath);
-
-            string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, folderPath);
-
-            string uniqueFileName = CreateName(fileName, uploadsFolder);
-
-            string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-            var dbPath = Path.Combine(folderPath, uniqueFileName);
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
+            else
             {
-                await stream.CopyToAsync(fileStream);
+                return await _localeStorageService.AddFileAsync(stream, folderPath, fileName);
             }
-
-            return dbPath;
         }
 
-        public Task<DownloadFile> GetFileAsync(string dbPath)
+        public async Task<DownloadFile> GetFileAsync(string dbPath)
         {
-            string path = Path.Combine(_webHostEnvironment.WebRootPath, dbPath);
+            DownloadFile file = null;
+            var storedFilePath = dbPath.Split(":");
 
-            if (!File.Exists(path))
+            if(storedFilePath[0] == StorageTypes.AzureBlob.ToString())
             {
-                throw new Exeptions.FileExceptions.FileNotFoundException(path);
+                file = await _azureBlobStorageService.GetFileAsync(storedFilePath[1]);
+            }
+            else if(storedFilePath[0] == StorageTypes.Locale.ToString())
+            {
+                file = await _localeStorageService.GetFileAsync(storedFilePath[1]);
             }
 
-            var provider = new FileExtensionContentTypeProvider();
-
-            if (!provider.TryGetContentType(path, out string contentType))
-            {
-                throw new CannotGetFileContentTypeException(path);
-            }
-
-            DownloadFile fileInfo = new DownloadFile()
-            {
-                ContentType = contentType,
-                Name = Path.GetFileName(path),
-                Content = new FileStream(path, FileMode.Open)
-            };
-
-            return Task.FromResult(fileInfo);
+            return file;
         }
 
         public async Task DeleteFileAsync(string dbPath)
         {
-            string deletePath = Path.Combine(_webHostEnvironment.WebRootPath, dbPath);
-            var file = new FileInfo(deletePath);
+            var storedFilePath = dbPath.Split(":");
 
-            if (file.Exists)
+            if (storedFilePath[0] == StorageTypes.AzureBlob.ToString())
             {
-                await Task.Factory.StartNew(() => file.Delete());
+                await _azureBlobStorageService.DeleteFileAsync(storedFilePath[1]);
             }
-        }
-
-        private string CreateName(string fileName, string folderPath)
-        {
-            var path = Path.Combine(folderPath, fileName);
-
-            bool isFileExsist = File.Exists(path);
-
-            if (isFileExsist)
+            else if (storedFilePath[0] == StorageTypes.Locale.ToString())
             {
-                if (!_fileSettings.Value.AllowChangeName)
-                {
-                    throw new FileNameAlreadyExistException(path);
-                }
-                else
-                {
-                    return $"{Path.GetFileNameWithoutExtension(path)}_" +
-                        $"{DateTime.Now.ToString("yyyyMMddTHHmmssfff")}" +
-                        $"{Path.GetExtension(path)}";
-                }
+                await _localeStorageService.DeleteFileAsync(storedFilePath[1]);
             }
-
-            return fileName;
-        }
-
-        public Task CreateDirectoryAsync(string folderPath)
-        {
-            string path = Path.Combine(_webHostEnvironment.WebRootPath, folderPath);
-
-            if (!Directory.Exists(path))
-            {
-                if (!_fileSettings.Value.AllowCreateFolderPath)
-                {
-                    throw new FileFolderNotExistException(path);
-                }
-                else
-                {
-                    Directory.CreateDirectory(path);
-                }
-            }
-
-            return Task.CompletedTask;
         }
     }
 }
