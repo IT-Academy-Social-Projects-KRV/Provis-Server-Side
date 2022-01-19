@@ -2,6 +2,7 @@
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
+using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
 
 namespace Provis.Core.Helpers.Mails
@@ -37,6 +38,14 @@ namespace Provis.Core.Helpers.Mails
             if (userInvite == null)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound, "Invite with this Id doesn't exist");
+            }
+        }
+
+        public static void TaskNullChecking(this WorkspaceTask workspaceTask)
+        {
+            if (workspaceTask == null)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task with this Id doesn't exist");
             }
         }
     }
