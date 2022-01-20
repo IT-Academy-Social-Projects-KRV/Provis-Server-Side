@@ -66,7 +66,8 @@ namespace Provis.Infrastructure.Data.Repositories
             await _dbContext.AddRangeAsync(entities);
         }
 
-        public async Task<IDbContextTransaction> BeginTransactionAsync(System.Data.IsolationLevel isolationLevel)
+        public async Task<IDbContextTransaction> BeginTransactionAsync
+            (System.Data.IsolationLevel isolationLevel = System.Data.IsolationLevel.ReadCommitted)
         {
             return (await _dbContext.Database.BeginTransactionAsync(isolationLevel));
         }
