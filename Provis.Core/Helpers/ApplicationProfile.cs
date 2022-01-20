@@ -95,8 +95,7 @@ namespace Provis.Core.Helpers
             CreateMap<WorkspaceTask, TaskDTO>()
                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
-               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
-               .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Comments.Count));
+               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name));
 
             CreateMap<Tuple<int, WorkspaceTask, int>, TaskDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Item2.Id))
