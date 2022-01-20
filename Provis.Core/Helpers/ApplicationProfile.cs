@@ -133,11 +133,17 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
-                .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId));
+                .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
+                .ForMember(x => x.AssignedUsers, act => act.MapFrom(srs => srs.UserTasks));
 
             CreateMap<WorkspaceTaskAttachment, TaskAttachmentInfoDTO>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs=> Path.GetFileName(srs.AttachmentPath)));
 
+            CreateMap<UserTask, TaskAssignedUsersDTO>()
+                .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
+                .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
+                .ForMember(x => x.RoleTagId, act => act.MapFrom(srs => srs.UserRoleTagId));
+                
             CreateMap<Comment, CommentListDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                 .ForMember(x => x.CommentText, act => act.MapFrom(srs => srs.CommentText))
@@ -149,6 +155,7 @@ namespace Provis.Core.Helpers
             CreateMap<CreateCommentDTO, Comment>()
                 .ForMember(x => x.CommentText, act => act.MapFrom(srs => srs.CommentText))
                 .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.TaskId));
+                
         }
     }
 }
