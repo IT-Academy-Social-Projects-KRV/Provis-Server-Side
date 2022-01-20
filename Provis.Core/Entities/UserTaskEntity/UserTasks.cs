@@ -18,15 +18,5 @@ namespace Provis.Core.Entities.UserTaskEntity
                     .OrderBy(x => x.Task.StatusId);
             }
         }
-        internal class TaskUserList : Specification<UserTask>
-        {
-            public TaskUserList(int taskId)
-            {
-                Query
-                    .Where(u => u.TaskId == taskId)
-                    .Include(u => u.User)
-                    .OrderBy(o => o.UserRoleTagId);
-            }
-        }
     }
 }
