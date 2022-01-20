@@ -10,6 +10,7 @@ using Provis.Core.Interfaces;
 using System;
 using System.Collections.Generic;
 using Provis.Core.Entities.StatusHistoryEntity;
+using Provis.Core.Entities.EventEntity;
 
 namespace Provis.Core.Entities.UserEntity
 {
@@ -19,6 +20,7 @@ namespace Provis.Core.Entities.UserEntity
         public string Surname { get; set; }
         public string ImageAvatarUrl { get; set; }
         public DateTime CreateDate { get; set; } // DateTime UTC
+        public DateTime BirthDate { get; set; }
 
         public List<UserTask> UserTasks { get; set; } = new List<UserTask>();
         public List<WorkspaceTask> Tasks { get; set; } = new List<WorkspaceTask>();
@@ -28,5 +30,6 @@ namespace Provis.Core.Entities.UserEntity
         public List<InviteUser> MyInvites { get; set; } = new List<InviteUser>();
         public List<InviteUser> Invites { get; set; } = new List<InviteUser>();
         public List<StatusHistory> StatusHistories { get; set; } = new List<StatusHistory>();
+        public List<Event> Events { get; set; } = new List<Event>();
     }
 }

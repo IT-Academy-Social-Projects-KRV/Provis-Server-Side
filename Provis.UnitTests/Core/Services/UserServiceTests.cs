@@ -9,6 +9,7 @@ using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers;
+using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Services;
@@ -32,6 +33,8 @@ namespace Provis.UnitTests.Core.Services
         protected Mock<IEmailSenderService> _emailSenderServiceMock;
         protected Mock<IFileService> _fileServiceMock;
         protected Mock<IOptions<ImageSettings>> _imageSettingsMock;
+        protected Mock<ITemplateService> _templateServiceMock;
+        protected Mock<IOptions<ClientUrl>> _clientUrlMock;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -43,6 +46,8 @@ namespace Provis.UnitTests.Core.Services
             _emailSenderServiceMock = new Mock<IEmailSenderService>();
             _fileServiceMock = new Mock<IFileService>();
             _imageSettingsMock = new Mock<IOptions<ImageSettings>>();
+            _templateServiceMock = new Mock<ITemplateService>();
+            _clientUrlMock = new Mock<IOptions<ClientUrl>>();
 
             _userService = new UserService(
                 _userManagerMock.Object,
@@ -51,7 +56,9 @@ namespace Provis.UnitTests.Core.Services
                 _mapperMock.Object,
                 _emailSenderServiceMock.Object,
                 _fileServiceMock.Object,
-                _imageSettingsMock.Object);
+                _imageSettingsMock.Object,
+                _templateServiceMock.Object,
+                _clientUrlMock.Object);
         }
 
         [Test]

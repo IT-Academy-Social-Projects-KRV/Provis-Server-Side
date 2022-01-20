@@ -18,7 +18,7 @@ namespace Provis.Core.Validation
             RuleFor(x => x.CommentText)
                 .NotNull()
                 .NotEmpty()
-                .Length(0, 500);
+                .Length(0, 1000);
         }
     }
 }
