@@ -3,7 +3,7 @@ using Provis.Core.DTO.CommentsDTO;
 
 namespace Provis.Core.Validation
 {
-    public class EditCommentValidation : AbstractValidator<EditCommentDTO>
+    public class EditCommentValidation : AbstractValidator<CommentEditDTO>
     {
         public EditCommentValidation()
         {

@@ -27,7 +27,7 @@ namespace Provis.WebApi.Controllers
             WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId,
             WorkSpaceRoles.ViewerId})]
-        public async Task<IActionResult> CommentAsync([FromBody] CreateCommentDTO commentDTO)
+        public async Task<IActionResult> CommentAsync([FromBody] CommentCreateDTO commentDTO)
         {
             await _commentService.AddCommentAsync(commentDTO, UserId);
 
@@ -56,7 +56,7 @@ namespace Provis.WebApi.Controllers
             WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId,
             WorkSpaceRoles.ViewerId})]
-        public async Task<IActionResult> EditCommentAsync([FromBody] EditCommentDTO commentDTO)
+        public async Task<IActionResult> EditCommentAsync([FromBody] CommentEditDTO commentDTO)
         {
             await _commentService.EditCommentAsync(commentDTO, UserId);
 

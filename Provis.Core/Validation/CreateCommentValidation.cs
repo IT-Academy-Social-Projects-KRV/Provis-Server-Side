@@ -3,7 +3,7 @@ using Provis.Core.DTO.CommentsDTO;
 
 namespace Provis.Core.Validation
 {
-    public class CreateCommentValidation : AbstractValidator<CreateCommentDTO>
+    public class CreateCommentValidation : AbstractValidator<CommentCreateDTO>
     {
         public CreateCommentValidation()
         {

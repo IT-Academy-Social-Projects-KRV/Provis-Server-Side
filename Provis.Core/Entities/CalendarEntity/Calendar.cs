@@ -5,7 +5,7 @@ using System;
 
 namespace Provis.Core.Entities.EventEntity
 {
-    public class Event : IBaseEntity
+    public class Calendar : IBaseEntity
     {
         public int Id { get; set; }
 

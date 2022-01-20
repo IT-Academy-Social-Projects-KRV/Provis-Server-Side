@@ -2,10 +2,10 @@
 
 namespace Provis.Core.DTO.CommentsDTO
 {
-    public class EditCommentDTO
+    public class CommentCreateDTO
     {
-        public int CommentId { get; set; }
         public string CommentText { get; set; }
+        public int TaskId { get; set; }
         public int WorkspaceId { get; set; }
     }
 }

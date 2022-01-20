@@ -152,7 +152,7 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
                 .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName));
 
-            CreateMap<CreateCommentDTO, Comment>()
+            CreateMap<CommentCreateDTO, Comment>()
                 .ForMember(x => x.CommentText, act => act.MapFrom(srs => srs.CommentText))
                 .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.TaskId));
                 

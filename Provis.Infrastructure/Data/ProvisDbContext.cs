@@ -42,7 +42,7 @@ namespace Provis.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new WorkspaceConfiguration());
             modelBuilder.ApplyConfiguration(new WorkspaceTaskConfiguration());
             modelBuilder.ApplyConfiguration(new WorkspaceTaskAttachmentConfiguration());
-            modelBuilder.ApplyConfiguration(new EventConfiguration());
+            modelBuilder.ApplyConfiguration(new CalendarConfiguration());
 
             modelBuilder.Seed();
         }
@@ -59,6 +59,6 @@ namespace Provis.Infrastructure.Data
         public DbSet<Workspace> Workspaces { get; set; }
         public DbSet<WorkspaceTask> Tasks { get; set; }
         public DbSet<WorkspaceTaskAttachment> TaskAttachments { get; set; }
-        public DbSet<Event> Events { get; set; }
+        public DbSet<Calendar> Events { get; set; }
     }
 }

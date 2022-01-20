@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Provis.Core.Entities.EventEntity
 {
-    public class EventConfiguration : IEntityTypeConfiguration<Event>
+    public class CalendarConfiguration : IEntityTypeConfiguration<Calendar>
     {
-        public void Configure(EntityTypeBuilder<Event> builder)
+        public void Configure(EntityTypeBuilder<Calendar> builder)
         {
             builder
                 .HasKey(x => x.Id);
