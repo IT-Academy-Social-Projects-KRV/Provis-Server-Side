@@ -83,22 +83,6 @@ namespace Provis.UnitTests.Core.Services
             result.Should().Be(expectedUser);
         }
 
-        [Test]
-        public async Task GetUserPersonalInfoAsync_UserNotExist_ThrowHttpException()
-        {
-            var userMock = UserTestData.GetTestUser();
-
-            SetupUserGetByKeyAsync(null, null);
-
-            Func<Task> act = () =>
-                _userService.GetUserPersonalInfoAsync(It.IsAny<string>());
-
-            await act.Should()
-                .ThrowAsync<HttpException>()
-                .Where(x=>x.StatusCode == HttpStatusCode.NotFound)
-                .WithMessage("User with Id not exist");
-        }
-
         [TearDown]
         public void TearDown()
         {
