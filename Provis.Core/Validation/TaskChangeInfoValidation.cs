@@ -24,6 +24,10 @@ namespace Provis.Core.Validation
                 .NotEmpty()
                 .NotNull()
                 .GreaterThan(DateTime.UtcNow);
+
+            RuleFor(task => task.StoryPoints)
+                .InclusiveBetween(1, 99)
+                .WithMessage("Story Points most be greater than 0 and less 100");
         }
     }
 }

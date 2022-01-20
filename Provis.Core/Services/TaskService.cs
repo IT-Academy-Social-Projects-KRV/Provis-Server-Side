@@ -340,32 +340,14 @@ namespace Provis.Core.Services
 
         public async Task<TaskInfoDTO> GetTaskInfoAsync(int taskId)
         {
-            var task = await _taskRepository.GetByKeyAsync(taskId);
-            task.TaskNullChecking();
+            var specification = new WorkspaceTasks.TaskById(taskId);
+            var task = await _taskRepository.GetFirstBySpecAsync(specification);
 
-            TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task with Id not found");
 
-            _mapper.Map(task, taskInfoDTO);
+            var taskToRerutn = _mapper.Map<TaskInfoDTO>(task);
 
-            var specification = new UserTasks.TaskUserList(taskId);
-
-            var taskUsers = await _userTaskRepository.GetListBySpecAsync(specification);
-
-            List<TaskAssignedUsersDTO> userList = new List<TaskAssignedUsersDTO>();
-
-            foreach (var item in taskUsers)
-            {
-                userList.Add(new TaskAssignedUsersDTO
-                {
-                    UserId = item.UserId,
-                    UserName = item.User.UserName,
-                    RoleTagId = item.UserRoleTagId
-                });
-            }
-
-            taskInfoDTO.AssignedUsers = userList;
-
-            return taskInfoDTO;
+            return taskToRerutn;
         }
 
         public async Task<List<TaskAttachmentInfoDTO>> GetTaskAttachmentsAsync(int taskId)
@@ -375,6 +357,7 @@ namespace Provis.Core.Services
 
             return listAttachments.Select(x => _mapper.Map<TaskAttachmentInfoDTO>(x)).ToList();
         }
+        
         public async Task<DownloadFile> GetTaskAttachmentAsync(int attachmentId)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
@@ -386,6 +369,7 @@ namespace Provis.Core.Services
 
             return file;
         }
+        
         public async Task DeleteTaskAttachmentAsync(int attachmentId)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
@@ -401,6 +385,7 @@ namespace Provis.Core.Services
             await _taskAttachmentRepository.DeleteAsync(attachment);
             await _taskAttachmentRepository.SaveChangesAsync();
         }
+        
         public async Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachments(taskAttachmentsDTO.TaskId);
