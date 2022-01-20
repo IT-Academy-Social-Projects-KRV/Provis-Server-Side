@@ -19,7 +19,7 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
         public string Description { get; set; }
         public DateTime DateOfCreate { get; set; }
         public DateTime DateOfEnd { get; set; }
-        public int StoryPoints { get; set; }
+        public int? StoryPoints { get; set; }
 
         public int StatusId { get; set; }
         public Status Status { get; set; }

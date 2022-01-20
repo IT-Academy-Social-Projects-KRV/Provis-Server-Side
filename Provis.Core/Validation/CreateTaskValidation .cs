@@ -24,7 +24,7 @@ namespace Provis.Core.Validation
                 .NotNull();
 
             RuleFor(task => task.StatusId)
-                .NotEmpty()
+                .NotNull()
                 .NotEmpty()
                 .Must(IsStatusExist)
                 .WithMessage("This status not exist");
