@@ -21,6 +21,7 @@ using Provis.Core.ApiModels;
 using Provis.Core.Helpers;
 using Microsoft.Extensions.Options;
 using Provis.Core.Helpers.Mails;
+using Provis.Core.Entities.CommentEntity;
 
 namespace Provis.Core.Services
 {
@@ -165,7 +166,7 @@ namespace Provis.Core.Services
                 var result = selection
                     .GroupBy(x => x.Item1)
                     .ToDictionary(k => k.Key,
-                        v => v.Select(x => _mapper.Map<TaskDTO>(x.Item2))
+                        v => v.Select(x => _mapper.Map<TaskDTO>(x))
                     .ToList());
 
                 return new TaskGroupByStatusDTO()
@@ -182,7 +183,7 @@ namespace Provis.Core.Services
                 var result = selection
                     .GroupBy(x => x.Item1)
                     .ToDictionary(k => k.Key,
-                        v => v.Select(x => _mapper.Map<TaskDTO>(x.Item2))
+                        v => v.Select(x => _mapper.Map<TaskDTO>(x))
                     .ToList());
 
                 return new TaskGroupByStatusDTO()

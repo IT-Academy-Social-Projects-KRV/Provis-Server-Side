@@ -19,6 +19,7 @@ using System.IO;
 using Provis.Core.Entities.CommentEntity;
 using Provis.Core.DTO.CommentDTO;
 using Provis.Core.DTO.CommentsDTO;
+using System;
 
 namespace Provis.Core.Helpers
 {
@@ -82,14 +83,26 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.TaskId))
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.Task.DateOfEnd))
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Task.Name))
-                .ForMember(x => x.WorkerRoleId, act => act.MapFrom(srs => srs.UserRoleTagId))
-                .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Task.Comments.Count));
+                .ForMember(x => x.WorkerRoleId, act => act.MapFrom(srs => srs.UserRoleTagId));
+
+            CreateMap<Tuple<int, UserTask, int>, TaskDTO>()
+               .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Item2.Task.Id))
+               .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.Item2.Task.DateOfEnd))
+               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Item2.Task.Name))
+               .ForMember(x => x.WorkerRoleId, act => act.MapFrom(srs => srs.Item2.UserRoleTagId))
+               .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Item3));
 
             CreateMap<WorkspaceTask, TaskDTO>()
                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Comments.Count));
+
+            CreateMap<Tuple<int, WorkspaceTask, int>, TaskDTO>()
+                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Item2.Id))
+                .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.Item2.DateOfEnd))
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Item2.Name))
+                .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Item3));
 
             CreateMap<UserChangeInfoDTO, User>();
 
