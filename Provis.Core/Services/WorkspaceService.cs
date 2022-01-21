@@ -233,10 +233,12 @@ namespace Provis.Core.Services
         {
             var modifierSpecification = new UserWorkspaces.WorkspaceMember(userId, userChangeRole.WorkspaceId);
             var modifier = await _userWorkspaceRepository.GetFirstBySpecAsync(modifierSpecification);
+            
             modifier.User.UserNullChecking();
 
             var targetSpecification = new UserWorkspaces.WorkspaceMember(userChangeRole.UserId, userChangeRole.WorkspaceId);
             var target = await _userWorkspaceRepository.GetFirstBySpecAsync(targetSpecification);
+            
             target.User.UserNullChecking();
 
             var roleId = (WorkSpaceRoles)modifier.RoleId;
@@ -280,7 +282,7 @@ namespace Provis.Core.Services
         }
 
         public async Task<List<WorkspaceInviteInfoDTO>>
-            GetWorkspaceActiveInvitesAsync(int workspaceId, string userId)
+        GetWorkspaceActiveInvitesAsync(int workspaceId, string userId)
         {
             var specification = new InviteUsers.InviteList(workspaceId);
             var invitesList = await _inviteUserRepository.GetListBySpecAsync(specification);
