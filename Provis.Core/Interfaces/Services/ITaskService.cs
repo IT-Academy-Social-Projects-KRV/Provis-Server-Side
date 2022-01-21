@@ -21,5 +21,6 @@ namespace Provis.Core.Interfaces.Services
         Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO);
         Task ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId);
         Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId);
+        Task DeleteTaskAsync(int taskId, string userId);
     }
 }

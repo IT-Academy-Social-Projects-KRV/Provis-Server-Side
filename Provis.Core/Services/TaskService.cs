@@ -10,6 +10,7 @@ using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
+using Provis.Core.Entities.CommentEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
@@ -37,6 +38,7 @@ namespace Provis.Core.Services
         protected readonly IRepository<Status> _taskStatusRepository;
         protected readonly IRepository<UserRoleTag> _workerRoleRepository;
         protected readonly IRepository<WorkspaceTaskAttachment> _taskAttachmentRepository;
+        protected readonly IRepository<Comment> _commentRepository;
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
         private readonly IOptions<TaskAttachmentSettings> _attachmentSettings;
@@ -51,6 +53,7 @@ namespace Provis.Core.Services
             IRepository<UserTask> userTask,
             IRepository<UserRoleTag> workerRoleRepository,
             IRepository<WorkspaceTaskAttachment> taskAttachmentRepository,
+            IRepository<Comment> commentRepository,
             IFileService fileService,
             IOptions<TaskAttachmentSettings> attachmentSettings,
             UserManager<User> userManager
@@ -67,6 +70,7 @@ namespace Provis.Core.Services
             _workerRoleRepository = workerRoleRepository;
             _taskStatusRepository = taskStatusRepository;
             _taskAttachmentRepository = taskAttachmentRepository;
+            _commentRepository = commentRepository;
             _attachmentSettings = attachmentSettings;
             _fileService = fileService;
         }
@@ -427,6 +431,42 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.Forbidden,
                             "You don't have permission to do this");
             }
+        }
+
+        public async Task DeleteTaskAsync(int taskId, string userId)
+        {
+            var workspaceTask = await _taskRepository.GetByKeyAsync(taskId);
+
+            _ = workspaceTask ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                "Task with Id not found");
+
+            if (workspaceTask.TaskCreatorId != userId)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You are not the creator of the task");
+            }
+
+            var specificationStatusHistories = new StatusHistories.StatusHistoresList(taskId);
+            var statusHistoriesList = await _statusHistoryRepository.GetListBySpecAsync(specificationStatusHistories);
+
+            await _statusHistoryRepository.DeleteRangeAsync(statusHistoriesList);
+
+            var specificationComments = new Comments.CommentTask(taskId);
+            var commentsList = await _commentRepository.GetListBySpecAsync(specificationComments);
+
+            await _commentRepository.DeleteRangeAsync(commentsList);
+
+            var specificationAttachments = new WorkspaceTaskAttachments.TaskAttachments(taskId);
+            var taskAttachmentsList = await _taskAttachmentRepository.GetListBySpecAsync(specificationAttachments);
+
+            await _taskAttachmentRepository.DeleteRangeAsync(taskAttachmentsList);
+
+            var specificationUserTask = new UserTasks.TaskUserList(taskId);
+            var userTaskList = await _userTaskRepository.GetListBySpecAsync(specificationUserTask);
+
+            await _userTaskRepository.DeleteRangeAsync(userTaskList);
+
+            await _taskRepository.DeleteAsync(workspaceTask);
+            await _taskRepository.SaveChangesAsync();
         }
     }
 }
