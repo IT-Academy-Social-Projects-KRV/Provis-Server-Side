@@ -100,6 +100,16 @@ namespace Provis.WebApi.Controllers
             return File(file.Content, file.ContentType, file.Name);
         }
 
+        [HttpGet]
+        [Authorize]
+        [Route("image/user/{userId}")]
+        public async Task<FileResult> GetImageAsync(string userId)
+        {
+            var file = await _userService.GetUserImageAsync(userId);
+
+            return File(file.Content, file.ContentType, file.Name);
+        }
+
         [HttpPost]
         [Authorize]
         [Route("two-factor-auntification/enable")]
