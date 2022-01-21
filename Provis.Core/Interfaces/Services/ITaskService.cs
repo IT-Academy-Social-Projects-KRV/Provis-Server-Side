@@ -19,5 +19,6 @@ namespace Provis.Core.Interfaces.Services
         Task<DownloadFile> GetTaskAttachmentAsync(int attachmentId);
         Task DeleteTaskAttachmentAsync(int attachmentId);
         Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO);
+        Task<DownloadFile> GetTaskAttachmentPreviewAsync(int attachmentId);
     }
 }

@@ -21,12 +21,15 @@ using Provis.Core.ApiModels;
 using Provis.Core.Helpers;
 using Microsoft.Extensions.Options;
 using Provis.Core.Helpers.Mails;
+using Microsoft.AspNetCore.StaticFiles;
+using System.Net;
 
 namespace Provis.Core.Services
 {
     public class TaskService : ITaskService
     {
         protected readonly UserManager<User> _userManager;
+        private readonly IOptions<ImageSettings> _imageSettings;
         protected readonly IRepository<User> _userRepository;
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<WorkspaceTask> _taskRepository;
@@ -52,10 +55,12 @@ namespace Provis.Core.Services
             IRepository<WorkspaceTaskAttachment> taskAttachmentRepository,
             IFileService fileService,
             IOptions<TaskAttachmentSettings> attachmentSettings,
-            UserManager<User> userManager
+            UserManager<User> userManager,
+            IOptions<ImageSettings> imageSettings
             )
         {
             _userManager = userManager;
+            _imageSettings = imageSettings;
             _userRepository = user;
             _taskRepository = task;
             _userWorkspaceRepository = userWorkspace;
@@ -369,6 +374,26 @@ namespace Provis.Core.Services
             await _taskAttachmentRepository.SaveChangesAsync();
 
             return _mapper.Map<TaskAttachmentInfoDTO>(workspaceTaskAttachment);
+        }
+
+        public async Task<DownloadFile> GetTaskAttachmentPreviewAsync(int attachmentId)
+        {
+            var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
+            var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
+
+            _ = attachment ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
+
+            var provider = new FileExtensionContentTypeProvider();
+
+            if (provider.TryGetContentType(attachment.AttachmentPath, out string contentType) &&
+                !contentType.StartsWith(_imageSettings.Value.Type))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "No preview for this file");
+            }
+
+            var file = await _fileService.GetFileAsync(attachment.AttachmentPath);
+
+            return file;
         }
     }
 }

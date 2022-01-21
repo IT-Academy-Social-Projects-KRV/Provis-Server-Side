@@ -53,7 +53,7 @@ namespace Provis.WebApi.Controllers
 
             return Ok(getTasks);
         }
-        
+
         [Authorize]
         [HttpGet]
         [Route("statuses")]
@@ -76,9 +76,9 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
+        [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId })]
         [Route("assign")]
         public async Task<IActionResult> AssignTask([FromBody] TaskAssignDTO taskAssign)
@@ -104,10 +104,10 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> GetStatusHistory(int taskId)
         {
             var res = await _taskService.GetStatusHistories(taskId);
-            
+
              return Ok(res);
         }
-        
+
         [Authorize]
         [HttpGet]
         [Route("task/{taskId}")]
@@ -126,7 +126,7 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> GetTaskAttachmentsAsync(int taskId, int workspaceId)
         {
             var res = await _taskService.GetTaskAttachmentsAsync(taskId);
-            
+
             return Ok(res);
         }
 
@@ -141,7 +141,19 @@ namespace Provis.WebApi.Controllers
 
             return File(file.Content, file.ContentType, file.Name);
         }
-        
+
+        [Authorize]
+        [HttpGet]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("task/workspace/{workspaceId}/attachment/{attachmentId}/preview")]
+        public async Task<IActionResult> GetTaskAttachmentPreviewAsync(int attachmentId)
+        {
+            var file = await _taskService.GetTaskAttachmentPreviewAsync(attachmentId);
+
+            return File(file.Content, file.ContentType, file.Name);
+        }
+
         [Authorize]
         [HttpDelete]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
