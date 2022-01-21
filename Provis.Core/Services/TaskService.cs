@@ -25,6 +25,8 @@ using Provis.Core.Roles;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Statuses;
+using App.Metrics;
+using Provis.Core.Metrics;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net;
 
@@ -49,6 +51,7 @@ namespace Provis.Core.Services
         private readonly IOptions<TaskAttachmentSettings> _attachmentSettings;
         private readonly IOptions<ClientUrl> _clientUrl;
         private readonly IEmailSenderService _emailSenderService;
+        private readonly IMetrics _metrics;
 
         public TaskService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
@@ -66,7 +69,9 @@ namespace Provis.Core.Services
             UserManager<User> userManager,
             IOptions<ClientUrl> options,
             IEmailSenderService emailSenderService,
-            IOptions<ImageSettings> imageSettings)
+            IOptions<ImageSettings> imageSettings,
+            IMetrics metrics
+            )
         {
             _userManager = userManager;
             _imageSettings = imageSettings;
@@ -85,6 +90,7 @@ namespace Provis.Core.Services
             _fileService = fileService;
             _clientUrl = options;
             _emailSenderService = emailSenderService;
+            _metrics = metrics;
         }
 
         public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
@@ -128,7 +134,13 @@ namespace Provis.Core.Services
                     UserId = userId
                 };
 
-                await _statusHistoryRepository.AddAsync(statusHistory);
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskCountByStatus,
+               MetricTagsConstructor.TaskCountByStatus(changeTaskStatus.WorkspaceId, changeTaskStatus.StatusId));
+
+            _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskCountByStatus,
+                MetricTagsConstructor.TaskCountByStatus(task.WorkspaceId, task.StatusId));
+
+            await _statusHistoryRepository.AddAsync(statusHistory);
 
                 task.StatusId = changeTaskStatus.StatusId;
                 await _taskRepository.UpdateAsync(task);
@@ -159,6 +171,9 @@ namespace Provis.Core.Services
                 DateOfChange = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 UserId = userId
             });
+
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskCountByStatus,
+                        MetricTagsConstructor.TaskCountByStatus(taskCreateDTO.WorkspaceId, taskCreateDTO.StatusId));
 
             _mapper.Map(taskCreateDTO, task);
 
