@@ -160,6 +160,18 @@ namespace Provis.WebApi.Controllers
         }
 
         [Authorize]
+        [HttpGet]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("task/workspace/{workspaceId}/attachment/{attachmentId}/preview")]
+        public async Task<IActionResult> GetTaskAttachmentPreviewAsync(int attachmentId)
+        {
+            var file = await _taskService.GetTaskAttachmentPreviewAsync(attachmentId);
+
+            return File(file.Content, file.ContentType, file.Name);
+        }
+
+        [Authorize]
         [HttpDelete]
         [WorkspaceRoles(new WorkSpaceRoles[] { 
             WorkSpaceRoles.OwnerId,
