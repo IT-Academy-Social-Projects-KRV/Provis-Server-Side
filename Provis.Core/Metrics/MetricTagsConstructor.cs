@@ -1,6 +1,4 @@
-﻿
-
-using App.Metrics;
+﻿using App.Metrics;
 
 namespace Provis.Core.Metrics
 {
@@ -13,11 +11,11 @@ namespace Provis.Core.Metrics
                 new[] { workspaceId.ToString(), taskStatusId.ToString() });
             return tags;
         }
-        public static MetricTags MembersCountByWorkspaceRole(int workspaceId, int MemberRoleId)
+        public static MetricTags MembersCountByWorkspaceRole(int workspaceId, int memberRoleId)
         {
             MetricTags tags = new(
                 new[] { "workspace_id", "member_role" },
-                new[] { workspaceId.ToString(), MemberRoleId.ToString() });
+                new[] { workspaceId.ToString(), memberRoleId.ToString() });
             return tags;
         }
     }

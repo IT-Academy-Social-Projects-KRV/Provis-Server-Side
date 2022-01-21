@@ -1,5 +1,4 @@
-﻿
-using App.Metrics;
+﻿using App.Metrics;
 using App.Metrics.Counter;
 
 namespace Provis.Core.Metrics
