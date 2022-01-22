@@ -282,7 +282,7 @@ namespace Provis.Core.Services
         }
 
         public async Task<List<WorkspaceInviteInfoDTO>>
-        GetWorkspaceActiveInvitesAsync(int workspaceId, string userId)
+            GetWorkspaceActiveInvitesAsync(int workspaceId, string userId)
         {
             var specification = new InviteUsers.InviteList(workspaceId);
             var invitesList = await _inviteUserRepository.GetListBySpecAsync(specification);
