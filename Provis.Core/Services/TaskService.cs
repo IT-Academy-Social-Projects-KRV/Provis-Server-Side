@@ -20,15 +20,19 @@ using System.Threading.Tasks;
 using Provis.Core.ApiModels;
 using Provis.Core.Helpers;
 using Microsoft.Extensions.Options;
+using Provis.Core.Roles;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Statuses;
+using Microsoft.AspNetCore.StaticFiles;
+using System.Net;
 
 namespace Provis.Core.Services
 {
     public class TaskService : ITaskService
     {
         protected readonly UserManager<User> _userManager;
+        private readonly IOptions<ImageSettings> _imageSettings;
         protected readonly IRepository<User> _userRepository;
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<WorkspaceTask> _taskRepository;
@@ -58,9 +62,11 @@ namespace Provis.Core.Services
             IOptions<TaskAttachmentSettings> attachmentSettings,
             UserManager<User> userManager,
             IOptions<ClientUrl> options,
-            IEmailSenderService emailSenderService)
+            IEmailSenderService emailSenderService,
+            IOptions<ImageSettings> imageSettings)
         {
             _userManager = userManager;
+            _imageSettings = imageSettings;
             _userRepository = user;
             _taskRepository = task;
             _userWorkspaceRepository = userWorkspace;
@@ -149,7 +155,7 @@ namespace Provis.Core.Services
 
             _mapper.Map(taskCreateDTO, task);
 
-            using (var transaction = await _taskRepository.BeginTransactionAsync())
+            using (var transaction = await _taskRepository.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead))
             {
                 try
                 {
@@ -413,6 +419,98 @@ namespace Provis.Core.Services
             await _taskAttachmentRepository.SaveChangesAsync();
 
             return _mapper.Map<TaskAttachmentInfoDTO>(workspaceTaskAttachment);
+        }
+
+        public async Task<DownloadFile> GetTaskAttachmentPreviewAsync(int attachmentId)
+        {
+            var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
+            var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
+
+            _ = attachment ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
+
+            var provider = new FileExtensionContentTypeProvider();
+
+            if (provider.TryGetContentType(attachment.AttachmentPath, out string contentType) &&
+                !contentType.StartsWith(_imageSettings.Value.Type))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "No preview for this file");
+            }
+
+            var file = await _fileService.GetFileAsync(attachment.AttachmentPath);
+
+            return file;
+        }
+
+        public async Task ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId)
+        {
+            var taskSpecification = new WorkspaceTasks
+                    .TaskById(changeRoleDTO.TaskId);
+            var task = await _taskRepository
+                    .GetFirstBySpecAsync(taskSpecification);
+
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                   "Task not found");
+
+            var userTaskSpecification = new UserTasks
+                    .AssignedMember(changeRoleDTO.TaskId, changeRoleDTO.UserId);
+            var userTaskMember = await _userTaskRepository
+                    .GetFirstBySpecAsync(userTaskSpecification);
+
+            _ = userTaskMember ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                    "Assigned user not found");
+
+            var userSpecification = new UserWorkspaces
+                    .WorkspaceMember(userId, changeRoleDTO.WorkspaceId);
+            var user = await _userWorkspaceRepository
+                    .GetFirstBySpecAsync(userSpecification);
+
+            if (task.TaskCreatorId == userId ||
+                (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
+            {
+                userTaskMember.UserRoleTagId = changeRoleDTO.RoleId;
+                await _userTaskRepository.SaveChangesAsync();
+            }
+            else
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "You don't have permission to do this");
+            }
+        }
+
+        public async Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId)
+        {
+            var taskSpecification = new WorkspaceTasks
+                    .TaskById(taskId);
+            var task = await _taskRepository
+                    .GetFirstBySpecAsync(taskSpecification);
+
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                   "Task not found");
+
+            var userTaskSpecification = new UserTasks
+                    .AssignedMember(taskId, disUserId);
+            var userTaskMember = await _userTaskRepository
+                    .GetFirstBySpecAsync(userTaskSpecification);
+
+            _ = userTaskMember ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                    "Assigned user not found");
+
+            var userSpecification = new UserWorkspaces
+                    .WorkspaceMember(userId, workspaceId);
+            var user = await _userWorkspaceRepository
+                    .GetFirstBySpecAsync(userSpecification);
+
+            if (task.TaskCreatorId == userId ||
+                (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
+            {
+                await _userTaskRepository.DeleteAsync(userTaskMember);
+                await _userTaskRepository.SaveChangesAsync();
+            }
+            else
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "You don't have permission to do this");
+            }
         }
     }
 }
