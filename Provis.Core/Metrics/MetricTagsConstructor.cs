@@ -18,5 +18,12 @@ namespace Provis.Core.Metrics
                 new[] { workspaceId.ToString(), memberRoleId.ToString() });
             return tags;
         }
+        public static MetricTags TaskRolesCountByWorkspace(int workspaceId, int taskRoleId)
+        {
+            MetricTags tags = new(
+                new[] { "workspace_id", "task_role" },
+                new[] { workspaceId.ToString(), taskRoleId.ToString() });
+            return tags;
+        }
     }
 }
