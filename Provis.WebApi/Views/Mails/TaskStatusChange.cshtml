@@ -9,7 +9,7 @@
 }
 
 <h2 style="color: white">@Model.TaskName</h2>
-<table align="center">
+<table align="center" style="word-break: break-all;">
     <tr>
         <td>
             <button style="background-color: aqua; color: white; border: 0; height: 40px; font-size: large" disabled>
@@ -20,7 +20,7 @@
             <h2 style="color: white">&rArr;</h2>
         </td>
         <td>
-            <button style="background-color: lawngreen; color: white; border: 0; height: 40px; font-size: large" disabled>
+            <button style="background-color: lawngreen; color: white; border: 0; height: 40px; font-size: large; word-break: break-all;" disabled>
                 <b>@Model.ToStatus.ToString().Replace("Id", "")</b>
             </button>
         </td>
