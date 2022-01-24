@@ -5,14 +5,15 @@ namespace Provis.Core.Entities.UserTaskEntity
 {
     public class UserTasks
     {
-        internal class UserTaskList : Specification<UserTask, Tuple<int, UserTask>>
+        internal class UserTaskList : Specification<UserTask, Tuple<int, UserTask, int>>
         {
             public UserTaskList(string userId, int workspaceId)
             {
                 Query
-                    .Select(x => new Tuple<int, UserTask>(
+                    .Select(x => new Tuple<int, UserTask, int>(
                         x.Task.StatusId,
-                        x))
+                        x,
+                        x.Task.Comments.Count))
                     .Include(x => x.Task)
                     .Where(x => x.UserId == userId && x.Task.WorkspaceId == workspaceId)
                     .OrderBy(x => x.Task.StatusId);
