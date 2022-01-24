@@ -347,7 +347,7 @@ namespace Provis.Core.Services
             }
 
             _metrics.Measure.Counter.Decrement(WorkspaceMetrics.MembersCountByWorkspaceRole,
-                   MetricTagsConstructor.MembersCountByWorkspaceRole(userWorksp.WorkspaceId, userWorksp.RoleId));
+                   MetricTagsConstructor.MembersCountByWorkspaceRole(workspaceId, userWorksp.RoleId));
 
             await _userWorkspaceRepository.DeleteAsync(userWorksp);
             await _workspaceRepository.SaveChangesAsync();
