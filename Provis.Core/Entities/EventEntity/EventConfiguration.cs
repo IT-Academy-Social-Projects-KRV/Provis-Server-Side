@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Provis.Core.Entities.EventEntity
 {
-    public class CalendarConfiguration : IEntityTypeConfiguration<Calendar>
+    public class EventConfiguration : IEntityTypeConfiguration<Event>
     {
-        public void Configure(EntityTypeBuilder<Calendar> builder)
+        public void Configure(EntityTypeBuilder<Event> builder)
         {
             builder
                 .HasKey(x => x.Id);
@@ -20,7 +20,7 @@ namespace Provis.Core.Entities.EventEntity
                 .HasMaxLength(1000);
 
             builder
-                .Property(x => x.DateTime)
+                .Property(x => x.DateOfStart)
                 .IsRequired();
 
             builder

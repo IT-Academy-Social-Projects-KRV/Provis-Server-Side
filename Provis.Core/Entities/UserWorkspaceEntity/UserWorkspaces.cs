@@ -1,5 +1,8 @@
 ﻿using Ardalis.Specification;
 using Microsoft.EntityFrameworkCore;
+using Provis.Core.DTO.EventDTO;
+using Provis.Core.Statuses;
+using System;
 using System.Linq;
 
 namespace Provis.Core.Entities.UserWorkspaceEntity
@@ -47,6 +50,32 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
                     .Where(x => x.WorkspaceId == workspaceId
                            && x.UserId == userId)
                     .Include(x => x.Workspace);
+            }
+        }
+
+        internal class WorkspaceOwnerManager : Specification<UserWorkspace>
+        {
+            public WorkspaceOwnerManager(string userId, int workspaceId)
+            {
+                Query
+                    .Where(p => p.UserId == userId &&
+                    p.WorkspaceId == workspaceId &&
+                    (p.RoleId == 1 || p.RoleId == 2));
+            }
+        }
+
+        internal class UsersDateOfBirth : Specification<UserWorkspace, EventDTO>
+        {
+            public UsersDateOfBirth(int workspaceId)
+            {
+                Query
+                    .Select(x => new EventDTO()
+                    {
+                        EventDay = x.User.BirthDate,
+                        Status = CalendarStatuses.BirthDay
+                    })
+                    .Where(x => x.User.BirthDate.Month == DateTime.UtcNow.Month && 
+                    x.WorkspaceId == workspaceId);
             }
         }
     }

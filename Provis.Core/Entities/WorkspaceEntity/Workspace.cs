@@ -17,9 +17,10 @@ namespace Provis.Core.Entities.WorkspaceEntity
         public string Description { get; set; }
         public DateTime DateOfCreate { get; set; }
 
+
         public List<UserWorkspace> UserWorkspaces { get; set; } = new List<UserWorkspace>();
         public List<WorkspaceTask> Tasks { get; set; } = new List<WorkspaceTask>();
         public List<InviteUser> InviteUsers { get; set; } = new List<InviteUser>();
-        public List<Calendar> Events { get; set; } = new List<Calendar>();
+        public List<Event> Events { get; set; } = new List<Event>();
     }
 }

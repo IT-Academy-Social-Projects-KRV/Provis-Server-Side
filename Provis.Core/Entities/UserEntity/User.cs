@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using Provis.Core.Entities.StatusHistoryEntity;
 using Provis.Core.Entities.EventEntity;
+using Provis.Core.Entities.UserEventsEntity;
 
 namespace Provis.Core.Entities.UserEntity
 {
@@ -30,6 +31,7 @@ namespace Provis.Core.Entities.UserEntity
         public List<InviteUser> MyInvites { get; set; } = new List<InviteUser>();
         public List<InviteUser> Invites { get; set; } = new List<InviteUser>();
         public List<StatusHistory> StatusHistories { get; set; } = new List<StatusHistory>();
-        public List<Calendar> Events { get; set; } = new List<Calendar>();
+        public List<Event> Events { get; set; } = new List<Event>();
+        public List<UserEvent> UserEvents { get; set; } = new List<UserEvent>();
     }
 }

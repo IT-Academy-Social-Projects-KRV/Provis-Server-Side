@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Provis.Core.DTO.CalendarDTO;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using Provis.WebApi.Policy;
@@ -23,16 +24,27 @@ namespace Provis.WebApi.Controllers
         [Authorize]
         [HttpGet]
         [WorkspaceRoles(new WorkSpaceRoles[] {
-            WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId,
-            WorkSpaceRoles.MemberId,
-            WorkSpaceRoles.ViewerId})]
-        [Route("workspace/{workspaceId}/allevents")]
-        public async Task<IActionResult> GetAllEvents(int workspaceId)
+            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
+        [Route("workspace/{workspaceId}")]
+        public async Task<IActionResult> GetAllEventsAsync(int workspaceId)
         {
-            var getEvents = await _calendarService.GetAllEvents(workspaceId, UserId);
+            var getEvents = await _calendarService.GetAllEventsAsync(workspaceId, UserId);
 
             return Ok(getEvents);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId})]
+        [Route("workspace/{workspaceId}")]
+        public async Task<IActionResult> CreateEventAsync([FromBody] EventCreateDTO eventCreateDTO)
+        {
+            await _calendarService.CreateEventAsync(eventCreateDTO, UserId);
+
+            return Ok();
         }
     }
 }

@@ -2,9 +2,9 @@
 {
     public enum CalendarStatuses : int
     {
-        Task = 1,
-        GeneralEvent = 2,
-        PersonalEvent = 3,
+        TaskDeadline = 1,
+        PersonalEventStart = 2,
+        SomebodysEventStart = 3,
         BirthDay = 4
     }
 }
