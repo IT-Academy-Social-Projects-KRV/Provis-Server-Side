@@ -216,45 +216,35 @@ namespace Provis.Core.Services
 
         public async Task JoinTaskAsync(TaskAssignDTO taskAssign, string userId)
         {
-            var taskSpecification = new WorkspaceTasks.TaskById(taskAssign.Id);
-            var task = await _taskRepository.GetFirstBySpecAsync(taskSpecification);
+            var task = await _taskRepository.GetByKeyAsync(taskAssign.Id);
+            ExtensionMethods.TaskNullChecking(task);
 
-            var workspaceSpecification = new Workspaces.WorkspaceById(taskAssign.WorkspaceId);
-            var worksp = await _workspaceRepository.GetFirstBySpecAsync(workspaceSpecification);
-
-            if (task.TaskCreatorId != userId && taskAssign.AssignedUsers.Single().UserId != userId)
+            if (task.TaskCreatorId != userId && taskAssign.AssignedUser.UserId != userId)
             {
                 throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                        "Only creator of the task can assign another users");
+                    "Only creator of the task can assign another users");
             }
 
-            List<UserTask> userTasks = new();
-            foreach (var item in taskAssign.AssignedUsers)
+            var userWorkspaceSpecification = new UserWorkspaces
+                .WorkspaceMember(taskAssign.AssignedUser.UserId, taskAssign.WorkspaceId);
+
+            if(!await _userWorkspaceRepository.AnyBySpecAsync(userWorkspaceSpecification))
             {
-                if (userTasks.Exists(x => x.UserId == item.UserId))
-                {
-                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                        "This user has already assigned");
-                }
-                if (!worksp.UserWorkspaces.Exists(c => c.UserId == item.UserId))
-                {
-                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                        "This user doesn't member of current workspace");
-                }
-                if (task.UserTasks.Exists(x => x.UserId == item.UserId && !x.IsUserDeleted))
-                {
-                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                        "This user alredy in this task");
-                }
-
-                userTasks.Add(new UserTask
-                {
-                    TaskId = task.Id,
-                    UserId = item.UserId,
-                    UserRoleTagId = item.RoleTagId
-                });
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    "This user doesn't member of current workspace");
             }
-            await _userTaskRepository.AddRangeAsync(userTasks);
+
+            var userTaskSpecifiction = new UserTasks
+                .AssignedMember(taskAssign.Id, taskAssign.AssignedUser.UserId);
+
+            if(await _userTaskRepository.AnyBySpecAsync(userTaskSpecifiction))
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    "This user has already assigned");
+            }
+
+            var userToAssign = _mapper.Map<UserTask>(taskAssign);
+            await _userTaskRepository.AddAsync(userToAssign);
             await _userTaskRepository.SaveChangesAsync();
 
         }
@@ -305,7 +295,7 @@ namespace Provis.Core.Services
 
             return listAttachments.Select(x => _mapper.Map<TaskAttachmentInfoDTO>(x)).ToList();
         }
-        
+
         public async Task<DownloadFile> GetTaskAttachmentAsync(int attachmentId)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
@@ -317,7 +307,7 @@ namespace Provis.Core.Services
 
             return file;
         }
-        
+
         public async Task DeleteTaskAttachmentAsync(int attachmentId)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
@@ -333,7 +323,7 @@ namespace Provis.Core.Services
             await _taskAttachmentRepository.DeleteAsync(attachment);
             await _taskAttachmentRepository.SaveChangesAsync();
         }
-        
+
         public async Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachments(taskAttachmentsDTO.TaskId);
