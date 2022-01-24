@@ -194,12 +194,16 @@ namespace Provis.Core.Services
                                 throw new HttpException(System.Net.HttpStatusCode.Forbidden,
                                     "This user has already assigned");
                             }
+
                             userTasks.Add(new UserTask
                             {
                                 TaskId = task.Id,
                                 UserId = item.UserId,
                                 UserRoleTagId = item.RoleTagId
                             });
+
+                            _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                                MetricTagsConstructor.TaskRolesCountByWorkspace(taskCreateDTO.WorkspaceId, item.RoleTagId));
                         }
                         await _userTaskRepository.AddRangeAsync(userTasks);
                         await _userTaskRepository.SaveChangesAsync();
@@ -297,6 +301,8 @@ namespace Provis.Core.Services
                     "This user has already assigned");
             }
 
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(taskAssign.WorkspaceId, taskAssign.RoleTagId));
             var userToAssign = _mapper.Map<UserTask>(taskAssign);
             await _userTaskRepository.AddAsync(userToAssign);
             await _userTaskRepository.SaveChangesAsync();
@@ -497,7 +503,14 @@ namespace Provis.Core.Services
             if (task.TaskCreatorId == userId ||
                 (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
             {
+                _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(changeRoleDTO.WorkspaceId, userTaskMember.UserRoleTagId));
+
                 userTaskMember.UserRoleTagId = changeRoleDTO.RoleId;
+
+                _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(changeRoleDTO.WorkspaceId, changeRoleDTO.RoleId));
+
                 await _userTaskRepository.SaveChangesAsync();
             }
             else
@@ -533,6 +546,9 @@ namespace Provis.Core.Services
             if (task.TaskCreatorId == userId ||
                 (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
             {
+                _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(workspaceId, userTaskMember.UserRoleTagId));
+
                 await _userTaskRepository.DeleteAsync(userTaskMember);
                 await _userTaskRepository.SaveChangesAsync();
             }

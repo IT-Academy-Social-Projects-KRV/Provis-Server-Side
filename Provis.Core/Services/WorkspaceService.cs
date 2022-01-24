@@ -343,6 +343,8 @@ namespace Provis.Core.Services
                 foreach (var userTask in userTasks)
                 {
                     userTask.Item2.IsUserDeleted = true;
+                    _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                        MetricTagsConstructor.TaskRolesCountByWorkspace(workspaceId, userTask.Item2.UserRoleTagId));
                 }
             }
 
