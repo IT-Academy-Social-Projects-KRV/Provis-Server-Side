@@ -77,12 +77,14 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
                 .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
                 .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
-                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId));
+                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
+                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints));
 
             CreateMap<UserTask, TaskDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.TaskId))
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.Task.DateOfEnd))
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Task.Name))
+                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.Task.StoryPoints))
                 .ForMember(x => x.WorkerRoleId, act => act.MapFrom(srs => srs.UserRoleTagId));
 
             CreateMap<Tuple<int, UserTask, int>, TaskDTO>()
@@ -95,7 +97,8 @@ namespace Provis.Core.Helpers
             CreateMap<WorkspaceTask, TaskDTO>()
                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
-               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name));
+               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
+               .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints));
 
             CreateMap<Tuple<int, WorkspaceTask, int>, TaskDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Item2.Id))
@@ -126,7 +129,8 @@ namespace Provis.Core.Helpers
               .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
               .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
-              .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.Deadline));
+              .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.Deadline))
+              .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints));
               
             CreateMap<StatusHistory, TaskStatusHistoryDTO>()
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
@@ -147,11 +151,18 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
-                .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId));
+                .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
+                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints))
+                .ForMember(x => x.AssignedUsers, act => act.MapFrom(srs => srs.UserTasks));
 
             CreateMap<WorkspaceTaskAttachment, TaskAttachmentInfoDTO>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs=> Path.GetFileName(srs.AttachmentPath)));
 
+            CreateMap<UserTask, TaskAssignedUsersDTO>()
+                .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
+                .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
+                .ForMember(x => x.RoleTagId, act => act.MapFrom(srs => srs.UserRoleTagId));
+                
             CreateMap<Comment, CommentListDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                 .ForMember(x => x.CommentText, act => act.MapFrom(srs => srs.CommentText))
@@ -163,6 +174,7 @@ namespace Provis.Core.Helpers
             CreateMap<CreateCommentDTO, Comment>()
                 .ForMember(x => x.CommentText, act => act.MapFrom(srs => srs.CommentText))
                 .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.TaskId));
+                
         }
     }
 }

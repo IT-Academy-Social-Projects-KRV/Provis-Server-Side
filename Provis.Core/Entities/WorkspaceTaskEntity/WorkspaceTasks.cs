@@ -26,7 +26,9 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
             {
                 Query
                     .Where(p => p.Id == taskId)
-                    .Include(p => p.UserTasks);
+                    .Include(p => p.UserTasks
+                        .Where(x => !x.IsUserDeleted))
+                        .ThenInclude(x => x.User);
             }
         }
     }

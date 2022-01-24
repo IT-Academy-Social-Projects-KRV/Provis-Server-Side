@@ -9,5 +9,6 @@ namespace Provis.Core.DTO.TaskDTO
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTime Deadline { get; set; }
+        public int? StoryPoints { get; set; }
     }
 }
