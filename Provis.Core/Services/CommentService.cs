@@ -44,7 +44,7 @@ namespace Provis.Core.Services
             _mapper = mapper;
         }
 
-        public async Task AddCommentAsync(CreateCommentDTO commentDTO, string userId)
+        public async Task<CommentListDTO> AddCommentAsync(CreateCommentDTO commentDTO, string userId)
         {
             Comment comment = new()
             {
@@ -53,8 +53,10 @@ namespace Provis.Core.Services
             };
             _mapper.Map(commentDTO, comment);
 
-            await _commentRepository.AddAsync(comment);
+            var commentInfo = await _commentRepository.AddAsync(comment);
             await _commentRepository.SaveChangesAsync();
+
+            return _mapper.Map(commentInfo, new CommentListDTO());
         }
 
         public async Task<List<CommentListDTO>> GetCommentListsAsync(int taskId)
