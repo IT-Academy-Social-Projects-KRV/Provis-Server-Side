@@ -15,7 +15,7 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                         x.StatusId,
                         x,
                         x.Comments.Count))
-                    .Where(x => x.WorkspaceId == workspaceId && (!x.UserTasks.Any() || x.UserTasks.All(y => y.IsUserDeleted == true))
+                    .Where(x => x.WorkspaceId == workspaceId && (!x.UserTasks.Any() || x.UserTasks.All(y => y.IsUserDeleted == true)))
                     .OrderBy(x => x.StatusId);
             }
         }

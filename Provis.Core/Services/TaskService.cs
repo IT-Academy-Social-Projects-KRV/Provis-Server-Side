@@ -302,7 +302,8 @@ namespace Provis.Core.Services
             }
 
             _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
-                    MetricTagsConstructor.TaskRolesCountByWorkspace(taskAssign.WorkspaceId, taskAssign.RoleTagId));
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(taskAssign.WorkspaceId, taskAssign.AssignedUser.RoleTagId));
+
             var userToAssign = _mapper.Map<UserTask>(taskAssign);
             await _userTaskRepository.AddAsync(userToAssign);
             await _userTaskRepository.SaveChangesAsync();
@@ -571,6 +572,9 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You are not the creator of the task");
             }
 
+            _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskCountByStatus,
+                MetricTagsConstructor.TaskCountByStatus(workspaceTask.WorkspaceId, workspaceTask.StatusId));
+
             var specificationStatusHistories = new StatusHistories.StatusHistoresList(taskId);
             var statusHistoriesList = await _statusHistoryRepository.GetListBySpecAsync(specificationStatusHistories);
 
@@ -590,6 +594,12 @@ namespace Provis.Core.Services
             var userTaskList = await _userTaskRepository.GetListBySpecAsync(specificationUserTask);
 
             await _userTaskRepository.DeleteRangeAsync(userTaskList);
+
+            foreach (var item in userTaskList)
+            {
+                _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(workspaceTask.WorkspaceId, item.UserRoleTagId));
+            }
 
             await _taskRepository.DeleteAsync(workspaceTask);
             await _taskRepository.SaveChangesAsync();
