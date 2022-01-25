@@ -3,7 +3,7 @@ using System;
 
 namespace Provis.Core.Entities.UserTaskEntity
 {
-    public class  UserTasks
+    public class UserTasks
     {
         internal class UserTaskList : Specification<UserTask, Tuple<int, UserTask, int>>
         {
@@ -28,6 +28,14 @@ namespace Provis.Core.Entities.UserTaskEntity
                     .Include(u => u.User)
                     .OrderBy(o => o.UserRoleTagId);
             }
+        }     
+        internal class TaskAssignedUserEmailList : Specification<UserTask, string>
+        {
+            public TaskAssignedUserEmailList(int taskId)
+            {
+                Query
+                    .Select(x => x.User.Email)
+                    .Where(t => t.TaskId == taskId);
         }
         internal class AssignedMember : Specification<UserTask>
         {
