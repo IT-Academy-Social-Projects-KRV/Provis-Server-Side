@@ -69,7 +69,7 @@ namespace Provis.Core.Services
 
             Workspace workspace = new Workspace()
             {
-                DateOfCreate = DateTime.UtcNow,
+                DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 Name = workspaceDTO.Name,
                 Description = workspaceDTO.Description
             };
@@ -134,7 +134,7 @@ namespace Provis.Core.Services
 
             InviteUser user = new InviteUser
             {
-                Date = DateTime.UtcNow,
+                Date = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 FromUser = owner,
                 ToUser = inviteUser,
                 Workspace = workspace,

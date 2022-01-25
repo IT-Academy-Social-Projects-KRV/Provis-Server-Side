@@ -9,7 +9,7 @@ namespace Provis.Core.Entities.InviteUserEntity
     {
         public int Id { get; set; }
 
-        public DateTime Date { get; set; }
+        public DateTimeOffset Date { get; set; }
         public bool? IsConfirm { get; set; }
 
         public int WorkspaceId { get; set; }

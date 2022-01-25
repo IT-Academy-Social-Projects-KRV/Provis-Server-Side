@@ -28,7 +28,7 @@ namespace Provis.Core.Entities.UserTaskEntity
                     .Include(u => u.User)
                     .OrderBy(o => o.UserRoleTagId);
             }
-        }     
+        }
         internal class TaskAssignedUserEmailList : Specification<UserTask, string>
         {
             public TaskAssignedUserEmailList(int taskId)
@@ -36,10 +36,11 @@ namespace Provis.Core.Entities.UserTaskEntity
                 Query
                     .Select(x => x.User.Email)
                     .Where(t => t.TaskId == taskId);
+            }
         }
         internal class AssignedMember : Specification<UserTask>
         {
-            public AssignedMember(int TaskId,string userId)
+            public AssignedMember(int TaskId, string userId)
             {
                 Query
                     .Where(x => x.TaskId == TaskId && x.UserId == userId);

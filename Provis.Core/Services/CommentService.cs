@@ -48,7 +48,7 @@ namespace Provis.Core.Services
         {
             Comment comment = new()
             {
-                DateOfCreate = DateTime.UtcNow,
+                DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 UserId = userId
             };
             _mapper.Map(commentDTO, comment);
@@ -79,7 +79,7 @@ namespace Provis.Core.Services
                     "Only creator can edit his comment");
             }
 
-            comment.DateOfCreate = DateTime.UtcNow;
+            comment.DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero);
             comment.CommentText = editComment.CommentText;
 
             await _commentRepository.UpdateAsync(comment);
