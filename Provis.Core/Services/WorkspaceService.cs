@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Provis.Core.Entities.UserTaskEntity;
+using App.Metrics;
+using Provis.Core.Metrics;
 
 namespace Provis.Core.Services
 {
@@ -36,6 +38,7 @@ namespace Provis.Core.Services
         protected readonly RoleAccess _roleAccess;
         protected readonly ITemplateService _templateService;
         protected readonly ClientUrl _clientUrl;
+        private readonly IMetrics _metrics;
 
         public WorkspaceService(IRepository<User> user,
             UserManager<User> userManager,
@@ -48,7 +51,8 @@ namespace Provis.Core.Services
             IMapper mapper,
             RoleAccess roleAccess,
             ITemplateService templateService,
-            IOptions<ClientUrl> options)
+            IOptions<ClientUrl> options,
+            IMetrics metrics)
         {
             _userRepository = user;
             _userManager = userManager;
@@ -62,6 +66,7 @@ namespace Provis.Core.Services
             _templateService = templateService;
             _userTaskRepository = userTasksRepository;
             _clientUrl = options.Value;
+            _metrics = metrics;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -82,6 +87,10 @@ namespace Provis.Core.Services
                 WorkspaceId = workspace.Id,
                 RoleId = (int)WorkSpaceRoles.OwnerId
             };
+
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
+              MetricTagsConstructor.MembersCountByWorkspaceRole(workspace.Id, (int)WorkSpaceRoles.OwnerId));
+
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _userWorkspaceRepository.SaveChangesAsync();
 
@@ -223,6 +232,9 @@ namespace Provis.Core.Services
                 RoleId = (int)WorkSpaceRoles.MemberId
             };
 
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
+              MetricTagsConstructor.MembersCountByWorkspaceRole(inviteUserRec.WorkspaceId, (int)WorkSpaceRoles.MemberId));
+
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _inviteUserRepository.SaveChangesAsync();
 
@@ -250,6 +262,12 @@ namespace Provis.Core.Services
                     .Any(p => p == (WorkSpaceRoles)userChangeRole.RoleId)
                 )
             {
+                _metrics.Measure.Counter.Decrement(WorkspaceMetrics.MembersCountByWorkspaceRole,
+                    MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, target.RoleId));
+
+                _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
+                    MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, userChangeRole.RoleId));
+
                 target.RoleId = userChangeRole.RoleId;
                 await _userWorkspaceRepository.SaveChangesAsync();
                 return _mapper.Map<WorkspaceChangeRoleDTO>(target);
@@ -325,8 +343,13 @@ namespace Provis.Core.Services
                 foreach (var userTask in userTasks)
                 {
                     userTask.Item2.IsUserDeleted = true;
+                    _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                        MetricTagsConstructor.TaskRolesCountByWorkspace(workspaceId, userTask.Item2.UserRoleTagId));
                 }
             }
+
+            _metrics.Measure.Counter.Decrement(WorkspaceMetrics.MembersCountByWorkspaceRole,
+                   MetricTagsConstructor.MembersCountByWorkspaceRole(workspaceId, userWorksp.RoleId));
 
             await _userWorkspaceRepository.DeleteAsync(userWorksp);
             await _workspaceRepository.SaveChangesAsync();

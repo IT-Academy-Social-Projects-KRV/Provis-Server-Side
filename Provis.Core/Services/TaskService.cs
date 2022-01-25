@@ -25,6 +25,8 @@ using Provis.Core.Roles;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Statuses;
+using App.Metrics;
+using Provis.Core.Metrics;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net;
 
@@ -49,6 +51,7 @@ namespace Provis.Core.Services
         private readonly IOptions<TaskAttachmentSettings> _attachmentSettings;
         private readonly IOptions<ClientUrl> _clientUrl;
         private readonly IEmailSenderService _emailSenderService;
+        private readonly IMetrics _metrics;
 
         public TaskService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
@@ -66,7 +69,9 @@ namespace Provis.Core.Services
             UserManager<User> userManager,
             IOptions<ClientUrl> options,
             IEmailSenderService emailSenderService,
-            IOptions<ImageSettings> imageSettings)
+            IOptions<ImageSettings> imageSettings,
+            IMetrics metrics
+            )
         {
             _userManager = userManager;
             _imageSettings = imageSettings;
@@ -85,6 +90,7 @@ namespace Provis.Core.Services
             _fileService = fileService;
             _clientUrl = options;
             _emailSenderService = emailSenderService;
+            _metrics = metrics;
         }
 
         public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
@@ -128,7 +134,13 @@ namespace Provis.Core.Services
                     UserId = userId
                 };
 
-                await _statusHistoryRepository.AddAsync(statusHistory);
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskCountByStatus,
+               MetricTagsConstructor.TaskCountByStatus(changeTaskStatus.WorkspaceId, changeTaskStatus.StatusId));
+
+            _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskCountByStatus,
+                MetricTagsConstructor.TaskCountByStatus(task.WorkspaceId, task.StatusId));
+
+            await _statusHistoryRepository.AddAsync(statusHistory);
 
                 task.StatusId = changeTaskStatus.StatusId;
                 await _taskRepository.UpdateAsync(task);
@@ -160,6 +172,9 @@ namespace Provis.Core.Services
                 UserId = userId
             });
 
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskCountByStatus,
+                        MetricTagsConstructor.TaskCountByStatus(taskCreateDTO.WorkspaceId, taskCreateDTO.StatusId));
+
             _mapper.Map(taskCreateDTO, task);
 
             using (var transaction = await _taskRepository.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead))
@@ -179,12 +194,16 @@ namespace Provis.Core.Services
                                 throw new HttpException(System.Net.HttpStatusCode.Forbidden,
                                     "This user has already assigned");
                             }
+
                             userTasks.Add(new UserTask
                             {
                                 TaskId = task.Id,
                                 UserId = item.UserId,
                                 UserRoleTagId = item.RoleTagId
                             });
+
+                            _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                                MetricTagsConstructor.TaskRolesCountByWorkspace(taskCreateDTO.WorkspaceId, item.RoleTagId));
                         }
                         await _userTaskRepository.AddRangeAsync(userTasks);
                         await _userTaskRepository.SaveChangesAsync();
@@ -281,6 +300,9 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest,
                     "This user has already assigned");
             }
+
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(taskAssign.WorkspaceId, taskAssign.AssignedUser.RoleTagId));
 
             var userToAssign = _mapper.Map<UserTask>(taskAssign);
             await _userTaskRepository.AddAsync(userToAssign);
@@ -487,7 +509,14 @@ namespace Provis.Core.Services
             if (task.TaskCreatorId == userId ||
                 (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
             {
+                _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(changeRoleDTO.WorkspaceId, userTaskMember.UserRoleTagId));
+
                 userTaskMember.UserRoleTagId = changeRoleDTO.RoleId;
+
+                _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(changeRoleDTO.WorkspaceId, changeRoleDTO.RoleId));
+
                 await _userTaskRepository.SaveChangesAsync();
             }
             else
@@ -523,6 +552,9 @@ namespace Provis.Core.Services
             if (task.TaskCreatorId == userId ||
                 (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
             {
+                _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(workspaceId, userTaskMember.UserRoleTagId));
+
                 await _userTaskRepository.DeleteAsync(userTaskMember);
                 await _userTaskRepository.SaveChangesAsync();
             }
@@ -549,6 +581,9 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.Forbidden, "You don`t have permissions");
             }
 
+            _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskCountByStatus,
+                MetricTagsConstructor.TaskCountByStatus(workspaceTask.WorkspaceId, workspaceTask.StatusId));
+
             var specificationStatusHistories = new StatusHistories.StatusHistoresList(taskId);
             var statusHistoriesList = await _statusHistoryRepository.GetListBySpecAsync(specificationStatusHistories);
 
@@ -568,6 +603,12 @@ namespace Provis.Core.Services
             var userTaskList = await _userTaskRepository.GetListBySpecAsync(specificationUserTask);
 
             await _userTaskRepository.DeleteRangeAsync(userTaskList);
+
+            foreach (var item in userTaskList)
+            {
+                _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(workspaceTask.WorkspaceId, item.UserRoleTagId));
+            }
 
             await _taskRepository.DeleteAsync(workspaceTask);
             await _taskRepository.SaveChangesAsync();

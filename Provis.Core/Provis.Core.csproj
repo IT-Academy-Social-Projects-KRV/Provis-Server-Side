@@ -5,6 +5,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="App.Metrics.AspNetCore.Endpoints" Version="4.3.0" />
+    <PackageReference Include="App.Metrics.AspNetCore.Tracking" Version="4.3.0" />
+    <PackageReference Include="App.Metrics.Formatters.Prometheus" Version="4.3.0" />
     <PackageReference Include="Ardalis.Specification" Version="5.2.0" />
     <PackageReference Include="AutoMapper" Version="10.1.1" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.10.0" />
