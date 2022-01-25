@@ -25,7 +25,6 @@ using Provis.Core.Roles;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Statuses;
-using Provis.Core.Entities.CommentEntity;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net;
 
@@ -283,7 +282,6 @@ namespace Provis.Core.Services
                     "This user has already assigned");
             }
 
-            await _userTaskRepository.AddRangeAsync(userTasks);
             var userToAssign = _mapper.Map<UserTask>(taskAssign);
             await _userTaskRepository.AddAsync(userToAssign);
             await _userTaskRepository.SaveChangesAsync();
