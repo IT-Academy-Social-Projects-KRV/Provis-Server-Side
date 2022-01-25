@@ -303,7 +303,20 @@ namespace Provis.Core.Services
             var specification = new WorkspaceTaskAttachments.TaskAttachments(taskId);
             var listAttachments = await _taskAttachmentRepository.GetListBySpecAsync(specification);
 
-            return listAttachments.Select(x => _mapper.Map<TaskAttachmentInfoDTO>(x)).ToList();
+            var listToReturn = listAttachments.Select(x => _mapper.Map<TaskAttachmentInfoDTO>(x)).ToList();
+            var provider = new FileExtensionContentTypeProvider();
+            foreach (var item in listToReturn)
+            {
+                if(provider.TryGetContentType(item.Name, out string contentType))
+                {
+                    item.ContentType = contentType;
+                }
+                else
+                {
+                    throw new HttpException(HttpStatusCode.BadRequest, "Can`t get content type");
+                }
+            }
+            return listToReturn;
         }
         
         public async Task<DownloadFile> GetTaskAttachmentAsync(int attachmentId)
@@ -360,7 +373,10 @@ namespace Provis.Core.Services
 
             await _taskAttachmentRepository.SaveChangesAsync();
 
-            return _mapper.Map<TaskAttachmentInfoDTO>(workspaceTaskAttachment);
+            var res = _mapper.Map<TaskAttachmentInfoDTO>(workspaceTaskAttachment);
+            res.ContentType = taskAttachmentsDTO.Attachment.ContentType;
+            
+            return res;
         }
 
         public async Task<DownloadFile> GetTaskAttachmentPreviewAsync(int attachmentId)
