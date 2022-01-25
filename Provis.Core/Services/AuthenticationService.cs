@@ -135,7 +135,7 @@ namespace Provis.Core.Services
 
         public async Task RegistrationAsync(User user, string password, string roleName)
         {
-            user.CreateDate = DateTime.UtcNow;
+            user.CreateDate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero);
             var result = await _userManager.CreateAsync(user, password);
 
             if (!result.Succeeded)

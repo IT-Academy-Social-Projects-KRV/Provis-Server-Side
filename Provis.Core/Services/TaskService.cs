@@ -84,7 +84,7 @@ namespace Provis.Core.Services
 
             var statusHistory = new StatusHistory
             {
-                DateOfChange = DateTime.UtcNow,
+                DateOfChange = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 StatusId = changeTaskStatus.StatusId,
                 TaskId = task.Id,
                 UserId = userId
@@ -112,12 +112,12 @@ namespace Provis.Core.Services
 
             var task = new WorkspaceTask();
 
-            task.DateOfCreate = DateTime.UtcNow;
+            task.DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero);
             task.TaskCreatorId = userId;
             task.StatusHistories.Add(new StatusHistory()
             {
                 StatusId = taskCreateDTO.StatusId,
-                DateOfChange = DateTime.UtcNow,
+                DateOfChange = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 UserId = userId
             });
 
