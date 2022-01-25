@@ -92,6 +92,7 @@ namespace Provis.Core.Helpers
                .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.Item2.Task.DateOfEnd))
                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Item2.Task.Name))
                .ForMember(x => x.WorkerRoleId, act => act.MapFrom(srs => srs.Item2.UserRoleTagId))
+               .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.Item2.Task.StoryPoints))
                .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Item3));
 
             CreateMap<WorkspaceTask, TaskDTO>()
@@ -104,6 +105,7 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Item2.Id))
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.Item2.DateOfEnd))
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Item2.Name))
+                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.Item2.StoryPoints))
                 .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Item3));
 
             CreateMap<UserChangeInfoDTO, User>();
