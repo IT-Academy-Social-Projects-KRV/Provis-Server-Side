@@ -7,6 +7,6 @@ namespace Provis.Core.DTO.TaskDTO
     {
         public int Id { get; set; }
         public int WorkspaceId { get; set; }
-        public List<UserAssignedOnTaskDTO> AssignedUsers { get; set; }
+        public UserAssignedOnTaskDTO AssignedUser { get; set; }
     }
 }

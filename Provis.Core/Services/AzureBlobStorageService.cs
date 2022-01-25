@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 
 namespace Provis.Core.Services
 {
-    public class AzureBlobStorageService : IFileService
+    public class AzureBlobStorageService : IAzureBlobStorageService
     {
         private readonly IOptions<FileSettings> _fileSettings;
         private readonly BlobServiceClient _blobServiceClient;
@@ -54,7 +54,7 @@ namespace Provis.Core.Services
 
             await blob.UploadAsync(stream, blobHttpHeaders);
 
-            return Path.Combine(folderPath, uniqueFileName);
+            return StorageTypes.AzureBlob.ToString() + ":" + Path.Combine(folderPath, uniqueFileName);
         }
 
         public async Task CreateDirectoryAsync(string folderPath)

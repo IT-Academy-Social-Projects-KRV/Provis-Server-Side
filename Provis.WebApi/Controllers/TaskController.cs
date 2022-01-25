@@ -25,7 +25,10 @@ namespace Provis.WebApi.Controllers
         [Authorize]
         [HttpPut]
         [Route("status")]
-        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { 
+            WorkSpaceRoles.OwnerId, 
+            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.MemberId })]
         public async Task<IActionResult> ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus)
         {
             await _taskService.ChangeTaskStatusAsync(changeTaskStatus, UserId);
@@ -35,7 +38,10 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { 
+            WorkSpaceRoles.OwnerId, 
+            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.MemberId })]
         [Route("task")]
         public async Task<IActionResult> AddTaskAsync([FromBody] TaskCreateDTO createDTO)
         {
@@ -53,7 +59,7 @@ namespace Provis.WebApi.Controllers
 
             return Ok(getTasks);
         }
-        
+
         [Authorize]
         [HttpGet]
         [Route("statuses")]
@@ -76,9 +82,9 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
+        [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId })]
         [Route("assign")]
         public async Task<IActionResult> AssignTask([FromBody] TaskAssignDTO taskAssign)
@@ -89,7 +95,10 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPut]
-        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { 
+            WorkSpaceRoles.OwnerId, 
+            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.MemberId })]
         [Route("task")]
         public async Task<IActionResult> ChangeTaskAsync([FromBody] TaskChangeInfoDTO taskChangeInfoDTO)
         {
@@ -104,13 +113,17 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> GetStatusHistory(int taskId)
         {
             var res = await _taskService.GetStatusHistories(taskId);
-            
-             return Ok(res);
+
+            return Ok(res);
         }
-        
+
         [Authorize]
         [HttpGet]
-        [Route("task/{taskId}")]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId })]
+        [Route("workspace/{workspaceId}/task/{taskId}")]
         public async Task<IActionResult> GetTaskInfoAndAssignedUsersAsync(int taskId)
         {
             var res = await _taskService.GetTaskInfoAsync(taskId);
@@ -120,34 +133,52 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { 
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.MemberId })]
         [Route("task/{taskId}/workspace/{workspaceId}/attachments")]
-        public async Task<IActionResult> GetTaskAttachmentsAsync(int taskId, int workspaceId)
+        public async Task<IActionResult> GetTaskAttachmentsAsync(int taskId)
         {
             var res = await _taskService.GetTaskAttachmentsAsync(taskId);
-            
+
             return Ok(res);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [WorkspaceRoles(new WorkSpaceRoles[] { 
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.MemberId })]
+        [Route("task/workspace/{workspaceId}/attachment/{attachmentId}")]
+        public async Task<IActionResult> GetTaskAttachmentAsync(int attachmentId)
+        {
+            var file = await _taskService.GetTaskAttachmentAsync(attachmentId);
+
+            return File(file.Content, file.ContentType, file.Name);
         }
 
         [Authorize]
         [HttpGet]
         [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
             WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
-        [Route("task/workspace/{workspaceId}/attachment/{attachmentId}")]
-        public async Task<IActionResult> GetTaskAttachmentAsync(int workspaceId, int attachmentId)
+        [Route("task/workspace/{workspaceId}/attachment/{attachmentId}/preview")]
+        public async Task<IActionResult> GetTaskAttachmentPreviewAsync(int attachmentId)
         {
-            var file = await _taskService.GetTaskAttachmentAsync(attachmentId);
+            var file = await _taskService.GetTaskAttachmentPreviewAsync(attachmentId);
 
             return File(file.Content, file.ContentType, file.Name);
         }
-        
+
         [Authorize]
         [HttpDelete]
-        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { 
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.MemberId })]
         [Route("task/workspace/{workspaceId}/attachment/{attachmentId}")]
-        public async Task<IActionResult> DeleteTaskAttachmentAsync(int workspaceId, int attachmentId)
+        public async Task<IActionResult> DeleteTaskAttachmentAsync(int attachmentId)
         {
             await _taskService.DeleteTaskAttachmentAsync(attachmentId);
 
@@ -156,14 +187,42 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [WorkspaceRoles(new WorkSpaceRoles[] { 
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.MemberId })]
         [Route("task/attachments")]
         public async Task<IActionResult> SendTaskAttachmentsAsync([FromForm] TaskAttachmentsDTO taskAttachmentsDTO)
         {
             var result = await _taskService.SendTaskAttachmentsAsync(taskAttachmentsDTO);
 
             return Ok(result);
+        }
+
+        [Authorize]
+        [HttpPut]
+        [WorkspaceRoles(new WorkSpaceRoles[]{
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId})]
+        [Route("change-role")]
+        public async Task<IActionResult> ChangeMemberRoleAsync([FromBody] TaskChangeRoleDTO changeRoleDTO)
+        {
+            await _taskService.ChangeMemberRoleAsync(changeRoleDTO, UserId);
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [WorkspaceRoles(new WorkSpaceRoles[]{
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId})]
+        [Route("task/{taskId}/workspace/{workspaceId}/disjoin/{disUserId}")]
+        public async Task<IActionResult> DisjoinTaskAsync(int workspaceId, int taskId, string disUserId)
+        {
+            await _taskService.DisjoinTaskAsync(workspaceId, taskId, disUserId, UserId);
+
+            return Ok();
         }
     }
 }

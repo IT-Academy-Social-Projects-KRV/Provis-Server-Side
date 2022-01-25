@@ -6,14 +6,15 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
 {
     public class WorkspaceTasks
     {
-        internal class UnassignedTaskList : Specification<WorkspaceTask, Tuple<int, WorkspaceTask>>
+        internal class UnassignedTaskList : Specification<WorkspaceTask, Tuple<int, WorkspaceTask, int>>
         {
             public UnassignedTaskList(int workspaceId)
             {
                 Query
-                    .Select(x => new Tuple<int, WorkspaceTask>(
+                    .Select(x => new Tuple<int, WorkspaceTask, int>(
                         x.StatusId,
-                        x))
+                        x,
+                        x.Comments.Count))
                     .Where(x => x.WorkspaceId == workspaceId && !x.UserTasks.Any())
                     .OrderBy(x => x.StatusId);
             }
@@ -25,7 +26,9 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
             {
                 Query
                     .Where(p => p.Id == taskId)
-                    .Include(p => p.UserTasks);
+                    .Include(p => p.UserTasks
+                        .Where(x => !x.IsUserDeleted))
+                        .ThenInclude(x => x.User);
             }
         }
     }

@@ -20,15 +20,20 @@ using System.Threading.Tasks;
 using Provis.Core.ApiModels;
 using Provis.Core.Helpers;
 using Microsoft.Extensions.Options;
+using Provis.Core.Roles;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Statuses;
+using Provis.Core.Entities.CommentEntity;
+using Microsoft.AspNetCore.StaticFiles;
+using System.Net;
 
 namespace Provis.Core.Services
 {
     public class TaskService : ITaskService
     {
         protected readonly UserManager<User> _userManager;
+        private readonly IOptions<ImageSettings> _imageSettings;
         protected readonly IRepository<User> _userRepository;
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<WorkspaceTask> _taskRepository;
@@ -58,9 +63,11 @@ namespace Provis.Core.Services
             IOptions<TaskAttachmentSettings> attachmentSettings,
             UserManager<User> userManager,
             IOptions<ClientUrl> options,
-            IEmailSenderService emailSenderService)
+            IEmailSenderService emailSenderService,
+            IOptions<ImageSettings> imageSettings)
         {
             _userManager = userManager;
+            _imageSettings = imageSettings;
             _userRepository = user;
             _taskRepository = task;
             _userWorkspaceRepository = userWorkspace;
@@ -80,8 +87,7 @@ namespace Provis.Core.Services
         public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
-
-            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task not found");
+            task.TaskNullChecking();
 
             if(task.StatusId != changeTaskStatus.StatusId)
             {
@@ -130,29 +136,20 @@ namespace Provis.Core.Services
 
         public async Task CreateTaskAsync(TaskCreateDTO taskCreateDTO, string userId)
         {
-            var user = await _userManager.FindByIdAsync(userId);
-
-            _ = user ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "User with Id not exist");
-
             var workspace = await _workspaceRepository.GetByKeyAsync(taskCreateDTO.WorkspaceId);
-
-            _ = workspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Workspace with Id not found");
+            workspace.WorkspaceNullChecking();
 
             foreach (var item in taskCreateDTO.AssignedUsers)
             {
                 var specification = new UserWorkspaces.WorkspaceMember(item.UserId, workspace.Id);
                 var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
-
-                _ = userWorkspace ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "User in workspace not found");
+                userWorkspace.UserWorkspaceNullChecking();
             }
 
             var task = new WorkspaceTask();
 
             task.DateOfCreate = DateTime.UtcNow;
-            task.TaskCreatorId = user.Id;
+            task.TaskCreatorId = userId;
             task.StatusHistories.Add(new StatusHistory()
             {
                 StatusId = taskCreateDTO.StatusId,
@@ -162,7 +159,7 @@ namespace Provis.Core.Services
 
             _mapper.Map(taskCreateDTO, task);
 
-            using (var transaction = await _taskRepository.BeginTransactionAsync())
+            using (var transaction = await _taskRepository.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead))
             {
                 try
                 {
@@ -211,7 +208,7 @@ namespace Provis.Core.Services
                 var result = selection
                     .GroupBy(x => x.Item1)
                     .ToDictionary(k => k.Key,
-                        v => v.Select(x => _mapper.Map<TaskDTO>(x.Item2))
+                        v => v.Select(x => _mapper.Map<TaskDTO>(x))
                     .ToList());
 
                 return new TaskGroupByStatusDTO()
@@ -228,7 +225,7 @@ namespace Provis.Core.Services
                 var result = selection
                     .GroupBy(x => x.Item1)
                     .ToDictionary(k => k.Key,
-                        v => v.Select(x => _mapper.Map<TaskDTO>(x.Item2))
+                        v => v.Select(x => _mapper.Map<TaskDTO>(x))
                     .ToList());
 
                 return new TaskGroupByStatusDTO()
@@ -255,55 +252,43 @@ namespace Provis.Core.Services
 
         public async Task JoinTaskAsync(TaskAssignDTO taskAssign, string userId)
         {
-            var taskSpecification = new WorkspaceTasks.TaskById(taskAssign.Id);
-            var task = await _taskRepository.GetFirstBySpecAsync(taskSpecification);
+            var task = await _taskRepository.GetByKeyAsync(taskAssign.Id);
+            ExtensionMethods.TaskNullChecking(task);
 
-            var workspaceSpecification = new Workspaces.WorkspaceById(taskAssign.WorkspaceId);
-            var worksp = await _workspaceRepository.GetFirstBySpecAsync(workspaceSpecification);
-
-            if (task.TaskCreatorId != userId && taskAssign.AssignedUsers.Single().UserId != userId)
+            if (task.TaskCreatorId != userId && taskAssign.AssignedUser.UserId != userId)
             {
                 throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                        "Only creator of the task can assign another users");
+                    "Only creator of the task can assign another users");
             }
 
-            List<UserTask> userTasks = new();
-            foreach (var item in taskAssign.AssignedUsers)
-            {
-                if (userTasks.Exists(x => x.UserId == item.UserId))
-                {
-                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                        "This user has already assigned");
-                }
-                if (!worksp.UserWorkspaces.Exists(c => c.UserId == item.UserId))
-                {
-                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                        "This user doesn't member of current workspace");
-                }
-                if (task.UserTasks.Exists(x => x.UserId == item.UserId && !x.IsUserDeleted))
-                {
-                    throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                        "This user alredy in this task");
-                }
+            var userWorkspaceSpecification = new UserWorkspaces
+                .WorkspaceMember(taskAssign.AssignedUser.UserId, taskAssign.WorkspaceId);
 
-                userTasks.Add(new UserTask
-                {
-                    TaskId = task.Id,
-                    UserId = item.UserId,
-                    UserRoleTagId = item.RoleTagId
-                });
+            if(!await _userWorkspaceRepository.AnyBySpecAsync(userWorkspaceSpecification))
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    "This user doesn't member of current workspace");
+            }
+
+            var userTaskSpecifiction = new UserTasks
+                .AssignedMember(taskAssign.Id, taskAssign.AssignedUser.UserId);
+
+            if(await _userTaskRepository.AnyBySpecAsync(userTaskSpecifiction))
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    "This user has already assigned");
             }
 
             await _userTaskRepository.AddRangeAsync(userTasks);
+            var userToAssign = _mapper.Map<UserTask>(taskAssign);
+            await _userTaskRepository.AddAsync(userToAssign);
             await _userTaskRepository.SaveChangesAsync();
         }
 
         public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
         {
             var workspaceTask = await _taskRepository.GetByKeyAsync(taskChangeInfoDTO.Id);
-
-            _ = workspaceTask ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Task with Id not found");
+            workspaceTask.TaskNullChecking();
 
             if (workspaceTask.TaskCreatorId != userId)
             {
@@ -358,34 +343,14 @@ namespace Provis.Core.Services
 
         public async Task<TaskInfoDTO> GetTaskInfoAsync(int taskId)
         {
-            var task = await _taskRepository.GetByKeyAsync(taskId);
+            var specification = new WorkspaceTasks.TaskById(taskId);
+            var task = await _taskRepository.GetFirstBySpecAsync(specification);
 
-            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Task with Id not found");
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task with Id not found");
 
-            TaskInfoDTO taskInfoDTO = new TaskInfoDTO();
+            var taskToRerutn = _mapper.Map<TaskInfoDTO>(task);
 
-            _mapper.Map(task, taskInfoDTO);
-
-            var specification = new UserTasks.TaskUserList(taskId);
-
-            var taskUsers = await _userTaskRepository.GetListBySpecAsync(specification);
-
-            List<TaskAssignedUsersDTO> userList = new List<TaskAssignedUsersDTO>();
-
-            foreach (var item in taskUsers)
-            {
-                userList.Add(new TaskAssignedUsersDTO
-                {
-                    UserId = item.UserId,
-                    UserName = item.User.UserName,
-                    RoleTagId = item.UserRoleTagId
-                });
-            }
-
-            taskInfoDTO.AssignedUsers = userList;
-
-            return taskInfoDTO;
+            return taskToRerutn;
         }
 
         public async Task<List<TaskAttachmentInfoDTO>> GetTaskAttachmentsAsync(int taskId)
@@ -395,6 +360,7 @@ namespace Provis.Core.Services
 
             return listAttachments.Select(x => _mapper.Map<TaskAttachmentInfoDTO>(x)).ToList();
         }
+
         public async Task<DownloadFile> GetTaskAttachmentAsync(int attachmentId)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
@@ -406,6 +372,7 @@ namespace Provis.Core.Services
 
             return file;
         }
+
         public async Task DeleteTaskAttachmentAsync(int attachmentId)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
@@ -421,6 +388,7 @@ namespace Provis.Core.Services
             await _taskAttachmentRepository.DeleteAsync(attachment);
             await _taskAttachmentRepository.SaveChangesAsync();
         }
+
         public async Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO)
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachments(taskAttachmentsDTO.TaskId);
@@ -448,6 +416,98 @@ namespace Provis.Core.Services
             await _taskAttachmentRepository.SaveChangesAsync();
 
             return _mapper.Map<TaskAttachmentInfoDTO>(workspaceTaskAttachment);
+        }
+
+        public async Task<DownloadFile> GetTaskAttachmentPreviewAsync(int attachmentId)
+        {
+            var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
+            var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
+
+            _ = attachment ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
+
+            var provider = new FileExtensionContentTypeProvider();
+
+            if (provider.TryGetContentType(attachment.AttachmentPath, out string contentType) &&
+                !contentType.StartsWith(_imageSettings.Value.Type))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "No preview for this file");
+            }
+
+            var file = await _fileService.GetFileAsync(attachment.AttachmentPath);
+
+            return file;
+        }
+
+        public async Task ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId)
+        {
+            var taskSpecification = new WorkspaceTasks
+                    .TaskById(changeRoleDTO.TaskId);
+            var task = await _taskRepository
+                    .GetFirstBySpecAsync(taskSpecification);
+
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                   "Task not found");
+
+            var userTaskSpecification = new UserTasks
+                    .AssignedMember(changeRoleDTO.TaskId, changeRoleDTO.UserId);
+            var userTaskMember = await _userTaskRepository
+                    .GetFirstBySpecAsync(userTaskSpecification);
+
+            _ = userTaskMember ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                    "Assigned user not found");
+
+            var userSpecification = new UserWorkspaces
+                    .WorkspaceMember(userId, changeRoleDTO.WorkspaceId);
+            var user = await _userWorkspaceRepository
+                    .GetFirstBySpecAsync(userSpecification);
+
+            if (task.TaskCreatorId == userId ||
+                (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
+            {
+                userTaskMember.UserRoleTagId = changeRoleDTO.RoleId;
+                await _userTaskRepository.SaveChangesAsync();
+            }
+            else
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "You don't have permission to do this");
+            }
+        }
+
+        public async Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId)
+        {
+            var taskSpecification = new WorkspaceTasks
+                    .TaskById(taskId);
+            var task = await _taskRepository
+                    .GetFirstBySpecAsync(taskSpecification);
+
+            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                   "Task not found");
+
+            var userTaskSpecification = new UserTasks
+                    .AssignedMember(taskId, disUserId);
+            var userTaskMember = await _userTaskRepository
+                    .GetFirstBySpecAsync(userTaskSpecification);
+
+            _ = userTaskMember ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                                    "Assigned user not found");
+
+            var userSpecification = new UserWorkspaces
+                    .WorkspaceMember(userId, workspaceId);
+            var user = await _userWorkspaceRepository
+                    .GetFirstBySpecAsync(userSpecification);
+
+            if (task.TaskCreatorId == userId ||
+                (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
+            {
+                await _userTaskRepository.DeleteAsync(userTaskMember);
+                await _userTaskRepository.SaveChangesAsync();
+            }
+            else
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "You don't have permission to do this");
+            }
         }
     }
 }

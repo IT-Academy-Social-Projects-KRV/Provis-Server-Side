@@ -25,24 +25,18 @@ namespace Provis.Core
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<IConfirmEmailService, ConfirmEmailService>();
             services.AddScoped<ITemplateService, TemplateService>();
+            services.AddScoped<ICommentService, CommentService>();
         }
 
         public static void AddFileService(this IServiceCollection services, IConfiguration configuration)
         {
-            var allowStoreInAzureBlobStore = configuration.GetSection("FileSettings")
-                .GetValue<bool>("AllowStoreInAzureBlobStore");
+            services.AddScoped(_ =>
+                new BlobServiceClient(configuration.GetSection("AzureBlobStorageSettings")
+                    .GetValue<string>("AccessKey")));
 
-            if (allowStoreInAzureBlobStore)
-            {
-                services.AddScoped(_ =>
-                    new BlobServiceClient(configuration.GetSection("AzureBlobStorageSettings")
-                        .GetValue<string>("AccessKey")));
-                services.AddScoped<IFileService, AzureBlobStorageService>();
-            }
-            else
-            {
-                services.AddScoped<IFileService, FileService>();
-            }
+            services.AddScoped<IFileService, FileService>();
+            services.AddScoped<IAzureBlobStorageService, AzureBlobStorageService>();
+            services.AddScoped<ILocaleStorageService, LocaleStorageService>();
         }
 
         public static void AddFluentValitation(this IServiceCollection services)
@@ -101,6 +95,6 @@ namespace Provis.Core
         public static void ConfigureRolesAccess(this IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<RoleAccess>(configuration.GetSection("RolesAccess"));
-        }        
+        }
     }
 }

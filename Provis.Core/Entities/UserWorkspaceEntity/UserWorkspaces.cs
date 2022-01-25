@@ -24,7 +24,8 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
             {
                 Query
                     .Where(p => p.UserId == userId &&
-                    p.WorkspaceId == workspaceId);
+                    p.WorkspaceId == workspaceId)
+                    .Include(x => x.User);
             }
         }
 

@@ -574,6 +574,9 @@ namespace Provis.Infrastructure.Migrations
                     b.Property<int>("StatusId")
                         .HasColumnType("int");
 
+                    b.Property<int>("StoryPoints")
+                        .HasColumnType("int");
+
                     b.Property<string>("TaskCreatorId")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
