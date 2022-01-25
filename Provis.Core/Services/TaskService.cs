@@ -292,12 +292,17 @@ namespace Provis.Core.Services
             var workspaceTask = await _taskRepository.GetByKeyAsync(taskChangeInfoDTO.Id);
             workspaceTask.TaskNullChecking();
 
-            if (workspaceTask.TaskCreatorId != userId)
+            var worspaceMemberSpecefication = new UserWorkspaces
+                .WorkspaceMember(userId, taskChangeInfoDTO.WorkspaceId);
+
+            if (!(workspaceTask.TaskCreatorId == userId ||
+                await _userWorkspaceRepository
+                .AllBySpecAsync(worspaceMemberSpecefication, x => x.RoleId == (int)WorkSpaceRoles.OwnerId)))
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You are not the creator of the task");
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden, "You don`t have permissions");
             }
 
-            if(workspaceTask.Name != taskChangeInfoDTO.Name 
+            if (workspaceTask.Name != taskChangeInfoDTO.Name 
                 || workspaceTask.Description != taskChangeInfoDTO.Description 
                 || workspaceTask.DateOfEnd != taskChangeInfoDTO.Deadline)
             {
@@ -528,16 +533,20 @@ namespace Provis.Core.Services
             }
         }
 
-        public async Task DeleteTaskAsync(int taskId, string userId)
+        public async Task DeleteTaskAsync(int workspaceId, int taskId, string userId)
         {
             var workspaceTask = await _taskRepository.GetByKeyAsync(taskId);
 
             _ = workspaceTask ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
                 "Task with Id not found");
 
-            if (workspaceTask.TaskCreatorId != userId)
+            var worspaceMemberSpecefication = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
+
+            if (!(workspaceTask.TaskCreatorId == userId ||
+                await _userWorkspaceRepository
+                .AllBySpecAsync(worspaceMemberSpecefication, x => x.RoleId == (int) WorkSpaceRoles.OwnerId)))
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You are not the creator of the task");
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden, "You don`t have permissions");
             }
 
             var specificationStatusHistories = new StatusHistories.StatusHistoresList(taskId);

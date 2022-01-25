@@ -232,7 +232,7 @@ namespace Provis.WebApi.Controllers
         [Route("task/{taskId}/workspace/{workspaceId}")]
         public async Task<IActionResult> DeleteTaskAsync(int taskId, int workspaceId)
         {
-            await _taskService.DeleteTaskAsync(taskId, UserId);
+            await _taskService.DeleteTaskAsync(workspaceId, taskId, UserId);
 
             return Ok();
         }
