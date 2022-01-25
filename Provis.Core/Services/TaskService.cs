@@ -101,24 +101,27 @@ namespace Provis.Core.Services
                 var assignedUserEmails = await _userTaskRepository.GetListBySpecAsync(
                     new UserTasks.TaskAssignedUserEmailList(changeTaskStatus.TaskId));
 
-                await Task.Factory.StartNew(async () =>
+                if(assignedUserEmails.Count() > 1)
                 {
-                    await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChangeStatus>()
+                    await Task.Factory.StartNew(async () =>
                     {
-                        Emails = assignedUserEmails,
-                        Subject = $"Changed status of {task.Name} task",
-                        Body = "TaskStatusChange",
-                        ViewModel = new TaskChangeStatus()
+                        await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskChangeStatus>()
                         {
-                            Uri = _clientUrl.Value.ApplicationUrl,
-                            WhoChangedUserName = user.Name,
-                            FromStatus = (TaskStatuses)task.StatusId,
-                            ToStatus = (TaskStatuses)changeTaskStatus.StatusId,
-                            TaskName = task.Name,
-                            WorkspaceName = workspace.Name
-                        }
+                            Emails = assignedUserEmails,
+                            Subject = $"Changed status of {task.Name} task",
+                            Body = "TaskStatusChange",
+                            ViewModel = new TaskChangeStatus()
+                            {
+                                Uri = _clientUrl.Value.ApplicationUrl,
+                                WhoChangedUserName = user.Name,
+                                FromStatus = (TaskStatuses)task.StatusId,
+                                ToStatus = (TaskStatuses)changeTaskStatus.StatusId,
+                                TaskName = task.Name,
+                                WorkspaceName = workspace.Name
+                            }
+                        });
                     });
-                });
+                }
 
                 var statusHistory = new StatusHistory
                 {
@@ -308,22 +311,25 @@ namespace Provis.Core.Services
                 var assignedUserEmails = await _userTaskRepository.GetListBySpecAsync(
                     new UserTasks.TaskAssignedUserEmailList(taskChangeInfoDTO.Id));
 
-                await Task.Factory.StartNew(async () =>
+                if (assignedUserEmails.Count() > 1)
                 {
-                    await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskEdited>()
+                    await Task.Factory.StartNew(async () =>
                     {
-                        Emails = assignedUserEmails,
-                        Subject = $"Task {workspaceTask.Name} was edited",
-                        Body = "TaskChange",
-                        ViewModel = new TaskEdited()
+                        await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskEdited>()
                         {
-                            Uri = _clientUrl.Value.ApplicationUrl,
-                            WhoEditUserName = user.Name,
-                            TaskChangeInfo = taskChangeInfoDTO,
-                            WorkspaceName = workspace.Name
-                        }
+                            Emails = assignedUserEmails,
+                            Subject = $"Task {workspaceTask.Name} was edited",
+                            Body = "TaskChange",
+                            ViewModel = new TaskEdited()
+                            {
+                                Uri = _clientUrl.Value.ApplicationUrl,
+                                WhoEditUserName = user.Name,
+                                TaskChangeInfo = taskChangeInfoDTO,
+                                WorkspaceName = workspace.Name
+                            }
+                        });
                     });
-                });
+                }
 
                 _mapper.Map(taskChangeInfoDTO, workspaceTask);
 
