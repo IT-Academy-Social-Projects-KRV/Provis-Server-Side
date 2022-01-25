@@ -326,7 +326,8 @@ namespace Provis.Core.Services
 
             if (workspaceTask.Name != taskChangeInfoDTO.Name 
                 || workspaceTask.Description != taskChangeInfoDTO.Description 
-                || workspaceTask.DateOfEnd != taskChangeInfoDTO.Deadline)
+                || workspaceTask.DateOfEnd != taskChangeInfoDTO.Deadline
+                || workspaceTask.StoryPoints != taskChangeInfoDTO.StoryPoints)
             {
                 var user = await _userRepository.GetByKeyAsync(userId);
 
