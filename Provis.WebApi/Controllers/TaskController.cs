@@ -224,5 +224,17 @@ namespace Provis.WebApi.Controllers
 
             return Ok();
         }
+
+        [Authorize]
+        [HttpDelete]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("task/{taskId}/workspace/{workspaceId}")]
+        public async Task<IActionResult> DeleteTaskAsync(int taskId, int workspaceId)
+        {
+            await _taskService.DeleteTaskAsync(taskId, UserId);
+
+            return Ok();
+        }
     }
 }

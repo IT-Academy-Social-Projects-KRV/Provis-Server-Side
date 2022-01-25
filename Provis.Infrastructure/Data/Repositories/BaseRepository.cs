@@ -47,7 +47,10 @@ namespace Provis.Infrastructure.Data.Repositories
         {
             await Task.Run(()=> _dbSet.Remove(entity));
         }
-
+        public async Task DeleteRangeAsync(IEnumerable<TEntity> entities)
+        {
+            await Task.Run(() => _dbSet.RemoveRange(entities));
+        }
         public IQueryable<TEntity> Query(params Expression<Func<TEntity, object>>[] includes)
         {
             var query = includes
@@ -113,5 +116,7 @@ namespace Provis.Infrastructure.Data.Repositories
             var evaluator = new SpecificationEvaluator();
             return evaluator.GetQuery(_dbSet, specification);
         }
+
+        
     }
 }
