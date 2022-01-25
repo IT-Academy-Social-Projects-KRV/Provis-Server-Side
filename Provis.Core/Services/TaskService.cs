@@ -53,6 +53,7 @@ namespace Provis.Core.Services
         private readonly IOptions<ClientUrl> _clientUrl;
         private readonly IEmailSenderService _emailSenderService;
         private readonly IMetrics _metrics;
+        private readonly IOptions<AttachmentSettings> _attachmentSettings;
 
         public TaskService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
@@ -66,7 +67,7 @@ namespace Provis.Core.Services
             IRepository<WorkspaceTaskAttachment> taskAttachmentRepository,
             IRepository<Comment> commentRepository,
             IFileService fileService,
-            IOptions<TaskAttachmentSettings> attachmentSettings,
+            IOptions<AttachmentSettings> attachmentSettings,
             UserManager<User> userManager,
             IOptions<ClientUrl> options,
             IEmailSenderService emailSenderService,

@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
-using Provis.Core.DTO.CommentDTO;
 using Provis.Core.DTO.CommentsDTO;
 using Provis.Core.Entities.CommentEntity;
 using Provis.Core.Entities.UserEntity;

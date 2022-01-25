@@ -1,5 +1,4 @@
-﻿using Provis.Core.DTO.CommentDTO;
-using Provis.Core.DTO.CommentsDTO;
+﻿using Provis.Core.DTO.CommentsDTO;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
