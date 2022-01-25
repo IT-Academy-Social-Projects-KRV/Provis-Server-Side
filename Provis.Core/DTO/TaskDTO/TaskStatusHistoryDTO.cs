@@ -8,6 +8,6 @@ namespace Provis.Core.DTO.TaskDTO
         public string UserName { get; set; }
         public int StatusId { get; set; }
         public string Status { get; set; }
-        public DateTime DateOfChange { get; set; }
+        public DateTimeOffset DateOfChange { get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace Provis.Core.Entities.CommentEntity
         public int Id { get; set; }
 
         public string CommentText { get; set; }
-        public DateTime DateOfCreate { get; set; }
+        public DateTimeOffset DateOfCreate { get; set; }
 
         public int TaskId { get; set; }
         public WorkspaceTask Task { get; set; }

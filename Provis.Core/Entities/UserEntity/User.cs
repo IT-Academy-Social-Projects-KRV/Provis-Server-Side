@@ -18,7 +18,7 @@ namespace Provis.Core.Entities.UserEntity
         public string Name { get; set; }
         public string Surname { get; set; }
         public string ImageAvatarUrl { get; set; }
-        public DateTime CreateDate { get; set; } // DateTime UTC
+        public DateTimeOffset CreateDate { get; set; } // DateTime UTC
 
         public List<UserTask> UserTasks { get; set; } = new List<UserTask>();
         public List<WorkspaceTask> Tasks { get; set; } = new List<WorkspaceTask>();

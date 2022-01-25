@@ -14,7 +14,7 @@ namespace Provis.Core.Entities.WorkspaceEntity
 
         public string Name { get; set; }
         public string Description { get; set; }
-        public DateTime DateOfCreate { get; set; }
+        public DateTimeOffset DateOfCreate { get; set; }
 
         public List<UserWorkspace> UserWorkspaces { get; set; } = new List<UserWorkspace>();
         public List<WorkspaceTask> Tasks { get; set; } = new List<WorkspaceTask>();
