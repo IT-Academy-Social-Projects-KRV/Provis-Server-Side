@@ -43,7 +43,7 @@ namespace Provis.Core.Services
         protected readonly IRepository<WorkspaceTaskAttachment> _taskAttachmentRepository;
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
-        private readonly IOptions<TaskAttachmentSettings> _attachmentSettings;
+        private readonly IOptions<AttachmentSettings> _attachmentSettings;
 
         public TaskService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
@@ -56,7 +56,7 @@ namespace Provis.Core.Services
             IRepository<UserRoleTag> workerRoleRepository,
             IRepository<WorkspaceTaskAttachment> taskAttachmentRepository,
             IFileService fileService,
-            IOptions<TaskAttachmentSettings> attachmentSettings,
+            IOptions<AttachmentSettings> attachmentSettings,
             UserManager<User> userManager,
             IOptions<ImageSettings> imageSettings
             )

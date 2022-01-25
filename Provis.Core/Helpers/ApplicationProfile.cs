@@ -17,7 +17,6 @@ using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
 using System.IO;
 using Provis.Core.Entities.CommentEntity;
-using Provis.Core.DTO.CommentDTO;
 using Provis.Core.DTO.CommentsDTO;
 using System;
 
