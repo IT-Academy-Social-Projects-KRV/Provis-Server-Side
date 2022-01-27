@@ -157,11 +157,11 @@ namespace Provis.Core.Services
             {
                 ToEmail = inviteDTO.UserEmail,
                 Subject = "Workspace invitation",
-                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/WorkspaceInvite", 
-                    new WorkspaceInvite() 
-                    { 
-                        Owner = owner.UserName, 
-                        WorkspaceName = workspace.Name, 
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/WorkspaceInvite",
+                    new WorkspaceInvite()
+                    {
+                        Owner = owner.UserName,
+                        WorkspaceName = workspace.Name,
                         UserName = inviteUser.UserName,
                         Uri = _clientUrl.ApplicationUrl
                     })
@@ -245,12 +245,12 @@ namespace Provis.Core.Services
         {
             var modifierSpecification = new UserWorkspaces.WorkspaceMember(userId, userChangeRole.WorkspaceId);
             var modifier = await _userWorkspaceRepository.GetFirstBySpecAsync(modifierSpecification);
-            
+
             modifier.User.UserNullChecking();
 
             var targetSpecification = new UserWorkspaces.WorkspaceMember(userChangeRole.UserId, userChangeRole.WorkspaceId);
             var target = await _userWorkspaceRepository.GetFirstBySpecAsync(targetSpecification);
-            
+
             target.User.UserNullChecking();
 
             var roleId = (WorkSpaceRoles)modifier.RoleId;
@@ -328,7 +328,7 @@ namespace Provis.Core.Services
             var userWorkspSpecification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
             var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspSpecification);
 
-            
+
             if (userWorksp.RoleId == (int)WorkSpaceRoles.OwnerId)
             {
                 throw new HttpException(System.Net.HttpStatusCode.NotFound,
