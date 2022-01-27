@@ -56,11 +56,51 @@ namespace Provis.Core.Services
             _userEventRepository = userEvent;
         }
 
+        public async Task CreateEventAsync(EventCreateDTO eventCreateDTO, string userId)
+        {
+            var workspaceEvent = new Event()
+            {
+                CreatorId = userId,
+                IsCreatorExist = false
+            };
+            _mapper.Map(eventCreateDTO, workspaceEvent);
+
+            try
+            {
+                await _eventRepository.AddAsync(workspaceEvent);
+                await _eventRepository.SaveChangesAsync();
+
+                List<UserEvent> userEvents = new();
+                foreach (var item in eventCreateDTO.AssignedUsers)
+                {
+                    if (userEvents.Exists(x => x.UserId == item.UserId))
+                    {
+                        throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            "This user already assigned");
+                    }
+                    userEvents.Add(new UserEvent
+                    {
+                        EventId = workspaceEvent.Id,
+                        UserId = item.UserId
+                    });
+                    if (item.UserId == userId)
+                    {
+                        workspaceEvent.IsCreatorExist = true;
+                    }
+                }
+
+                await _userEventRepository.AddRangeAsync(userEvents);
+                await _userEventRepository.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                    "Failed");
+            }
+        }
+
         public async Task<List<EventDTO>> GetAllEventsAsync(int workspaceId, string userId)
         {
-            //var calendarSpecification = new UserCalendars.UsersInTasks(workspaceId, userId);
-            //var calendarList = await _userCalendarRepository.GetListBySpecAsync(calendarSpecification);
-
             var eventSpecification = new Events.GetMyEvents(userId, workspaceId);
             var eventList = await _eventRepository.GetListBySpecAsync(eventSpecification);
 
@@ -103,39 +143,48 @@ namespace Provis.Core.Services
             }
         }
 
-
-        public async Task CreateEventAsync(EventCreateDTO eventCreateDTO, string userId)
+        public async Task<List<EventDayDTO>> GetDayEventsAsync(int workspaceId, DateTime dateTime, string userId)
         {
-            var workspaceEvent = new Event()
-            {
-                CreatorId = userId,
-                IsCreatorExist = false
-            };
-            _mapper.Map(eventCreateDTO, workspaceEvent);
+            var eventSpecification = new Events.GetDayEvents(userId, workspaceId, dateTime);
+            var eventList = await _eventRepository.GetListBySpecAsync(eventSpecification);
 
-            List<UserEvent> userEvents = new List<UserEvent>();
-            foreach (var item in eventCreateDTO.AssignedUsers)
+            var userEventsDay = new UserEvents.GetDayEvents(userId, workspaceId, dateTime);
+            var userEventList = await _userEventRepository.GetListBySpecAsync(userEventsDay);
+
+            var userSpecification = new UserWorkspaces.UsersDateOfBirthDetail(workspaceId, dateTime);
+            var userBirthdayList = await _userWorkspaceRepository.GetListBySpecAsync(userSpecification);
+
+            var userWorkspSpecification = new UserWorkspaces.WorkspaceOwnerManager(userId, workspaceId);
+            var isOwnerOrManager = await _userWorkspaceRepository.AnyBySpecAsync(userWorkspSpecification);
+
+            if (isOwnerOrManager)
             {
-                if (userEvents.Exists(x => x.UserId == item.UserId))
-                {
-                    throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                        "This user already assigned");
-                }
-                userEvents.Add(new UserEvent
-                {
-                    EventId = workspaceEvent.Id, 
-                    UserId = item.UserId
-                });
-                if (item.UserId == userId)
-                {
-                    workspaceEvent.IsCreatorExist = true;
-                }
+                var allWorkspaceTasks = new WorkspaceTasks.AllWorkspaceDayTasks(workspaceId, dateTime);
+                var allTasksList = await _taskRepository.GetListBySpecAsync(allWorkspaceTasks);
+
+                var listToReturn = eventList.ToList();
+                listToReturn.AddRange(userEventList);
+                listToReturn.AddRange(userBirthdayList);
+                listToReturn.AddRange(allTasksList);
+
+                return listToReturn;
             }
-            await _eventRepository.AddAsync(workspaceEvent);
-            await _eventRepository.SaveChangesAsync();
+            else
+            {
+                var taskSpecification = new WorkspaceTasks.TaskDayByUser(userId, workspaceId, dateTime);
+                var taskList = await _taskRepository.GetListBySpecAsync(taskSpecification);
 
-            await _userEventRepository.AddRangeAsync(userEvents);
-            await _userEventRepository.SaveChangesAsync();
+                var userTask = new UserTasks.TaskDayByUser(userId, workspaceId, dateTime);
+                var userTaskList = await _userTaskRepository.GetListBySpecAsync(userTask);
+
+                var listToReturn = eventList.ToList();
+                listToReturn.AddRange(userEventList);
+                listToReturn.AddRange(userBirthdayList);
+                listToReturn.AddRange(taskList);
+                listToReturn.AddRange(userTaskList);
+
+                return listToReturn;
+            }
         }
     }
 }

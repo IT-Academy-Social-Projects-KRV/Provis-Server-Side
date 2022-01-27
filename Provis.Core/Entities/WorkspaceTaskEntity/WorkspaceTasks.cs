@@ -1,5 +1,7 @@
 ﻿using Ardalis.Specification;
+using Provis.Core.DTO.CalendarDTO;
 using Provis.Core.DTO.EventDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Statuses;
 using System;
 using System.Linq;
@@ -50,6 +52,30 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
             }
         }
 
+        internal class TaskDayByUser : Specification<WorkspaceTask, EventDayDTO>
+        {
+            public TaskDayByUser(string userId, int workspaceId, DateTime dateTime)
+            {
+                Query
+                    .Select(x => new EventDayDTO()
+                    {
+                        Status = CalendarStatuses.TaskDeadline,
+                        Name = x.Name,
+                        DateOfStart = x.DateOfEnd,
+                        DateOfEnd = null,
+                        AssignedUsers = x.UserTasks.Select(y => new UserCalendarInfoDTO()
+                        {
+                            UserId = y.UserId,
+                            UserName = y.User.UserName
+                        }).ToList()
+                    })
+                    .Include(x => x.UserTasks)
+                    .Where(p => p.WorkspaceId == workspaceId &&
+                        p.DateOfEnd.Date == dateTime.Date &&
+                        p.TaskCreatorId == userId);
+            }
+        }
+
         internal class AllWorkspaceTasks : Specification<WorkspaceTask, EventDTO>
         {
             public AllWorkspaceTasks(int workspaceId)
@@ -64,18 +90,27 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                         p.DateOfEnd.Month == DateTime.UtcNow.Month);
             }
         }
+
+        internal class AllWorkspaceDayTasks : Specification<WorkspaceTask, EventDayDTO>
+        {
+            public AllWorkspaceDayTasks(int workspaceId, DateTime dateTime)
+            {
+                Query
+                    .Select(x => new EventDayDTO()
+                    {
+                        Status = CalendarStatuses.TaskDeadline,
+                        Name = x.Name,
+                        DateOfStart = x.DateOfEnd,
+                        DateOfEnd = null,
+                        AssignedUsers = x.UserTasks.Select(y => new UserCalendarInfoDTO()
+                        {
+                            UserId = y.UserId,
+                            UserName = y.User.UserName
+                        }).ToList()
+                    })
+                    .Where(p => p.WorkspaceId == workspaceId &&
+                        p.DateOfEnd.Date == dateTime.Date);
+            }
+        }
     }
 }
-
-//Query
-//                    .Select(x => new EventDTO()
-//                    {
-//                        EventDay = x.DateOfEnd,
-//                        Status = CalendarStatuses.Task
-//                    })
-//                    .Include(x => x.UserTasks)
-//                    .ThenInclude(x => x.Task)
-//                    .Where(p => p.WorkspaceId == workspaceId &&
-//                        p.DateOfEnd.Month == DateTime.UtcNow.Month &&
-//                        (p.UserTasks.Exists(x => x.UserId == userId && x.Task.WorkspaceId == workspaceId) ||
-//                        p.TaskCreatorId == userId))

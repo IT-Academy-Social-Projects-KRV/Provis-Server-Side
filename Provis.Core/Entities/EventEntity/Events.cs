@@ -1,5 +1,7 @@
 ﻿using Ardalis.Specification;
+using Provis.Core.DTO.CalendarDTO;
 using Provis.Core.DTO.EventDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Statuses;
 using System;
 using System.Linq;
@@ -20,6 +22,29 @@ namespace Provis.Core.Entities.EventEntity
                     })
                     .Where(c => c.WorkspaceId == workspaceId &&
                         c.DateOfStart.Month == DateTime.UtcNow.Month &&
+                        c.CreatorId == userId);
+            }
+        }
+
+        internal class GetDayEvents : Specification<Event, EventDayDTO>
+        {
+            public GetDayEvents(string userId, int workspaceId, DateTime dateTime)
+            {
+                Query
+                    .Select(x => new EventDayDTO()
+                    {
+                        Status = x.IsCreatorExist ? CalendarStatuses.PersonalEventStart : CalendarStatuses.SomebodysEventStart,
+                        Name = x.EventName,
+                        DateOfStart = x.DateOfStart,
+                        DateOfEnd = x.DateOfEnd,
+                        AssignedUsers = x.UserEvents.Select(y => new UserCalendarInfoDTO()
+                        {
+                            UserId = y.UserId,
+                            UserName = y.User.UserName
+                        }).ToList()
+                    })
+                    .Where(c => c.WorkspaceId == workspaceId &&
+                        c.DateOfStart.Date == dateTime.Date &&
                         c.CreatorId == userId);
             }
         }

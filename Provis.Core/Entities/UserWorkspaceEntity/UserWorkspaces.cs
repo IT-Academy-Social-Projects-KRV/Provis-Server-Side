@@ -1,6 +1,8 @@
 ﻿using Ardalis.Specification;
 using Microsoft.EntityFrameworkCore;
+using Provis.Core.DTO.CalendarDTO;
 using Provis.Core.DTO.EventDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Statuses;
 using System;
 using System.Linq;
@@ -64,6 +66,28 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
             }
         }
 
+        internal class UsersDateOfBirthDetail : Specification<UserWorkspace, EventDayDTO>
+        {
+            public UsersDateOfBirthDetail(int workspaceId, DateTime dateTime)
+            {
+                Query
+                    .Select(x => new EventDayDTO()
+                    {
+                        Status = CalendarStatuses.BirthDay,
+                        Name = "BirthDay",
+                        DateOfStart = x.User.BirthDate,
+                        DateOfEnd = null,
+                        AssignedUsers = x.User.UserWorkspaces.Select(y => new UserCalendarInfoDTO()
+                        {
+                            UserId = y.User.Id,
+                            UserName = y.User.UserName
+                        }).ToList()
+                    })
+                    .Where(x => x.User.BirthDate.Date == dateTime.Date && 
+                    x.WorkspaceId == workspaceId);
+            }
+        }
+
         internal class UsersDateOfBirth : Specification<UserWorkspace, EventDTO>
         {
             public UsersDateOfBirth(int workspaceId)
@@ -74,7 +98,7 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
                         EventDay = x.User.BirthDate,
                         Status = CalendarStatuses.BirthDay
                     })
-                    .Where(x => x.User.BirthDate.Month == DateTime.UtcNow.Month && 
+                    .Where(x => x.User.BirthDate.Month == DateTime.UtcNow.Month &&
                     x.WorkspaceId == workspaceId);
             }
         }

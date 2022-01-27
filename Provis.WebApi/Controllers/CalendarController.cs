@@ -22,11 +22,23 @@ namespace Provis.WebApi.Controllers
         }
 
         [Authorize]
+        [HttpPost]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId})]
+        public async Task<IActionResult> CreateEventAsync([FromBody] EventCreateDTO eventCreateDTO)
+        {
+            await _calendarService.CreateEventAsync(eventCreateDTO, UserId);
+
+            return Ok();
+        }
+
+        [Authorize]
         [HttpGet]
         [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
-        [Route("workspace/{workspaceId}")]
+        [Route("all/workspace/{workspaceId}")]
         public async Task<IActionResult> GetAllEventsAsync(int workspaceId)
         {
             var getEvents = await _calendarService.GetAllEventsAsync(workspaceId, UserId);
@@ -35,16 +47,16 @@ namespace Provis.WebApi.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpGet]
         [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
-            WorkSpaceRoles.MemberId})]
-        [Route("workspace/{workspaceId}")]
-        public async Task<IActionResult> CreateEventAsync([FromBody] EventCreateDTO eventCreateDTO)
+            WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
+        [Route("day/workspace/{workspaceId}")]
+        public async Task<IActionResult> GetDayEventsAsync(int workspaceId, DateTime dateTime)
         {
-            await _calendarService.CreateEventAsync(eventCreateDTO, UserId);
+            var getEvents = await _calendarService.GetDayEventsAsync(workspaceId, dateTime, UserId);
 
-            return Ok();
+            return Ok(getEvents);
         }
     }
 }

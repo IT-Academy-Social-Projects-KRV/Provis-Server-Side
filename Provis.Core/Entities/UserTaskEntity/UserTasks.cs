@@ -1,11 +1,15 @@
 ﻿using Ardalis.Specification;
+using Provis.Core.DTO.CalendarDTO;
 using Provis.Core.DTO.EventDTO;
+using Provis.Core.DTO.UserDTO;
+using Provis.Core.Entities.UserEventsEntity;
 using Provis.Core.Statuses;
 using System;
+using System.Linq;
 
 namespace Provis.Core.Entities.UserTaskEntity
 {
-    public class  UserTasks
+    public class UserTasks
     {
         internal class UserTaskList : Specification<UserTask, Tuple<int, UserTask>>
         {
@@ -35,6 +39,32 @@ namespace Provis.Core.Entities.UserTaskEntity
                     .Where(x => x.Task.DateOfEnd.Month == DateTime.UtcNow.Month && 
                     x.Task.WorkspaceId == workspaceId && 
                     x.UserId == userId && 
+                    x.Task.TaskCreatorId != userId &&
+                    x.IsUserDeleted == false);
+            }
+        }
+
+        internal class TaskDayByUser : Specification<UserTask, EventDayDTO>
+        {
+            public TaskDayByUser(string userId, int workspaceId, DateTime dateTime)
+            {
+                Query
+                    .Select(x => new EventDayDTO()
+                    {
+                        Status = CalendarStatuses.TaskDeadline,
+                        Name = x.Task.Name,
+                        DateOfStart = x.Task.DateOfEnd,
+                        DateOfEnd = null,
+                        AssignedUsers = x.Task.UserTasks.Select(y => new UserCalendarInfoDTO()
+                        {
+                            UserId = y.UserId,
+                            UserName = y.User.UserName
+                        }).ToList()
+                    })
+                    .Include(x => x.Task)
+                    .Where(x => x.Task.DateOfEnd.Date == dateTime.Date &&
+                    x.Task.WorkspaceId == workspaceId &&
+                    x.UserId == userId &&
                     x.Task.TaskCreatorId != userId &&
                     x.IsUserDeleted == false);
             }
