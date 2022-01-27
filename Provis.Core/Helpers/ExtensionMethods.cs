@@ -4,6 +4,8 @@ using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
+using Provis.Core.Resources;
+using System.Net;
 
 namespace Provis.Core.Helpers.Mails
 {
@@ -13,7 +15,8 @@ namespace Provis.Core.Helpers.Mails
         {
             if (user == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User with this Id doesn't exist");
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.UserNotFound);
             }
         }
 
@@ -21,7 +24,8 @@ namespace Provis.Core.Helpers.Mails
         {
             if (workspace == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Workspace with this Id doesn't exist");
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.WorkspaceNotFound);
             }
         }
 
@@ -29,7 +33,8 @@ namespace Provis.Core.Helpers.Mails
         {
             if (userWorkspace == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "User doesn't exist in this workspace");
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.UserNotMember);
             }
         }
 
@@ -37,7 +42,8 @@ namespace Provis.Core.Helpers.Mails
         {
             if (userInvite == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Invite with this Id doesn't exist");
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.InviteNotFound);
             }
         }
 
@@ -45,7 +51,8 @@ namespace Provis.Core.Helpers.Mails
         {
             if (workspaceTask == null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task with this Id doesn't exist");
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.TaskNotFound);
             }
         }
     }
