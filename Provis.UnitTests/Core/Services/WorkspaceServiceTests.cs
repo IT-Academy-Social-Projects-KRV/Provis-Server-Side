@@ -16,7 +16,9 @@ using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Services;
+using Provis.UnitTests.Base;
 using Provis.UnitTests.Base.TestData;
+using System.Threading.Tasks;
 
 namespace Provis.UnitTests.Core.Services
 {
@@ -43,7 +45,7 @@ namespace Provis.UnitTests.Core.Services
         public void OneTimeSetUp()
         {
             _emailSendServiceMock = new Mock<IEmailSenderService>();
-            _userManagerMock = new Mock<UserManager<User>>();
+            _userManagerMock = UserManagerMock.GetUserManager<User>();
             _workspaceRepositoryMock = new Mock<IRepository<Workspace>>();
             _userWorkspaceRepositoryMock = new Mock<IRepository<UserWorkspace>>();
             _inviteUserRepositoryMock = new Mock<IRepository<InviteUser>>();
@@ -92,12 +94,28 @@ namespace Provis.UnitTests.Core.Services
 
         [Test]
         [TestCase("1")]
-        public async Task CreateWorkspaceAsync_CreateNewWorkspace_ReturnOk(WorkspaceCreateDTO workspaceDTO, string userid)
+        public async Task CreateWorkspaceAsync_UserIsValidAndDTOIsValid_ReturnCompletedTask(string userid)
         {
             var workspaceCreateDTOMock = WorkspaceTestData.GetWorkspaceCreateDTO();
+            var workspaceMock = WorkspaceTestData.GetTestWorkspace();
 
-            await _workspaceService.CreateWorkspaceAsync(workspaceDTO, userid);
+            SetupAddAsync(workspaceMock);
 
+            await _workspaceService.CreateWorkspaceAsync(workspaceCreateDTOMock, userid);
+        }
+
+        protected void SetupAddAsync(Workspace workspaceInstance)
+        {
+            _workspaceRepositoryMock
+                .Setup(x => x.AddAsync(workspaceInstance))
+                .Verifiable();
+        }
+
+        protected void SetupUserWorkspaceAddAsync(UserWorkspace userWorkspaceInstance)
+        {
+            _userWorkspaceRepositoryMock
+                .Setup(x => x.AddAsync(It.IsAny<UserWorkspace>()))
+                .Verifiable();
         }
     }
 }

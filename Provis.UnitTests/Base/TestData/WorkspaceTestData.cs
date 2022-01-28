@@ -1,4 +1,5 @@
 ﻿using Provis.Core.DTO.WorkspaceDTO;
+using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using System;
 using System.Collections.Generic;
@@ -19,14 +20,24 @@ namespace Provis.UnitTests.Base.TestData
             };
         }
 
-        public static Workspace CreateWorkspace(WorkspaceCreateDTO workspaceDTO, string userid)
+        public static Workspace GetTestWorkspace()
         {
             return new Workspace()
             {
                 Id = 1,
-                DateOfCreate = DateTime.Today,
                 Description = "Description1",
-                Name = "Name1"
+                Name = "Name1",
+                DateOfCreate = DateTime.Now
+            };
+        }
+
+        public static UserWorkspace GetTestUserWorkspace()
+        {
+            return new UserWorkspace()
+            {
+                UserId = "1",
+                WorkspaceId = 1,
+                RoleId = 1
             };
         }
     }

@@ -70,8 +70,6 @@ namespace Provis.Core.Services
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
-            var user = await _userManager.FindByIdAsync(userid);
-
             Workspace workspace = new Workspace()
             {
                 DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
@@ -83,13 +81,13 @@ namespace Provis.Core.Services
 
             UserWorkspace userWorkspace = new UserWorkspace()
             {
-                UserId = user.Id,
+                UserId = userid,
                 WorkspaceId = workspace.Id,
                 RoleId = (int)WorkSpaceRoles.OwnerId
             };
 
-            _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
-              MetricTagsConstructor.MembersCountByWorkspaceRole(workspace.Id, (int)WorkSpaceRoles.OwnerId));
+            //_metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
+            //  MetricTagsConstructor.MembersCountByWorkspaceRole(workspace.Id, (int)WorkSpaceRoles.OwnerId));
 
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _userWorkspaceRepository.SaveChangesAsync();
