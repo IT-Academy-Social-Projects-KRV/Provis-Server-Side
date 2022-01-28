@@ -21,6 +21,8 @@ using System.Threading.Tasks;
 using Provis.Core.Entities.UserTaskEntity;
 using App.Metrics;
 using Provis.Core.Metrics;
+using System.Net;
+using Provis.Core.Resources;
 
 namespace Provis.Core.Services
 {
@@ -117,7 +119,8 @@ namespace Provis.Core.Services
 
             if (owner.Email == inviteDTO.UserEmail)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You cannot send invite to your account");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.SendInviteYourself);
             }
 
             var inviteUser = await _userManager.FindByEmailAsync(inviteDTO.UserEmail);
@@ -129,16 +132,16 @@ namespace Provis.Core.Services
             var inviteUserListSpecification = new InviteUsers.InviteList(inviteUser.Id, workspace.Id);
             if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x=>x.IsConfirm == null))
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                    "User already has invite, wait for a answer");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.UserAlreadyHasInvite);
             }
 
             var userWorkspaceInviteSpecification = new UserWorkspaces.WorkspaceMember(inviteUser.Id, workspace.Id);
             if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x => x.IsConfirm.Value == true)
                 && await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspaceInviteSpecification) != null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                    "This user already accepted your invite");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.UserAcceptedInvite);
             }
 
             InviteUser user = new InviteUser
@@ -177,7 +180,8 @@ namespace Provis.Core.Services
 
             if (inviteUserRec.ToUserId != userid)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You cannot deny this invite");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.CannotDenyInvite);
             }
 
             inviteUserRec.IsConfirm ??= false;
@@ -204,12 +208,14 @@ namespace Provis.Core.Services
 
             if (inviteUserRec.ToUserId != userid)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "That's not yours invite!");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.CannotAcceptInvite);
             }
 
             if (inviteUserRec.IsConfirm == true)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You have already confirmed your invitation!");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.InviteAlreadyAccerted);
             }
 
             inviteUserRec.IsConfirm = true;
@@ -274,7 +280,8 @@ namespace Provis.Core.Services
             }
             else
             {
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden, "You haven't permission to change this Role");
+                throw new HttpException(HttpStatusCode.Forbidden,
+                    ErrorMessages.NotPermission);
             }
         }
 
@@ -331,8 +338,8 @@ namespace Provis.Core.Services
 
             if (userWorksp.RoleId == (int)WorkSpaceRoles.OwnerId)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "Owner can't leave workspace");
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.OwnerCannotLeaveWorkspace);
             }
 
             var userTaskSpecification = new UserTasks.UserTaskList(userId, workspaceId);
@@ -361,8 +368,8 @@ namespace Provis.Core.Services
 
             if (invite == null || invite.IsConfirm != null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Invite with Id not found or it already answered");
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.InviteNotFound);
             }
 
             var specification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
@@ -375,8 +382,8 @@ namespace Provis.Core.Services
             }
             else
             {
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                            "You don't have permission to do this");
+                throw new HttpException(HttpStatusCode.Forbidden,
+                    ErrorMessages.NotPermission);
             }
 
             await Task.CompletedTask;

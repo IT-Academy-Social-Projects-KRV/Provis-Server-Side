@@ -29,6 +29,7 @@ using App.Metrics;
 using Provis.Core.Metrics;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net;
+using Provis.Core.Resources;
 
 namespace Provis.Core.Services
 {
@@ -194,8 +195,8 @@ namespace Provis.Core.Services
                         {
                             if (userTasks.Exists(x => x.UserId == item.UserId))
                             {
-                                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                                    "This user has already assigned");
+                                throw new HttpException(HttpStatusCode.Forbidden,
+                                    ErrorMessages.UserAlreadyAssigned);
                             }
 
                             userTasks.Add(new UserTask
@@ -216,8 +217,8 @@ namespace Provis.Core.Services
                 catch (Exception)
                 {
                     transaction.Rollback();
-                    throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                        "Failed");
+                    throw new HttpException(HttpStatusCode.Forbidden,
+                        ErrorMessages.TransactionFailed);
                 }
             }
             await Task.CompletedTask;
@@ -282,8 +283,8 @@ namespace Provis.Core.Services
 
             if (task.TaskCreatorId != userId && taskAssign.AssignedUser.UserId != userId)
             {
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                    "Only creator of the task can assign another users");
+                throw new HttpException(HttpStatusCode.Forbidden,
+                    ErrorMessages.NotPermissionAssignUser);
             }
 
             var userWorkspaceSpecification = new UserWorkspaces
@@ -291,8 +292,8 @@ namespace Provis.Core.Services
 
             if(!await _userWorkspaceRepository.AnyBySpecAsync(userWorkspaceSpecification))
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                    "This user doesn't member of current workspace");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.UserNotMember);
             }
 
             var userTaskSpecifiction = new UserTasks
@@ -300,8 +301,8 @@ namespace Provis.Core.Services
 
             if(await _userTaskRepository.AnyBySpecAsync(userTaskSpecifiction))
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                    "This user has already assigned");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.UserAlreadyAssigned);
             }
 
             _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
@@ -324,11 +325,12 @@ namespace Provis.Core.Services
                 await _userWorkspaceRepository
                 .AllBySpecAsync(worspaceMemberSpecefication, x => x.RoleId == (int)WorkSpaceRoles.OwnerId)))
             {
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden, "You don`t have permissions");
+                throw new HttpException(HttpStatusCode.Forbidden,
+                    ErrorMessages.NotPermission);
             }
 
-            if (workspaceTask.Name != taskChangeInfoDTO.Name 
-                || workspaceTask.Description != taskChangeInfoDTO.Description 
+            if (workspaceTask.Name != taskChangeInfoDTO.Name
+                || workspaceTask.Description != taskChangeInfoDTO.Description
                 || workspaceTask.DateOfEnd != taskChangeInfoDTO.Deadline
                 || workspaceTask.StoryPoints != taskChangeInfoDTO.StoryPoints)
             {
@@ -364,7 +366,7 @@ namespace Provis.Core.Services
                 await _taskRepository.UpdateAsync(workspaceTask);
 
                 await _taskRepository.SaveChangesAsync();
-            }           
+            }
         }
 
         public async Task<List<TaskStatusHistoryDTO>> GetStatusHistories(int taskId)
@@ -382,7 +384,8 @@ namespace Provis.Core.Services
             var specification = new WorkspaceTasks.TaskById(taskId);
             var task = await _taskRepository.GetFirstBySpecAsync(specification);
 
-            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Task with Id not found");
+            _ = task ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.TaskNotFound);
 
             var taskToRerutn = _mapper.Map<TaskInfoDTO>(task);
 
@@ -404,7 +407,8 @@ namespace Provis.Core.Services
                 }
                 else
                 {
-                    throw new HttpException(HttpStatusCode.BadRequest, "Can`t get content type");
+                    throw new HttpException(HttpStatusCode.BadRequest,
+                        ErrorMessages.CannotGetFileContentType);
                 }
             }
             return listToReturn;
@@ -415,7 +419,8 @@ namespace Provis.Core.Services
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
             var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
 
-            _ = attachment ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
+            _ = attachment ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.AttachmentNotFound);
 
             var file = await _fileService.GetFileAsync(attachment.AttachmentPath);
 
@@ -427,7 +432,8 @@ namespace Provis.Core.Services
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
             var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
 
-            _ = attachment ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
+            _ = attachment ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.AttachmentNotFound);
 
             if (attachment.AttachmentPath != null)
             {
@@ -446,7 +452,7 @@ namespace Provis.Core.Services
             var listAttachmentsAlready = result.ToList();
 
             if (listAttachmentsAlready.Count == _attachmentSettings.Value.MaxCount)
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                throw new HttpException(HttpStatusCode.BadRequest,
                     $"You have exceeded limit of {_attachmentSettings.Value.MaxCount} attachments");
 
             var file = taskAttachmentsDTO.Attachment;
@@ -466,7 +472,7 @@ namespace Provis.Core.Services
 
             var res = _mapper.Map<TaskAttachmentInfoDTO>(workspaceTaskAttachment);
             res.ContentType = taskAttachmentsDTO.Attachment.ContentType;
-            
+
             return res;
         }
 
@@ -475,14 +481,16 @@ namespace Provis.Core.Services
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
             var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
 
-            _ = attachment ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Attachment not found");
+            _ = attachment ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.AttachmentNotFound);
 
             var provider = new FileExtensionContentTypeProvider();
 
             if (provider.TryGetContentType(attachment.AttachmentPath, out string contentType) &&
                 !contentType.StartsWith(_imageSettings.Value.Type))
             {
-                throw new HttpException(HttpStatusCode.BadRequest, "No preview for this file");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.NotPreview);
             }
 
             var file = await _fileService.GetFileAsync(attachment.AttachmentPath);
@@ -497,16 +505,16 @@ namespace Provis.Core.Services
             var task = await _taskRepository
                     .GetFirstBySpecAsync(taskSpecification);
 
-            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                                   "Task not found");
+            _ = task ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.TaskNotFound);
 
             var userTaskSpecification = new UserTasks
                     .AssignedMember(changeRoleDTO.TaskId, changeRoleDTO.UserId);
             var userTaskMember = await _userTaskRepository
                     .GetFirstBySpecAsync(userTaskSpecification);
 
-            _ = userTaskMember ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                                    "Assigned user not found");
+            _ = userTaskMember ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.UserNotFound);
 
             var userSpecification = new UserWorkspaces
                     .WorkspaceMember(userId, changeRoleDTO.WorkspaceId);
@@ -528,8 +536,8 @@ namespace Provis.Core.Services
             }
             else
             {
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                            "You don't have permission to do this");
+                throw new HttpException(HttpStatusCode.Forbidden,
+                    ErrorMessages.NotPermission);
             }
         }
 
@@ -540,16 +548,16 @@ namespace Provis.Core.Services
             var task = await _taskRepository
                     .GetFirstBySpecAsync(taskSpecification);
 
-            _ = task ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                                   "Task not found");
+            _ = task ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.TaskNotFound);
 
             var userTaskSpecification = new UserTasks
                     .AssignedMember(taskId, disUserId);
             var userTaskMember = await _userTaskRepository
                     .GetFirstBySpecAsync(userTaskSpecification);
 
-            _ = userTaskMember ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                                    "Assigned user not found");
+            _ = userTaskMember ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.UserNotFound);
 
             var userSpecification = new UserWorkspaces
                     .WorkspaceMember(userId, workspaceId);
@@ -567,8 +575,8 @@ namespace Provis.Core.Services
             }
             else
             {
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                            "You don't have permission to do this");
+                throw new HttpException(HttpStatusCode.Forbidden,
+                    ErrorMessages.NotPermission);
             }
         }
 
@@ -576,8 +584,8 @@ namespace Provis.Core.Services
         {
             var workspaceTask = await _taskRepository.GetByKeyAsync(taskId);
 
-            _ = workspaceTask ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Task with Id not found");
+            _ = workspaceTask ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.TaskNotFound);
 
             var worspaceMemberSpecefication = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
 
@@ -585,7 +593,8 @@ namespace Provis.Core.Services
                 await _userWorkspaceRepository
                 .AllBySpecAsync(worspaceMemberSpecefication, x => x.RoleId == (int) WorkSpaceRoles.OwnerId)))
             {
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden, "You don`t have permissions");
+                throw new HttpException(HttpStatusCode.Forbidden,
+                    ErrorMessages.NotPermission);
             }
 
             _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskCountByStatus,

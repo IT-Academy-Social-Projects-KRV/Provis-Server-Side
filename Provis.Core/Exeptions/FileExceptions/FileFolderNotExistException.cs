@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Provis.Core.Resources;
+using System;
 using System.Runtime.Serialization;
 
 namespace Provis.Core.Exeptions.FileExceptions
@@ -7,13 +8,13 @@ namespace Provis.Core.Exeptions.FileExceptions
     public class FileFolderNotExistException : FileException
     {
         public FileFolderNotExistException()
-            : base("Cannot save the file") { }
+            : base(ErrorMessages.CannotSaveFile) { }
 
         public FileFolderNotExistException(Exception innerException)
-            : base("Cannot save the file", innerException) { }
+            : base(ErrorMessages.CannotSaveFile, innerException) { }
 
         public FileFolderNotExistException(string path)
-            : base("Cannot save the file", path) { }
+            : base(ErrorMessages.CannotSaveFile, path) { }
 
         protected FileFolderNotExistException(SerializationInfo info, StreamingContext context)
             : base(info, context) { }

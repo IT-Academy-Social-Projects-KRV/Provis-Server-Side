@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Provis.Core.Resources;
+using System;
 using System.Runtime.Serialization;
 
 namespace Provis.Core.Exeptions.FileExceptions
@@ -7,13 +8,13 @@ namespace Provis.Core.Exeptions.FileExceptions
     public class FileNotFoundException : FileException
     {
         public FileNotFoundException()
-            : base("File not found") { }
+            : base(ErrorMessages.FileNotFound) { }
 
         public FileNotFoundException(Exception innerException)
-            : base("File not found", innerException) { }
+            : base(ErrorMessages.FileNotFound, innerException) { }
 
         public FileNotFoundException(string path)
-            : base("File not found", path) { }
+            : base(ErrorMessages.FileNotFound, path) { }
 
         protected FileNotFoundException(SerializationInfo info, StreamingContext context)
             : base(info, context) { }

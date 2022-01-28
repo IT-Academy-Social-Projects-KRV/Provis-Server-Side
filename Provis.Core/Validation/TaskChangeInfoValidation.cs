@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Provis.Core.DTO.TaskDTO;
+using Provis.Core.Resources;
 using System;
 
 namespace Provis.Core.Validation
@@ -27,7 +28,7 @@ namespace Provis.Core.Validation
 
             RuleFor(task => task.StoryPoints)
                 .InclusiveBetween(1, 99)
-                .WithMessage("Story Points most be greater than 0 and less 100");
+                .WithMessage(ErrorMessages.InvalidStoryPoints);
         }
     }
 }

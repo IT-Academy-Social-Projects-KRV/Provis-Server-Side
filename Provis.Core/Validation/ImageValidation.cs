@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Helpers;
+using Provis.Core.Resources;
 using System;
 using System.Linq;
 
@@ -25,7 +26,7 @@ namespace Provis.Core.Validation
 
             RuleFor(x => x.Image.ContentType)
                .Must(IsImage)
-                .WithMessage("File must be image");
+                .WithMessage(ErrorMessages.InvalidImage);
         }
 
         private bool IsImage(string contentType)
