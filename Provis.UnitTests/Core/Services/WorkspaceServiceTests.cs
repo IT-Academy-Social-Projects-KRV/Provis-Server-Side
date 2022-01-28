@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using Provis.Core.DTO.WorkspaceDTO;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RoleEntity;
 using Provis.Core.Entities.UserEntity;
@@ -15,6 +16,7 @@ using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Services;
+using Provis.UnitTests.Base.TestData;
 
 namespace Provis.UnitTests.Core.Services
 {
@@ -86,6 +88,16 @@ namespace Provis.UnitTests.Core.Services
             _templateServiceMock.Verify();
             _optionsMock.Verify();
             _metricsMock.Verify();
+        }
+
+        [Test]
+        [TestCase("1")]
+        public async Task CreateWorkspaceAsync_CreateNewWorkspace_ReturnOk(WorkspaceCreateDTO workspaceDTO, string userid)
+        {
+            var workspaceCreateDTOMock = WorkspaceTestData.GetWorkspaceCreateDTO();
+
+            await _workspaceService.CreateWorkspaceAsync(workspaceDTO, userid);
+
         }
     }
 }
