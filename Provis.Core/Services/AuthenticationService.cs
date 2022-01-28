@@ -201,7 +201,7 @@ namespace Provis.Core.Services
             await _refreshTokenRepository.SaveChangesAsync();
         }
 
-        public async Task<string> SentResetPasswordTokenAsync(string userEmail)
+        public async Task SentResetPasswordTokenAsync(string userEmail)
         {
             var user = await _userManager.FindByEmailAsync(userEmail);
             user.UserNullChecking();
@@ -216,8 +216,6 @@ namespace Provis.Core.Services
                 Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/ResetPassword",
                     new UserToken() { Token = encodedCode, UserName = user.UserName, Uri = _clientUrl.ApplicationUrl })
             });
-
-            return encodedCode;
         }
 
         public async Task ResetPasswordAsync(UserChangePasswordDTO userChangePasswordDTO)
