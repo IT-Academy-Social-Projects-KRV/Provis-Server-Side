@@ -10,5 +10,7 @@ namespace Provis.Core.DTO.TaskDTO
         public int? StoryPoints { get; set; }
         public int? WorkerRoleId { get; set; }
         public int CommentCount { get; set; }
+        public int MemberCount {  get; set; }
+        public string CreatorUsername { get; set; }
     }
 }
