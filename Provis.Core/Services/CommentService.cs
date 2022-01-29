@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Provis.Core.ApiModels;
 using Provis.Core.DTO.CommentsDTO;
 using Provis.Core.Entities.CommentEntity;
+using Provis.Core.Entities.CommentAttachmentEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
@@ -13,6 +15,9 @@ using Provis.Core.Roles;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
+using Microsoft.AspNetCore.StaticFiles;
+using System.Net;
 
 namespace Provis.Core.Services
 {
@@ -24,7 +29,9 @@ namespace Provis.Core.Services
         protected readonly IRepository<Workspace> _workspaceRepository;
         protected readonly IRepository<WorkspaceTask> _taskRepository;
         protected readonly IRepository<Comment> _commentRepository;
+        protected readonly IRepository<CommentAttachment> _commentAttachmentRepository;
         protected readonly IMapper _mapper;
+        private readonly IFileService _fileService;
 
         public CommentService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
@@ -32,6 +39,8 @@ namespace Provis.Core.Services
             IRepository<UserWorkspace> userWorkspace,
             IRepository<Workspace> workspace,
             UserManager<User> userManager,
+            IRepository<CommentAttachment> commentAttachment,
+            IFileService fileService,
             IMapper mapper)
         {
             _userManager = userManager;
@@ -40,7 +49,9 @@ namespace Provis.Core.Services
             _userRepository = user;
             _taskRepository = task;
             _commentRepository = comment;
+            _commentAttachmentRepository = commentAttachment;
             _mapper = mapper;
+            _fileService = fileService;
         }
 
         public async Task<CommentListDTO> AddCommentAsync(CreateCommentDTO commentDTO, string userId)
@@ -101,6 +112,65 @@ namespace Provis.Core.Services
 
             await _commentRepository.DeleteAsync(comment);
             await _commentRepository.SaveChangesAsync();
+        }
+
+        public async Task<List<CommentAttachmentInfoDTO>> GetCommentAttachmentsAsync(int commentId)
+        {
+            var specification = new CommentAttachments.CommentAttachmentsList(commentId);
+            var listAttachments = await _commentAttachmentRepository.GetListBySpecAsync(specification);
+            
+            var listToReturn = listAttachments.Select(x => _mapper.Map<CommentAttachmentInfoDTO>(x)).ToList();
+            var provider = new FileExtensionContentTypeProvider();
+            foreach (var item in listToReturn)
+            {
+                if (provider.TryGetContentType(item.Name, out string contentType))
+                {
+                    item.ContentType = contentType;
+                }
+                else
+                {
+                    throw new HttpException(HttpStatusCode.BadRequest, "Can`t get content type");
+                }
+            }
+            return listToReturn;
+        }
+
+        public async Task<DownloadFile> GetCommentAttachmentAsync(int attachmentId)
+        {
+            var specification = new CommentAttachments.CommentAttachmentInfo(attachmentId);
+            var attachment = await _commentAttachmentRepository.GetFirstBySpecAsync(specification);
+
+            _ = attachment ?? throw new HttpException(HttpStatusCode.NotFound, "Attachment not found");
+
+            var file = await _fileService.GetFileAsync(attachment.AttachmentPath);
+
+            return file;
+        }
+
+        public async Task DeleteCommentAttachmentAsync(int attachmentId)
+        {
+            var specification = new CommentAttachments.CommentAttachmentInfo(attachmentId);
+            var attachment = await _commentAttachmentRepository.GetFirstBySpecAsync(specification);
+
+            _ = attachment ?? throw new HttpException(HttpStatusCode.NotFound, "Attachment not found");
+
+            if (attachment.AttachmentPath != null)
+            {
+                await _fileService.DeleteFileAsync(attachment.AttachmentPath);
+            }
+
+            await _commentAttachmentRepository.DeleteAsync(attachment);
+            await _commentAttachmentRepository.SaveChangesAsync();
+        }
+
+        public Task<CommentAttachmentInfoDTO> SendCommentAttachmentsAsync(CommentAttachmentsDTO commentAttachmentsDTO)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<DownloadFile> GetCommentAttachmentPreviewAsync(int attachmentId)
+        {
+            throw new NotImplementedException();
         }
     }
 }
