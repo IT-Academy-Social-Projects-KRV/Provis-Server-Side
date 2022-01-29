@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Provis.Core.Entities.CommentEntity;
+using Provis.Core.Entities.CommentAttachmentEntity;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RefreshTokenEntity;
 using Provis.Core.Entities.RoleEntity;
@@ -57,5 +58,6 @@ namespace Provis.Infrastructure.Data
         public DbSet<Workspace> Workspaces { get; set; }
         public DbSet<WorkspaceTask> Tasks { get; set; }
         public DbSet<WorkspaceTaskAttachment> TaskAttachments { get; set; }
+        public DbSet<CommentAttachment> CommentAttachments { get; set; }
     }
 }
