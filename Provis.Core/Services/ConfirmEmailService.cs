@@ -83,7 +83,7 @@ namespace Provis.Core.Services
             }
         }
 
-        private string DecodeUnicodeBase64(string input)
+        public string DecodeUnicodeBase64(string input)
         {
             var bytes = new Span<byte>(new byte[input.Length]);
 
