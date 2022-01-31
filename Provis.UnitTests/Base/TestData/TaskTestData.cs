@@ -18,24 +18,19 @@ namespace Provis.UnitTests.Base.TestData
                 new Status()
                 {
                    Id = 1,
-                   Name = "In review",
-                   StatusHistories = new List<StatusHistory>(),
-                   Tasks = new List<WorkspaceTask>()
-                },
-                new Status()
-                {
-                   Id = 2,
-                   Name = "Completed",
-                   StatusHistories = new List<StatusHistory>(),
-                   Tasks = new List<WorkspaceTask>()
-                },
-                new Status()
-                {
-                   Id = 3,
-                   Name = "Deleted",
-                   StatusHistories = new List<StatusHistory>(),
-                   Tasks = new List<WorkspaceTask>()
+                   Name = "In review"
                 }
+                //},
+                //new Status()
+                //{
+                //   Id = 2,
+                //   Name = "Completed"
+                //},
+                //new Status()
+                //{
+                //   Id = 3,
+                //   Name = "Deleted"
+                //}
             };
         }
     }

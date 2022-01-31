@@ -7,8 +7,6 @@ using Moq;
 using NUnit.Framework;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.Entities.CommentEntity;
-using Provis.Core.Entities.InviteUserEntity;
-using Provis.Core.Entities.RoleEntity;
 using Provis.Core.Entities.StatusEntity;
 using Provis.Core.Entities.StatusHistoryEntity;
 using Provis.Core.Entities.UserEntity;
@@ -112,12 +110,14 @@ namespace Provis.UnitTests.Core.Services
                 }).ToList();
 
             SetupGetAllAsync(statusListMock);
-            _mapperMock.SetupMap(statusListMock, expectedStatusList);
+
+            _mapperMock.SetupMap(statusListMock[0], expectedStatusList[0]);
 
             var result = await _taskService.GetTaskStatuses();
 
-            Assert.AreEqual(expectedStatusList, result);
-            //result.Should().BeSameAs(expectedStatusList);
+            //Assert.AreEqual(expectedStatusList, result);
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(expectedStatusList);
         }
 
         [TearDown]
