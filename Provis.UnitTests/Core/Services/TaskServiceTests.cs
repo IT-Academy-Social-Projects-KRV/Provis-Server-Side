@@ -115,7 +115,6 @@ namespace Provis.UnitTests.Core.Services
 
             var result = await _taskService.GetTaskStatuses();
 
-            //Assert.AreEqual(expectedStatusList, result);
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(expectedStatusList);
         }

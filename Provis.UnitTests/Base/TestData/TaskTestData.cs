@@ -20,17 +20,6 @@ namespace Provis.UnitTests.Base.TestData
                    Id = 1,
                    Name = "In review"
                 }
-                //},
-                //new Status()
-                //{
-                //   Id = 2,
-                //   Name = "Completed"
-                //},
-                //new Status()
-                //{
-                //   Id = 3,
-                //   Name = "Deleted"
-                //}
             };
         }
     }
