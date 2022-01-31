@@ -21,7 +21,7 @@ namespace Provis.Core.Entities.CommentAttachmentEntity
             builder
                 .HasOne(x => x.Comment)
                 .WithMany(x => x.Attachments)
-                .HasForeignKey(x => x.Comment);
+                .HasForeignKey(x => x.CommentId);
         }
     }
 }

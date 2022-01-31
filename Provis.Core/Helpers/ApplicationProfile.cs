@@ -15,6 +15,7 @@ using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
+using Provis.Core.Entities.CommentAttachmentEntity;
 using System.IO;
 using Provis.Core.Entities.CommentEntity;
 using Provis.Core.DTO.CommentsDTO;
@@ -158,6 +159,9 @@ namespace Provis.Core.Helpers
 
             CreateMap<WorkspaceTaskAttachment, TaskAttachmentInfoDTO>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs=> Path.GetFileName(srs.AttachmentPath)));
+
+            CreateMap<CommentAttachment, CommentAttachmentInfoDTO>()
+                .ForMember(x => x.Name, act => act.MapFrom(srs => Path.GetFileName(srs.AttachmentPath)));
 
             CreateMap<UserTask, TaskAssignedUsersDTO>()
                 .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))

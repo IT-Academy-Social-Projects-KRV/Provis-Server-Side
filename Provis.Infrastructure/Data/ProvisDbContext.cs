@@ -30,6 +30,7 @@ namespace Provis.Infrastructure.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfiguration(new CommentConfiguration());
+            modelBuilder.ApplyConfiguration(new CommentAttachmentConfiguration());
             modelBuilder.ApplyConfiguration(new InviteUserConfiguration());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
             modelBuilder.ApplyConfiguration(new RoleConfiguration());

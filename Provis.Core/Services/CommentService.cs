@@ -19,6 +19,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net;
+using Provis.Core.Helpers;
+using Microsoft.Extensions.Options;
 
 namespace Provis.Core.Services
 {
@@ -32,6 +34,8 @@ namespace Provis.Core.Services
         protected readonly IRepository<Comment> _commentRepository;
         protected readonly IRepository<CommentAttachment> _commentAttachmentRepository;
         protected readonly IMapper _mapper;
+        private readonly IOptions<AttachmentSettings> _attachmentSettings;
+        private readonly IOptions<ImageSettings> _imageSettings;
         private readonly IFileService _fileService;
 
         public CommentService(IRepository<User> user,
@@ -42,6 +46,8 @@ namespace Provis.Core.Services
             UserManager<User> userManager,
             IRepository<CommentAttachment> commentAttachment,
             IFileService fileService,
+            IOptions<AttachmentSettings> attachmentSettings,
+            IOptions<ImageSettings> imageSettings,
             IMapper mapper)
         {
             _userManager = userManager;
@@ -53,6 +59,8 @@ namespace Provis.Core.Services
             _commentAttachmentRepository = commentAttachment;
             _mapper = mapper;
             _fileService = fileService;
+            _attachmentSettings = attachmentSettings;
+            _imageSettings = imageSettings;
         }
 
         public async Task<CommentListDTO> AddCommentAsync(CreateCommentDTO commentDTO, string userId)
@@ -130,7 +138,7 @@ namespace Provis.Core.Services
                 }
                 else
                 {
-                    throw new HttpException(HttpStatusCode.BadRequest, "Can`t get content type");
+                    throw new HttpException(HttpStatusCode.BadRequest, ErrorMessages.CannotGetFileContentType);
                 }
             }
             return listToReturn;
@@ -141,7 +149,7 @@ namespace Provis.Core.Services
             var specification = new CommentAttachments.CommentAttachmentInfo(attachmentId);
             var attachment = await _commentAttachmentRepository.GetFirstBySpecAsync(specification);
 
-            _ = attachment ?? throw new HttpException(HttpStatusCode.NotFound, "Attachment not found");
+            _ = attachment ?? throw new HttpException(HttpStatusCode.NotFound, ErrorMessages.AttachmentNotFound);
 
             var file = await _fileService.GetFileAsync(attachment.AttachmentPath);
 
@@ -153,7 +161,7 @@ namespace Provis.Core.Services
             var specification = new CommentAttachments.CommentAttachmentInfo(attachmentId);
             var attachment = await _commentAttachmentRepository.GetFirstBySpecAsync(specification);
 
-            _ = attachment ?? throw new HttpException(HttpStatusCode.NotFound, "Attachment not found");
+            _ = attachment ?? throw new HttpException(HttpStatusCode.NotFound, ErrorMessages.AttachmentNotFound);
 
             if (attachment.AttachmentPath != null)
             {
@@ -164,14 +172,58 @@ namespace Provis.Core.Services
             await _commentAttachmentRepository.SaveChangesAsync();
         }
 
-        public Task<CommentAttachmentInfoDTO> SendCommentAttachmentsAsync(CommentAttachmentsDTO commentAttachmentsDTO)
+        public async Task<CommentAttachmentInfoDTO> SendCommentAttachmentsAsync(CommentAttachmentsDTO commentAttachmentsDTO)
         {
-            throw new NotImplementedException();
+            var specification = new CommentAttachments.CommentAttachmentsList(commentAttachmentsDTO.CommentId);
+            var result = await _commentAttachmentRepository.GetListBySpecAsync(specification);
+
+            var listAttachmentsAlready = result.ToList();
+
+            if (listAttachmentsAlready.Count == _attachmentSettings.Value.MaxCount)
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    $"You have exceeded limit of {_attachmentSettings.Value.MaxCount} attachments");
+
+            var file = commentAttachmentsDTO.Attachment;
+
+            string newPath = await _fileService.AddFileAsync(file.OpenReadStream(),
+                _attachmentSettings.Value.Path, file.FileName);
+
+            CommentAttachment commentAttachment = new()
+            {
+                AttachmentPath = newPath,
+                CommentId = commentAttachmentsDTO.CommentId
+            };
+
+            await _commentAttachmentRepository.AddAsync(commentAttachment);
+
+            await _commentAttachmentRepository.SaveChangesAsync();
+
+            var res = _mapper.Map<CommentAttachmentInfoDTO>(commentAttachment);
+            res.ContentType = commentAttachmentsDTO.Attachment.ContentType;
+
+            return res;
         }
 
-        public Task<DownloadFile> GetCommentAttachmentPreviewAsync(int attachmentId)
+        public async Task<DownloadFile> GetCommentAttachmentPreviewAsync(int attachmentId)
         {
-            throw new NotImplementedException();
+            var specification = new CommentAttachments.CommentAttachmentsList(attachmentId);
+            var attachment = await _commentAttachmentRepository.GetFirstBySpecAsync(specification);
+
+            _ = attachment ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.AttachmentNotFound);
+
+            var provider = new FileExtensionContentTypeProvider();
+
+            if (provider.TryGetContentType(attachment.AttachmentPath, out string contentType) &&
+                !contentType.StartsWith(_imageSettings.Value.Type))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.NotPreview);
+            }
+
+            var file = await _fileService.GetFileAsync(attachment.AttachmentPath);
+
+            return file;
         }
     }
 }

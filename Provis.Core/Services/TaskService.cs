@@ -49,11 +49,10 @@ namespace Provis.Core.Services
         protected readonly IRepository<Comment> _commentRepository;
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
-        private readonly IOptions<TaskAttachmentSettings> _attachmentSettings;
+        private readonly IOptions<AttachmentSettings> _attachmentSettings;
         private readonly IOptions<ClientUrl> _clientUrl;
         private readonly IEmailSenderService _emailSenderService;
         private readonly IMetrics _metrics;
-        private readonly IOptions<AttachmentSettings> _attachmentSettings;
 
         public TaskService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
@@ -398,7 +397,7 @@ namespace Provis.Core.Services
             var specification = new WorkspaceTaskAttachments.TaskAttachments(taskId);
             var listAttachments = await _taskAttachmentRepository.GetListBySpecAsync(specification);
 
-            var listToReturn = listAttachments.Select(x => _mapper.Map<TaskAttachmentInfoDTO>(x)).ToList();
+            var listToReturn = _mapper.Map<List<TaskAttachmentInfoDTO>>(listAttachments);
             var provider = new FileExtensionContentTypeProvider();
             foreach (var item in listToReturn)
             {
