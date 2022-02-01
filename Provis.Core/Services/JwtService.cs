@@ -27,7 +27,8 @@ namespace Provis.Core.Services
         protected readonly IConfigurationSection _googleSettings;
         private readonly IConfiguration _configuration;
 
-        public JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userManager, IConfiguration configuration)
+        public JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userManager, 
+            IConfiguration configuration)
         {
             this.jwtOptions = jwtOptions;
             this.userManager = userManager;

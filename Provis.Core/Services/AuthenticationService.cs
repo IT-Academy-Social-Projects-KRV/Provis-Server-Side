@@ -1,6 +1,4 @@
-﻿using Google.Apis.Auth;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.RefreshTokenEntity;
@@ -13,7 +11,6 @@ using Provis.Core.Interfaces.Services;
 using Provis.Core.Resources;
 using Provis.Core.Roles;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,7 +27,6 @@ namespace Provis.Core.Services
         protected readonly IEmailSenderService _emailSenderService;
         protected readonly ITemplateService _templateService;
         protected readonly ClientUrl _clientUrl;
-        protected readonly IConfiguration _configuration;
 
         public AuthenticationService(
             UserManager<User> userManager,
@@ -89,7 +85,7 @@ namespace Provis.Core.Services
         {
             var refeshToken = _jwtService.CreateRefreshToken();
 
-            RefreshToken rt = new RefreshToken()
+            RefreshToken rt = new()
             {
                 Token = refeshToken,
                 UserId = user.Id
@@ -146,7 +142,7 @@ namespace Provis.Core.Services
 
             if (!result.Succeeded)
             {
-                StringBuilder errorMessage = new StringBuilder();
+                StringBuilder errorMessage = new();
                 foreach (var error in result.Errors)
                 {
                     errorMessage.Append(error.ToString() + " ");

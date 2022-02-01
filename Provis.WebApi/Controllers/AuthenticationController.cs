@@ -4,8 +4,6 @@ using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using System.Threading.Tasks;
 using Provis.Core.Entities.UserEntity;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 
 namespace Provis.WebApi.Controllers
 {
