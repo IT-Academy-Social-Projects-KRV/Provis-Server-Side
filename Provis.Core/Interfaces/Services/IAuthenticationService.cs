@@ -1,4 +1,5 @@
-﻿using Provis.Core.DTO.UserDTO;
+﻿using Microsoft.AspNetCore.Mvc;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.UserEntity;
 using System.Threading.Tasks;
 
@@ -11,5 +12,6 @@ namespace Provis.Core.Interfaces.Services
         Task<UserAutorizationDTO> RefreshTokenAsync(UserAutorizationDTO userTokensDTO);
         Task LogoutAsync(UserAutorizationDTO userTokensDTO);
         Task<UserAutorizationDTO> LoginTwoStepAsync(UserTwoFactorDTO twoFactorDTO);
+        Task<UserAuthResponseDTO> ExternalLoginAsync(UserExternalAuthDTO authDTO);
     }
 }

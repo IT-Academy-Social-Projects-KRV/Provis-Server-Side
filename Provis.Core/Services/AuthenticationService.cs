@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Google.Apis.Auth;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.RefreshTokenEntity;
@@ -9,7 +11,10 @@ using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Resources;
+using Provis.Core.Roles;
 using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,6 +30,7 @@ namespace Provis.Core.Services
         protected readonly IEmailSenderService _emailSenderService;
         protected readonly ITemplateService _templateService;
         protected readonly ClientUrl _clientUrl;
+        protected readonly IConfiguration _configuration;
 
         public AuthenticationService(
             UserManager<User> userManager,
@@ -196,6 +202,45 @@ namespace Provis.Core.Services
 
             await _refreshTokenRepository.DeleteAsync(refeshTokenFromDb);
             await _refreshTokenRepository.SaveChangesAsync();
+        }
+
+        public async Task<UserAuthResponseDTO> ExternalLoginAsync(UserExternalAuthDTO authDTO)
+        {
+            var payload = await _jwtService.VerifyGoogleToken(authDTO);
+            if (payload == null)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.InvalidExternalAuthentication);
+            }
+
+            var info = new UserLoginInfo(authDTO.Provider, payload.Subject, authDTO.Provider);
+
+            var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+
+            if (user == null)
+            {
+                user = await _userManager.FindByEmailAsync(payload.Email);
+                if (user == null)
+                {
+                    user = new User { Email = payload.Email, UserName = payload.GivenName, 
+                        Name = payload.GivenName, Surname = payload.FamilyName,
+                        CreateDate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero) };
+                    await _userManager.CreateAsync(user);
+                    //prepare and send an email for the email confirmation
+                    await _userManager.AddToRoleAsync(user, SystemRoles.User);
+                    await _userManager.AddLoginAsync(user, info);
+                }
+                else
+                {
+                    await _userManager.AddLoginAsync(user, info);
+                }
+            }
+
+            var claims = _jwtService.SetClaims(user);
+            var token =  _jwtService.CreateToken(claims);
+            var refreshToken = _jwtService.CreateRefreshToken();
+
+            return (new UserAuthResponseDTO { Token = token, RefreshToken = refreshToken });
         }
     }
 }

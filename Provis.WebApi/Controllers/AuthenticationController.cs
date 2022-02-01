@@ -4,6 +4,8 @@ using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using System.Threading.Tasks;
 using Provis.Core.Entities.UserEntity;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace Provis.WebApi.Controllers
 {
@@ -69,6 +71,14 @@ namespace Provis.WebApi.Controllers
             await authenticationService.LogoutAsync(userTokensDTO);
 
             return NoContent();
+        }
+
+        [HttpPost]
+        [Route("signin-google")]
+        public async Task<IActionResult> ExternalLoginAsync([FromBody] UserExternalAuthDTO authDTO)
+        {
+            var result = await authenticationService.ExternalLoginAsync(authDTO);
+            return Ok(result);
         }
     }
 }

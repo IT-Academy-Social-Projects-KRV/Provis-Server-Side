@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,16 @@ namespace Provis.WebApi
             services.AddControllers();
             services.AddDbContext(Configuration.GetConnectionString("DefaultConnection"));
             services.AddIdentityDbContext();
+
+            services.AddAuthentication()
+                .AddGoogle("google", opt =>
+                {
+                    var googleAuth = Configuration.GetSection("Authentication:Google");
+
+                    opt.ClientId = googleAuth["ClientId"];
+                    opt.ClientSecret = googleAuth["ClientSecret"];
+                    opt.SignInScheme = IdentityConstants.ExternalScheme;
+                });
 
             services.AddRepositories();
             services.AddCustomServices();

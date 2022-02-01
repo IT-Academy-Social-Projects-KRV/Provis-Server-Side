@@ -1,6 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Google.Apis.Auth;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers;
@@ -13,6 +16,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Provis.Core.Services
 {
@@ -20,11 +24,15 @@ namespace Provis.Core.Services
     {
         private readonly IOptions<JwtOptions> jwtOptions;
         private readonly UserManager<User> userManager;
+        protected readonly IConfigurationSection _googleSettings;
+        private readonly IConfiguration _configuration;
 
-        public JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userManager)
+        public JwtService(IOptions<JwtOptions> jwtOptions, UserManager<User> userManager, IConfiguration configuration)
         {
             this.jwtOptions = jwtOptions;
             this.userManager = userManager;
+            _configuration = configuration;
+            _googleSettings = _configuration.GetSection("GoogleAuthSettings");
         }
 
         public string CreateRefreshToken()
@@ -85,6 +93,24 @@ namespace Provis.Core.Services
             claims.AddRange(roles.Select(role => new Claim(ClaimsIdentity.DefaultRoleClaimType, role)));
 
             return claims;
+        }
+
+        public async Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(UserExternalAuthDTO authDTO)
+        {
+            try
+            {
+                var settings = new GoogleJsonWebSignature.ValidationSettings()
+                {
+                    Audience = new List<string>() { _googleSettings.GetSection("clientId").Value }
+                };
+
+                var payload = await GoogleJsonWebSignature.ValidateAsync(authDTO.IdToken, settings);
+                return payload;
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
     }
 }
