@@ -101,7 +101,7 @@ namespace Provis.Core.Services
 
             if (!task.RowVersion.SequenceEqual(changeTaskStatus.RowVersion))
             {
-                throw new HttpException(HttpStatusCode.BadRequest, "Old data");
+                throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
             }
 
             if (task.StatusId != changeTaskStatus.StatusId)
@@ -330,7 +330,7 @@ namespace Provis.Core.Services
 
             if (!workspaceTask.RowVersion.SequenceEqual(taskChangeInfoDTO.RowVersion))
             {
-                throw new HttpException(HttpStatusCode.BadRequest, "Old data");
+                throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
             }
 
             if (!(workspaceTask.TaskCreatorId == userId ||
@@ -522,7 +522,7 @@ namespace Provis.Core.Services
 
             if (!userTaskMember.RowVersion.SequenceEqual(changeRoleDTO.RowVersion))
             {
-                throw new HttpException(HttpStatusCode.BadRequest, "Old data");
+                throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
             }
 
             var taskSpecification = new WorkspaceTasks

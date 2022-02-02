@@ -256,7 +256,7 @@ namespace Provis.Core.Services
 
             if (!target.RowVersion.SequenceEqual(userChangeRole.RowVersion))
             {
-                throw new HttpException(HttpStatusCode.BadRequest, "Old data");
+                throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
             }
 
             var modifierSpecification = new UserWorkspaces.WorkspaceMember(userId, userChangeRole.WorkspaceId);
@@ -339,7 +339,6 @@ namespace Provis.Core.Services
         {
             var userWorkspSpecification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
             var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspSpecification);
-
 
             if (userWorksp.RoleId == (int)WorkSpaceRoles.OwnerId)
             {
