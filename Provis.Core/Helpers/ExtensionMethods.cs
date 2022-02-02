@@ -1,4 +1,5 @@
 ﻿using Provis.Core.DTO.TaskDTO;
+using Provis.Core.Entities.CommentEntity;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
@@ -64,6 +65,15 @@ namespace Provis.Core.Helpers.Mails
                || workspaceTask.Description != taskChangeInfoDTO.Description
                || workspaceTask.DateOfEnd != taskChangeInfoDTO.Deadline
                || workspaceTask.StoryPoints != taskChangeInfoDTO.StoryPoints;
+        }
+
+        public static void CommentNullChecking(this Comment comment)
+        {
+            if(comment == null)
+            {
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.CommentNotFound);
+            }
         }
     }
 }

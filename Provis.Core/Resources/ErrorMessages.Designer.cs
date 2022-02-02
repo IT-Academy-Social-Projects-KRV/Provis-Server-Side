@@ -115,6 +115,15 @@ namespace Provis.Core.Resources {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Comment not found.
+        /// </summary>
+        internal static string CommentNotFound {
+            get {
+                return ResourceManager.GetString("CommentNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Data has been modified by another user.
         /// </summary>
         internal static string ConcurrencyCheck {

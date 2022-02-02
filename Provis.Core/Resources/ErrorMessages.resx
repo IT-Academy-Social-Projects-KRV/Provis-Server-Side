@@ -135,6 +135,9 @@
   <data name="CannotSaveFile" xml:space="preserve">
     <value>Cannot save the file</value>
   </data>
+  <data name="CommentNotFound" xml:space="preserve">
+    <value>Comment not found</value>
+  </data>
   <data name="ConcurrencyCheck" xml:space="preserve">
     <value>Data has been modified by another user</value>
   </data>
