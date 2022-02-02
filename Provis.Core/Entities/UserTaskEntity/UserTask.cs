@@ -17,5 +17,7 @@ namespace Provis.Core.Entities.UserTaskEntity
 
         public int UserRoleTagId { get; set; }
         public UserRoleTag UserRoleTag { get; set; }
+
+        public byte[] RowVersion { get; set; }
     }
 }

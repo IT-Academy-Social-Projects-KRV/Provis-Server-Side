@@ -15,5 +15,7 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
 
         public int RoleId { get; set; }
         public Role Role { get; set; }
+
+        public byte[] RowVersion { get; set; }
     }
 }
