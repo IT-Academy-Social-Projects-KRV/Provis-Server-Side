@@ -102,9 +102,9 @@ namespace Provis.WebApi.Controllers
         [Route("task")]
         public async Task<IActionResult> ChangeTaskAsync([FromBody] TaskChangeInfoDTO taskChangeInfoDTO)
         {
-            await _taskService.ChangeTaskInfoAsync(taskChangeInfoDTO, UserId);
+            var worskaceTask = await _taskService.ChangeTaskInfoAsync(taskChangeInfoDTO, UserId);
 
-            return Ok();
+            return Ok(worskaceTask);
         }
 
         [Authorize]

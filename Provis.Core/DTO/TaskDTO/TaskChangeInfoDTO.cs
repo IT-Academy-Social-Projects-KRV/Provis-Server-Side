@@ -10,5 +10,6 @@ namespace Provis.Core.DTO.TaskDTO
         public string Description { get; set; }
         public DateTimeOffset Deadline { get; set; }
         public int? StoryPoints { get; set; }
+        public byte[] RowVersion { get; set; }
     }
 }

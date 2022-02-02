@@ -136,7 +136,8 @@ namespace Provis.Core.Helpers
               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
               .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
               .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.Deadline))
-              .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints));
+              .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints))
+              .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion)); ;
 
             CreateMap<StatusHistory, TaskStatusHistoryDTO>()
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
@@ -160,7 +161,8 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
                 .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
                 .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints))
-                .ForMember(x => x.AssignedUsers, act => act.MapFrom(srs => srs.UserTasks));
+                .ForMember(x => x.AssignedUsers, act => act.MapFrom(srs => srs.UserTasks))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
 
             CreateMap<WorkspaceTaskAttachment, TaskAttachmentInfoDTO>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs=> Path.GetFileName(srs.AttachmentPath)));

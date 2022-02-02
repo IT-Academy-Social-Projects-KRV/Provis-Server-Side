@@ -313,13 +313,18 @@ namespace Provis.Core.Services
             await _userTaskRepository.SaveChangesAsync();
         }
 
-        public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
+        public async Task<TaskInfoDTO> ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
         {
             var workspaceTask = await _taskRepository.GetByKeyAsync(taskChangeInfoDTO.Id);
             workspaceTask.TaskNullChecking();
 
             var worspaceMemberSpecefication = new UserWorkspaces
                 .WorkspaceMember(userId, taskChangeInfoDTO.WorkspaceId);
+
+            if (!workspaceTask.RowVersion.SequenceEqual(taskChangeInfoDTO.RowVersion))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "Old data");
+            }
 
             if (!(workspaceTask.TaskCreatorId == userId ||
                 await _userWorkspaceRepository
@@ -329,10 +334,7 @@ namespace Provis.Core.Services
                     ErrorMessages.NotPermission);
             }
 
-            if (workspaceTask.Name != taskChangeInfoDTO.Name
-                || workspaceTask.Description != taskChangeInfoDTO.Description
-                || workspaceTask.DateOfEnd != taskChangeInfoDTO.Deadline
-                || workspaceTask.StoryPoints != taskChangeInfoDTO.StoryPoints)
+            if (workspaceTask.TaskDataIsUpdated(taskChangeInfoDTO))
             {
                 var user = await _userRepository.GetByKeyAsync(userId);
 
@@ -367,6 +369,8 @@ namespace Provis.Core.Services
 
                 await _taskRepository.SaveChangesAsync();
             }
+
+            return _mapper.Map<TaskInfoDTO>(await _taskRepository.GetByKeyAsync(workspaceTask.Id));
         }
 
         public async Task<List<TaskStatusHistoryDTO>> GetStatusHistories(int taskId)
