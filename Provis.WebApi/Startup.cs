@@ -27,16 +27,7 @@ namespace Provis.WebApi
             services.AddControllers();
             services.AddDbContext(Configuration.GetConnectionString("DefaultConnection"));
             services.AddIdentityDbContext();
-
-            services.AddAuthentication()
-                .AddGoogle("google", opt =>
-                {
-                    var googleAuth = Configuration.GetSection("Authentication:Google");
-
-                    opt.ClientId = googleAuth["ClientId"];
-                    opt.ClientSecret = googleAuth["ClientSecret"];
-                    opt.SignInScheme = IdentityConstants.ExternalScheme;
-                });
+            services.AddAuthentication();
 
             services.AddRepositories();
             services.AddCustomServices();

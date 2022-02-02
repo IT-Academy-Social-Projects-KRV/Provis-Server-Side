@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Google.Apis.Auth;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.RefreshTokenEntity;
@@ -200,9 +201,16 @@ namespace Provis.Core.Services
             await _refreshTokenRepository.SaveChangesAsync();
         }
 
-        public async Task<UserAuthResponseDTO> ExternalLoginAsync(UserExternalAuthDTO authDTO)
+        public UserAuthResponseDTO GoogleLoginAsync(UserExternalAuthDTO authDTO)
         {
-            var payload = await _jwtService.VerifyGoogleToken(authDTO);
+            var payload = _jwtService.VerifyGoogleToken(authDTO);
+            return payload;
+        }
+
+        public async Task<UserAuthResponseDTO> ExternalLoginAsync(UserExternalAuthDTO authDTO, GoogleJsonWebSignature.Payload payload)
+        {
+            
+
             if (payload == null)
             {
                 throw new HttpException(HttpStatusCode.BadRequest,
