@@ -249,15 +249,20 @@ namespace Provis.Core.Services
 
         public async Task<WorkspaceChangeRoleDTO> ChangeUserRoleAsync(string userId, WorkspaceChangeRoleDTO userChangeRole)
         {
-            var modifierSpecification = new UserWorkspaces.WorkspaceMember(userId, userChangeRole.WorkspaceId);
-            var modifier = await _userWorkspaceRepository.GetFirstBySpecAsync(modifierSpecification);
-
-            modifier.User.UserNullChecking();
-
             var targetSpecification = new UserWorkspaces.WorkspaceMember(userChangeRole.UserId, userChangeRole.WorkspaceId);
             var target = await _userWorkspaceRepository.GetFirstBySpecAsync(targetSpecification);
 
             target.User.UserNullChecking();
+
+            if (!target.RowVersion.SequenceEqual(userChangeRole.RowVersion))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "Old data");
+            }
+
+            var modifierSpecification = new UserWorkspaces.WorkspaceMember(userId, userChangeRole.WorkspaceId);
+            var modifier = await _userWorkspaceRepository.GetFirstBySpecAsync(modifierSpecification);
+
+            modifier.User.UserNullChecking();
 
             var roleId = (WorkSpaceRoles)modifier.RoleId;
 

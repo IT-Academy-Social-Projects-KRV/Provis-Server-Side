@@ -58,12 +58,14 @@ namespace Provis.Core.Helpers
             CreateMap<UserWorkspace, WorkspaceChangeRoleDTO>()
                 .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
-                .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.RoleId));
+                .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.RoleId))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
 
             CreateMap<UserWorkspace, WorkspaceMemberDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.UserId))
                 .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
-                .ForMember(x => x.Role, act => act.MapFrom(srs => srs.RoleId));
+                .ForMember(x => x.Role, act => act.MapFrom(srs => srs.RoleId))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
 
             CreateMap<InviteUser, WorkspaceInviteInfoDTO>()
                 .ForMember(x => x.Date, act => act.MapFrom(srs => srs.Date))
