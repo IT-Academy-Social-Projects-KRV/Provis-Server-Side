@@ -6,7 +6,7 @@ namespace Provis.Core.Interfaces.Services
 {
     public interface ITaskService
     {
-        Task ChangeTaskStatusAsync(TaskChangeStatusDTO cangeTaskStatus, string userId);
+        Task<TaskChangeStatusDTO> ChangeTaskStatusAsync(TaskChangeStatusDTO cangeTaskStatus, string userId);
         Task CreateTaskAsync(TaskCreateDTO taskCreateDTO, string userId);
         Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId);
         Task<List<TaskStatusDTO>> GetTaskStatuses();

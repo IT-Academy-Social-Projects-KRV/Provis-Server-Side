@@ -94,12 +94,17 @@ namespace Provis.Core.Services
             _metrics = metrics;
         }
 
-        public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
+        public async Task<TaskChangeStatusDTO> ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
             task.TaskNullChecking();
 
-            if(task.StatusId != changeTaskStatus.StatusId)
+            if (!task.RowVersion.SequenceEqual(changeTaskStatus.RowVersion))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "Old data");
+            }
+
+            if (task.StatusId != changeTaskStatus.StatusId)
             {
                 var user = await _userRepository.GetByKeyAsync(userId);
 
@@ -138,19 +143,21 @@ namespace Provis.Core.Services
                     UserId = userId
                 };
 
-            _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskCountByStatus,
-               MetricTagsConstructor.TaskCountByStatus(changeTaskStatus.WorkspaceId, changeTaskStatus.StatusId));
+                _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskCountByStatus,
+                    MetricTagsConstructor.TaskCountByStatus(changeTaskStatus.WorkspaceId, changeTaskStatus.StatusId));
 
-            _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskCountByStatus,
-                MetricTagsConstructor.TaskCountByStatus(task.WorkspaceId, task.StatusId));
+                _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskCountByStatus,
+                    MetricTagsConstructor.TaskCountByStatus(task.WorkspaceId, task.StatusId));
 
-            await _statusHistoryRepository.AddAsync(statusHistory);
+                await _statusHistoryRepository.AddAsync(statusHistory);
 
                 task.StatusId = changeTaskStatus.StatusId;
                 await _taskRepository.UpdateAsync(task);
 
                 await _taskRepository.SaveChangesAsync();
             }
+
+            return _mapper.Map<TaskChangeStatusDTO>(await _taskRepository.GetByKeyAsync(task.Id));
         }
 
         public async Task CreateTaskAsync(TaskCreateDTO taskCreateDTO, string userId)

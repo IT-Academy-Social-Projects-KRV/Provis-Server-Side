@@ -31,9 +31,9 @@ namespace Provis.WebApi.Controllers
             WorkSpaceRoles.MemberId })]
         public async Task<IActionResult> ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus)
         {
-            await _taskService.ChangeTaskStatusAsync(changeTaskStatus, UserId);
+            var taskStatus = await _taskService.ChangeTaskStatusAsync(changeTaskStatus, UserId);
 
-            return Ok();
+            return Ok(taskStatus);
         }
 
         [Authorize]

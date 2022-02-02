@@ -97,7 +97,8 @@ namespace Provis.Core.Helpers
                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.Item2.Task.StoryPoints))
                .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Item3))
                .ForMember(x => x.MemberCount, act => act.MapFrom(src => src.Item4))
-               .ForMember(x => x.CreatorUsername, act => act.MapFrom(src => src.Item5));
+               .ForMember(x => x.CreatorUsername, act => act.MapFrom(src => src.Item5))
+               .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.Item2.Task.RowVersion));
 
             CreateMap<WorkspaceTask, TaskDTO>()
                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
@@ -190,6 +191,12 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.Id))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.AssignedUser.UserId))
                 .ForMember(x => x.UserRoleTagId, act => act.MapFrom(srs => srs.AssignedUser.RoleTagId));
+
+            CreateMap<WorkspaceTask, TaskChangeStatusDTO>()
+                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
+                .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.Id))
+                .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
         }
     }
 }

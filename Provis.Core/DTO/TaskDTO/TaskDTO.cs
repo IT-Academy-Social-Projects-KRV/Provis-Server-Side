@@ -12,5 +12,6 @@ namespace Provis.Core.DTO.TaskDTO
         public int CommentCount { get; set; }
         public int MemberCount {  get; set; }
         public string CreatorUsername { get; set; }
+        public byte[] RowVersion { get; set; }
     }
 }
