@@ -5,5 +5,6 @@
         public string UserId { get; set; }
         public string UserName { get; set; }
         public int RoleTagId { get; set; }
+        public byte[] RowVersion { get; set; }
     }
 }

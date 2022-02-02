@@ -509,8 +509,22 @@ namespace Provis.Core.Services
             return file;
         }
 
-        public async Task ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId)
+        public async Task<TaskChangeRoleDTO> ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId)
         {
+            var userTaskSpecification = new UserTasks
+                .AssignedMember(changeRoleDTO.TaskId, changeRoleDTO.UserId);
+
+            var userTaskMember = await _userTaskRepository
+                    .GetFirstBySpecAsync(userTaskSpecification);
+
+            _ = userTaskMember ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.UserNotFound);
+
+            if (!userTaskMember.RowVersion.SequenceEqual(changeRoleDTO.RowVersion))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, "Old data");
+            }
+
             var taskSpecification = new WorkspaceTasks
                     .TaskById(changeRoleDTO.TaskId);
             var task = await _taskRepository
@@ -518,14 +532,6 @@ namespace Provis.Core.Services
 
             _ = task ?? throw new HttpException(HttpStatusCode.NotFound,
                 ErrorMessages.TaskNotFound);
-
-            var userTaskSpecification = new UserTasks
-                    .AssignedMember(changeRoleDTO.TaskId, changeRoleDTO.UserId);
-            var userTaskMember = await _userTaskRepository
-                    .GetFirstBySpecAsync(userTaskSpecification);
-
-            _ = userTaskMember ?? throw new HttpException(HttpStatusCode.NotFound,
-                ErrorMessages.UserNotFound);
 
             var userSpecification = new UserWorkspaces
                     .WorkspaceMember(userId, changeRoleDTO.WorkspaceId);
@@ -550,6 +556,8 @@ namespace Provis.Core.Services
                 throw new HttpException(HttpStatusCode.Forbidden,
                     ErrorMessages.NotPermission);
             }
+
+            return _mapper.Map<TaskChangeRoleDTO>(await _userTaskRepository.GetFirstBySpecAsync(userTaskSpecification));
         }
 
         public async Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId)

@@ -173,7 +173,8 @@ namespace Provis.Core.Helpers
             CreateMap<UserTask, TaskAssignedUsersDTO>()
                 .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
-                .ForMember(x => x.RoleTagId, act => act.MapFrom(srs => srs.UserRoleTagId));
+                .ForMember(x => x.RoleTagId, act => act.MapFrom(srs => srs.UserRoleTagId))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
 
             CreateMap<Comment, CommentListDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
@@ -196,6 +197,12 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
                 .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.Id))
                 .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
+
+            CreateMap<UserTask, TaskChangeRoleDTO>()
+                .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.TaskId))
+                .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.UserRoleTagId))
+                .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
                 .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
         }
     }

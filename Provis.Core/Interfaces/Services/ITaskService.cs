@@ -20,7 +20,7 @@ namespace Provis.Core.Interfaces.Services
         Task DeleteTaskAttachmentAsync(int attachmentId);
         Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO);
         Task<DownloadFile> GetTaskAttachmentPreviewAsync(int attachmentId);
-        Task ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId);
+        Task<TaskChangeRoleDTO> ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId);
         Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId);
         Task DeleteTaskAsync(int workspaceId, int taskId, string userId);
     }
