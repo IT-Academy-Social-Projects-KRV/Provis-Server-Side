@@ -201,16 +201,9 @@ namespace Provis.Core.Services
             await _refreshTokenRepository.SaveChangesAsync();
         }
 
-        public UserAuthResponseDTO GoogleLoginAsync(UserExternalAuthDTO authDTO)
+        public async Task<UserAuthResponseDTO> ExternalLoginAsync(UserExternalAuthDTO authDTO)
         {
-            var payload = _jwtService.VerifyGoogleToken(authDTO);
-            return payload;
-        }
-
-        public async Task<UserAuthResponseDTO> ExternalLoginAsync(UserExternalAuthDTO authDTO, GoogleJsonWebSignature.Payload payload)
-        {
-            
-
+            var payload = await _jwtService.VerifyGoogleToken(authDTO);
             if (payload == null)
             {
                 throw new HttpException(HttpStatusCode.BadRequest,

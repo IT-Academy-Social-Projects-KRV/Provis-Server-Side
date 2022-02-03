@@ -98,20 +98,13 @@ namespace Provis.Core.Services
 
         public async Task<GoogleJsonWebSignature.Payload> VerifyGoogleToken(UserExternalAuthDTO authDTO)
         {
-            try
+            var settings = new GoogleJsonWebSignature.ValidationSettings()
             {
-                var settings = new GoogleJsonWebSignature.ValidationSettings()
-                {
-                    Audience = new List<string>() { _googleSettings.GetSection("clientId").Value }
-                };
+                Audience = new List<string>() { _googleSettings.GetSection("clientId").Value }
+            };
 
-                var payload = await GoogleJsonWebSignature.ValidateAsync(authDTO.IdToken, settings);
-                return payload;
-            }
-            catch (Exception)
-            {
-                return null;
-            }
+            var payload = await GoogleJsonWebSignature.ValidateAsync(authDTO.IdToken, settings);
+            return payload;
         }
     }
 }
