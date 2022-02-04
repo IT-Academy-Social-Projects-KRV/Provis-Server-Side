@@ -28,7 +28,7 @@ namespace Provis.Core.Services
         private readonly IFileService _fileService;
         private readonly IOptions<ImageSettings> _imageSettings;
         protected readonly ITemplateService _templateService;
-        protected readonly ClientUrl _clientUrl;
+        protected readonly IOptions<ClientUrl> _clientUrl;
 
 
         public UserService(UserManager<User> userManager,
@@ -49,7 +49,7 @@ namespace Provis.Core.Services
             _imageSettings = imageSettings;
             _emailSenderService = emailSenderService;
             _templateService = templateService;
-            _clientUrl = clientUrl.Value;
+            _clientUrl = clientUrl;
         }
 
         public async Task<UserPersonalInfoDTO> GetUserPersonalInfoAsync(string userId)
@@ -170,13 +170,14 @@ namespace Provis.Core.Services
             var user = await _userManager.FindByIdAsync(userId);
 
             var twoFactorToken = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
+
             var message = new MailRequest
             {
                 ToEmail = user.Email,
                 Subject = "Provis 2fa code",
                 Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode",
-                    new UserToken() { Token = twoFactorToken, UserName = user.UserName, Uri = _clientUrl.ApplicationUrl })
-            };
+                    new UserToken() { Token = twoFactorToken, UserName = user.UserName, Uri = _clientUrl.Value.ApplicationUrl })
+        };
 
             await _emailSenderService.SendEmailAsync(message);
 
