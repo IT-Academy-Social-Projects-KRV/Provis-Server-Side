@@ -70,7 +70,7 @@ namespace Provis.Core.Services
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
-            Workspace workspace = new Workspace()
+            Workspace workspace = new()
             {
                 DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 Name = workspaceDTO.Name,
@@ -79,15 +79,15 @@ namespace Provis.Core.Services
             await _workspaceRepository.AddAsync(workspace);
             await _workspaceRepository.SaveChangesAsync();
 
-            UserWorkspace userWorkspace = new UserWorkspace()
+            UserWorkspace userWorkspace = new()
             {
                 UserId = userid,
                 WorkspaceId = workspace.Id,
                 RoleId = (int)WorkSpaceRoles.OwnerId
             };
 
-            //_metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
-            //  MetricTagsConstructor.MembersCountByWorkspaceRole(workspace.Id, (int)WorkSpaceRoles.OwnerId));
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
+              MetricTagsConstructor.MembersCountByWorkspaceRole(workspace.Id, (int)WorkSpaceRoles.OwnerId));
 
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _userWorkspaceRepository.SaveChangesAsync();
@@ -95,7 +95,7 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-        public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
+        public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO)
         {
             var workspaceRec = await _workspaceRepository.GetByKeyAsync(workspaceUpdateDTO.WorkspaceId);
             workspaceRec.WorkspaceNullChecking();

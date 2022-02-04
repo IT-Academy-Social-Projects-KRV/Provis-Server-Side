@@ -1,5 +1,6 @@
 ﻿using App.Metrics;
 using AutoMapper;
+using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -11,6 +12,7 @@ using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.UserTaskEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
+using Provis.Core.Exeptions;
 using Provis.Core.Helpers;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Repositories;
@@ -18,6 +20,8 @@ using Provis.Core.Interfaces.Services;
 using Provis.Core.Services;
 using Provis.UnitTests.Base;
 using Provis.UnitTests.Base.TestData;
+using System;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Provis.UnitTests.Core.Services
@@ -99,23 +103,136 @@ namespace Provis.UnitTests.Core.Services
             var workspaceCreateDTOMock = WorkspaceTestData.GetWorkspaceCreateDTO();
             var workspaceMock = WorkspaceTestData.GetTestWorkspace();
 
-            SetupAddAsync(workspaceMock);
+            SetupAddWorkspaceAsync(workspaceMock);
+            SetupWorkspaceSaveChangesAsync();
 
-            await _workspaceService.CreateWorkspaceAsync(workspaceCreateDTOMock, userid);
+            var userWorkspaceMock = WorkspaceTestData.GetTestUserWorkspace();
+
+            SetupAddUserWorkspaceAsync(userWorkspaceMock);
+            SetupUserWorkspaceSaveChangesAsync();
+
+            var result = _workspaceService.CreateWorkspaceAsync(workspaceCreateDTOMock, userid);
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
         }
 
-        protected void SetupAddAsync(Workspace workspaceInstance)
+        [Test]
+        public async Task UpdateWorkspaceAsync_DTOIsValid_ReturnCompletedTask()
         {
-            _workspaceRepositoryMock
-                .Setup(x => x.AddAsync(workspaceInstance))
+            var workspaceCreateDTOMock = WorkspaceTestData.GetTestUpdateWorkspaceDTO();
+            var workspaceMock = WorkspaceTestData.GetTestWorkspace();
+
+            SetupGetWorkspaceByKeyAsync(workspaceCreateDTOMock.WorkspaceId, workspaceMock);
+            SetupMap(workspaceCreateDTOMock, workspaceMock);
+
+            SetupUpdateWorkspaceAsync();
+            SetupWorkspaceSaveChangesAsync();
+
+            var result = _workspaceService.UpdateWorkspaceAsync(workspaceCreateDTOMock);
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
+        [Test]
+        [TestCase("1")]
+        public async Task SendInviteAsync_WrongEmail_ThrowHTTPException(string ownerId)
+        {
+            var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
+            var userMock = UserTestData.GetTestUser();
+
+            SetupGetUserByIdAsync(ownerId, userMock);
+
+            Func<Task> act = () => _workspaceService
+                .SendInviteAsync(workspaceInviteDTOMock, ownerId);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.Invalid2FVCode);
+        }
+
+        protected void SetupMap<TSource, TDestination>(TSource source, TDestination destination)
+        {
+            _mapperMock
+                .Setup(x => x.Map(source ?? It.IsAny<TSource>(), destination))
+                .Returns(destination)
                 .Verifiable();
         }
 
-        protected void SetupUserWorkspaceAddAsync(UserWorkspace userWorkspaceInstance)
+        protected void SetupGetWorkspaceByKeyAsync(int workspaceId, Workspace workspaceInstance)
+        {
+            _workspaceRepositoryMock
+                .Setup(x => x.GetByKeyAsync(workspaceId))
+                .Returns(Task.FromResult(workspaceInstance))
+                .Verifiable();
+        }
+
+        protected void SetupGetUserByIdAsync(string userId, User userInstance)
+        {
+            _userManagerMock
+                .Setup(x => x.FindByIdAsync(userId ?? It.IsAny<string>()))
+                .ReturnsAsync(userInstance)
+                .Verifiable();
+        }
+
+        protected void SetupUpdateWorkspaceAsync()
+        {
+            _workspaceRepositoryMock
+                .Setup(x => x.UpdateAsync(It.IsAny<Workspace>()))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+
+        protected void SetupAddWorkspaceAsync(Workspace workspaceInstance)
+        {
+            _workspaceRepositoryMock
+                .Setup(x => x.AddAsync(It.IsAny<Workspace>()))
+                .ReturnsAsync(workspaceInstance)
+                .Verifiable();
+        }
+
+        protected void SetupAddUserWorkspaceAsync(UserWorkspace userWorkspaceInstance)
         {
             _userWorkspaceRepositoryMock
                 .Setup(x => x.AddAsync(It.IsAny<UserWorkspace>()))
+                .ReturnsAsync(userWorkspaceInstance)
                 .Verifiable();
         }
+
+        protected void SetupWorkspaceSaveChangesAsync()
+        {
+            _workspaceRepositoryMock
+                .Setup(x => x.SaveChangesAsync())
+                .Returns(Task.FromResult(1))
+                .Verifiable();
+        }
+
+        protected void SetupUserWorkspaceSaveChangesAsync()
+        {
+            _userWorkspaceRepositoryMock
+                .Setup(x => x.SaveChangesAsync())
+                .Returns(Task.FromResult(1))
+                .Verifiable();
+        }
+
+        //protected void SetupCounterIncrement(Workspace workspaceInstance)
+        //{
+        //    _workspaceRepositoryMock
+        //        .Setup(x => x.AddAsync(workspaceInstance))
+        //        .Verifiable();
+        //}
+
+        //protected void SetupMembersCountByWorkspaceRole(Workspace workspaceInstance)
+        //{
+        //    _workspaceRepositoryMock
+        //        .Setup(x => x.AddAsync(workspaceInstance))
+        //        .Verifiable();
+        //}
     }
 }
