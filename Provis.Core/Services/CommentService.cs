@@ -10,6 +10,7 @@ using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
+using Provis.Core.Resources;
 using Provis.Core.Roles;
 using System;
 using System.Collections.Generic;
@@ -76,7 +77,7 @@ namespace Provis.Core.Services
             if (comment.UserId != creatorId)
             {
                 throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                    "Only creator can edit his comment");
+                    ErrorMessages.NotPermissionEditComment);
             }
 
             comment.DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero);
@@ -93,11 +94,11 @@ namespace Provis.Core.Services
 
             var comment = await _commentRepository.GetByKeyAsync(id);
 
-            if (!(comment.UserId == userId || 
+            if (!(comment.UserId == userId ||
                 userWorkspace.RoleId == (int)WorkSpaceRoles.OwnerId))
             {
                 throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                    "Only cretor or workspace owner can delete comments");
+                   ErrorMessages.NotPermissionDeleteComment);
             }
 
             await _commentRepository.DeleteAsync(comment);

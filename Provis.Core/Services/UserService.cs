@@ -12,6 +12,7 @@ using Provis.Core.Helpers.Mails;
 using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
+using Provis.Core.Resources;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -66,7 +67,7 @@ namespace Provis.Core.Services
             if (userObject != null && userObject.Id != userId)
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                    "This username already exists");
+                   ErrorMessages.UsernameAlreadyExists);
             }
 
             var user = await _userRepository.GetByKeyAsync(userId);
@@ -122,7 +123,8 @@ namespace Provis.Core.Services
         {
             var user = await _userManager.FindByIdAsync(userId);
 
-            _ = user.ImageAvatarUrl ?? throw new HttpException(System.Net.HttpStatusCode.NotFound, "Image not found");
+            _ = user.ImageAvatarUrl ?? throw new HttpException(System.Net.HttpStatusCode.NotFound,
+                ErrorMessages.ImageNotFound);
 
             var file = await _fileService.GetFileAsync(user.ImageAvatarUrl);
 
@@ -136,7 +138,7 @@ namespace Provis.Core.Services
             if (!user.EmailConfirmed)
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                    "First you need to confirm your email address");
+                    ErrorMessages.EmailNotConfirm);
             }
 
             return await _userManager.GetTwoFactorEnabledAsync(user);
@@ -150,14 +152,14 @@ namespace Provis.Core.Services
 
             if (!isUserToken)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Invalid code");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, ErrorMessages.Invalid2FVCode);
             }
 
             var result = await _userManager.SetTwoFactorEnabledAsync(user, !await _userManager.GetTwoFactorEnabledAsync(user));
 
             if (!result.Succeeded)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Invalid request");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, ErrorMessages.InvalidRequest);
             }
 
             await Task.CompletedTask;
@@ -172,7 +174,7 @@ namespace Provis.Core.Services
             {
                 ToEmail = user.Email,
                 Subject = "Provis 2fa code",
-                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode", 
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode",
                     new UserToken() { Token = twoFactorToken, UserName = user.UserName, Uri = _clientUrl.ApplicationUrl })
             };
 

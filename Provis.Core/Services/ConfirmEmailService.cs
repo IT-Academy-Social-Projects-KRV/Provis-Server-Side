@@ -6,6 +6,7 @@ using Provis.Core.Exeptions;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Interfaces.Services;
+using Provis.Core.Resources;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,7 +20,7 @@ namespace Provis.Core.Services
         protected readonly ITemplateService _templateService;
         protected readonly ClientUrl _clientUrl;
 
-        public ConfirmEmailService(UserManager<User> userManager, 
+        public ConfirmEmailService(UserManager<User> userManager,
             IEmailSenderService emailSender,
             ITemplateService templateService,
             IOptions<ClientUrl> options)
@@ -43,7 +44,7 @@ namespace Provis.Core.Services
             {
                 ToEmail = user.Email,
                 Subject = "Provis Confirm Email",
-                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/ConfirmEmail", 
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/ConfirmEmail",
                     new UserToken() { Token = encodedCode, UserName = user.UserName, Uri = _clientUrl.ApplicationUrl })
             });
 
@@ -62,7 +63,8 @@ namespace Provis.Core.Services
 
             if(!result.Succeeded)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Wrong code or this code is deprecated, try again!");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    ErrorMessages.ConfirmEmailInvalidCode);
             }
 
             await _userManager.UpdateSecurityStampAsync(user);
@@ -76,17 +78,19 @@ namespace Provis.Core.Services
 
             if (user.EmailConfirmed)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You already confirmed your email address!");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    ErrorMessages.AlreadyComfirmEmail);
             }
         }
 
-        private string DecodeUnicodeBase64(string input)
+        public string DecodeUnicodeBase64(string input)
         {
             var bytes = new Span<byte>(new byte[input.Length]);
 
             if(!Convert.TryFromBase64String(input, bytes, out var bytesWritten))
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Invalid code, try again!");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                    ErrorMessages.ConfirmEmailInvalidCode);
             }
 
             return Encoding.Unicode.GetString(bytes.Slice(0, bytesWritten));

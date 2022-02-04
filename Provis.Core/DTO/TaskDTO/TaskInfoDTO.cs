@@ -5,6 +5,7 @@ namespace Provis.Core.DTO.TaskDTO
 {
     public class TaskInfoDTO
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public DateTimeOffset Deadline { get; set; }
