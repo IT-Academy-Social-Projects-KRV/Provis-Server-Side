@@ -1,6 +1,11 @@
-﻿using AutoMapper;
+﻿using App.Metrics;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Options;
+using Provis.Core.ApiModels;
 using Provis.Core.DTO.TaskDTO;
+using Provis.Core.Entities.CommentEntity;
 using Provis.Core.Entities.StatusEntity;
 using Provis.Core.Entities.StatusHistoryEntity;
 using Provis.Core.Entities.UserEntity;
@@ -8,28 +13,23 @@ using Provis.Core.Entities.UserRoleTagEntity;
 using Provis.Core.Entities.UserTaskEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
-using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
-using Provis.Core.Entities.CommentEntity;
+using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
+using Provis.Core.Helpers;
+using Provis.Core.Helpers.Mails;
+using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
+using Provis.Core.Metrics;
+using Provis.Core.Resources;
+using Provis.Core.Roles;
+using Provis.Core.Statuses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using Provis.Core.ApiModels;
-using Provis.Core.Helpers;
-using Microsoft.Extensions.Options;
-using Provis.Core.Roles;
-using Provis.Core.Helpers.Mails;
-using Provis.Core.Helpers.Mails.ViewModels;
-using Provis.Core.Statuses;
-using App.Metrics;
-using Provis.Core.Metrics;
-using Microsoft.AspNetCore.StaticFiles;
 using System.Net;
-using Provis.Core.Resources;
+using System.Threading.Tasks;
 
 namespace Provis.Core.Services
 {
@@ -37,16 +37,16 @@ namespace Provis.Core.Services
     {
         protected readonly UserManager<User> _userManager;
         private readonly IOptions<ImageSettings> _imageSettings;
-        protected readonly IRepository<User> _userRepository;
-        protected readonly IRepository<Workspace> _workspaceRepository;
-        protected readonly IRepository<WorkspaceTask> _taskRepository;
-        protected readonly IRepository<UserTask> _userTaskRepository;
-        protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
-        protected readonly IRepository<StatusHistory> _statusHistoryRepository;
-        protected readonly IRepository<Status> _taskStatusRepository;
-        protected readonly IRepository<UserRoleTag> _workerRoleRepository;
-        protected readonly IRepository<WorkspaceTaskAttachment> _taskAttachmentRepository;
-        protected readonly IRepository<Comment> _commentRepository;
+        protected readonly IEntityRepository<User> _userRepository;
+        protected readonly IEntityRepository<Workspace> _workspaceRepository;
+        protected readonly IEntityRepository<WorkspaceTask> _taskRepository;
+        protected readonly IEntityRepository<UserTask> _userTaskRepository;
+        protected readonly IEntityRepository<UserWorkspace> _userWorkspaceRepository;
+        protected readonly IEntityRepository<StatusHistory> _statusHistoryRepository;
+        protected readonly IEntityRepository<Status> _taskStatusRepository;
+        protected readonly IEntityRepository<UserRoleTag> _workerRoleRepository;
+        protected readonly IEntityRepository<WorkspaceTaskAttachment> _taskAttachmentRepository;
+        protected readonly IEntityRepository<Comment> _commentRepository;
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
         private readonly IOptions<TaskAttachmentSettings> _attachmentSettings;
@@ -54,17 +54,17 @@ namespace Provis.Core.Services
         private readonly IEmailSenderService _emailSenderService;
         private readonly IMetrics _metrics;
 
-        public TaskService(IRepository<User> user,
-            IRepository<WorkspaceTask> task,
-            IRepository<Workspace> workspace,
-            IRepository<Status> taskStatusRepository,
-            IRepository<UserWorkspace> userWorkspace,
+        public TaskService(IEntityRepository<User> user,
+            IEntityRepository<WorkspaceTask> task,
+            IEntityRepository<Workspace> workspace,
+            IEntityRepository<Status> taskStatusRepository,
+            IEntityRepository<UserWorkspace> userWorkspace,
             IMapper mapper,
-            IRepository<StatusHistory> statusHistoryRepository,
-            IRepository<UserTask> userTask,
-            IRepository<UserRoleTag> workerRoleRepository,
-            IRepository<WorkspaceTaskAttachment> taskAttachmentRepository,
-            IRepository<Comment> commentRepository,
+            IEntityRepository<StatusHistory> statusHistoryRepository,
+            IEntityRepository<UserTask> userTask,
+            IEntityRepository<UserRoleTag> workerRoleRepository,
+            IEntityRepository<WorkspaceTaskAttachment> taskAttachmentRepository,
+            IEntityRepository<Comment> commentRepository,
             IFileService fileService,
             IOptions<TaskAttachmentSettings> attachmentSettings,
             UserManager<User> userManager,

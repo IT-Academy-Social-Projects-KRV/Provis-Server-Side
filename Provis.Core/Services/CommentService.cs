@@ -21,18 +21,18 @@ namespace Provis.Core.Services
     public class CommentService : ICommentService
     {
         protected readonly UserManager<User> _userManager;
-        protected readonly IRepository<User> _userRepository;
-        protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
-        protected readonly IRepository<Workspace> _workspaceRepository;
-        protected readonly IRepository<WorkspaceTask> _taskRepository;
-        protected readonly IRepository<Comment> _commentRepository;
+        protected readonly IEntityRepository<User> _userRepository;
+        protected readonly IEntityRepository<UserWorkspace> _userWorkspaceRepository;
+        protected readonly IEntityRepository<Workspace> _workspaceRepository;
+        protected readonly IEntityRepository<WorkspaceTask> _taskRepository;
+        protected readonly IEntityRepository<Comment> _commentRepository;
         protected readonly IMapper _mapper;
 
-        public CommentService(IRepository<User> user,
-            IRepository<WorkspaceTask> task,
-            IRepository<Comment> comment,
-            IRepository<UserWorkspace> userWorkspace,
-            IRepository<Workspace> workspace,
+        public CommentService(IEntityRepository<User> user,
+            IEntityRepository<WorkspaceTask> task,
+            IEntityRepository<Comment> comment,
+            IEntityRepository<UserWorkspace> userWorkspace,
+            IEntityRepository<Workspace> workspace,
             UserManager<User> userManager,
             IMapper mapper)
         {
@@ -54,10 +54,10 @@ namespace Provis.Core.Services
             };
             _mapper.Map(commentDTO, comment);
 
-            var commentInfo = await _commentRepository.AddAsync(comment);
+            await _commentRepository.AddAsync(comment);
             await _commentRepository.SaveChangesAsync();
 
-            return _mapper.Map(commentInfo, new CommentListDTO());
+            return _mapper.Map(comment, new CommentListDTO());
         }
 
         public async Task<List<CommentListDTO>> GetCommentListsAsync(int taskId)

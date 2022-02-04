@@ -15,10 +15,10 @@ namespace Provis.WebApi.Policy
 {
     public class WorkspaceRolesAuthorizationHandler : AuthorizationHandler<WorkspaceRolesRequirement>
     {
-        private readonly IRepository<UserWorkspace> userWorkspaceRepository;
+        private readonly IEntityRepository<UserWorkspace> userWorkspaceRepository;
         private readonly IHttpContextAccessor httpContextAccessor;
 
-        public WorkspaceRolesAuthorizationHandler(IRepository<UserWorkspace> userWorkspaceRepository, IHttpContextAccessor httpContextAccessor)
+        public WorkspaceRolesAuthorizationHandler(IEntityRepository<UserWorkspace> userWorkspaceRepository, IHttpContextAccessor httpContextAccessor)
         {
             this.userWorkspaceRepository = userWorkspaceRepository;
             this.httpContextAccessor = httpContextAccessor;

@@ -23,39 +23,63 @@ using App.Metrics;
 using Provis.Core.Metrics;
 using System.Net;
 using Provis.Core.Resources;
+using Provis.Core.Interfaces.Repositories.DapperRepositories;
+using Provis.Core.Interfaces.Repositories.DapperRepositories.DapperRepositoriesEntity;
 
 namespace Provis.Core.Services
 {
     public class WorkspaceService : IWorkspaceService
     {
+        protected readonly IWorkspaceRepository _workspaceRepositoryDapper;
+        protected readonly IUserWorkspaceRepository _userWorkspaceRepositoryDapper;
+        protected readonly IInviteUserRepository _inviteUserRepositoryDapper;
+        protected readonly IUserRepository _userRepositoryDapper;
+        protected readonly IRoleRepository _userRoleRepositoryDapper;
+        protected readonly IUserTaskRepository _userTaskRepositoryDapper;
+
         protected readonly IEmailSenderService _emailSendService;
         protected readonly UserManager<User> _userManager;
-        protected readonly IRepository<Workspace> _workspaceRepository;
-        protected readonly IRepository<UserWorkspace> _userWorkspaceRepository;
-        protected readonly IRepository<InviteUser> _inviteUserRepository;
-        protected readonly IRepository<User> _userRepository;
-        protected readonly IRepository<Role> _userRoleRepository;
-        protected readonly IRepository<UserTask> _userTaskRepository;
+        protected readonly IEntityRepository<Workspace> _workspaceRepository;
+        protected readonly IEntityRepository<UserWorkspace> _userWorkspaceRepository;
+        protected readonly IEntityRepository<InviteUser> _inviteUserRepository;
+        protected readonly IEntityRepository<User> _userRepository;
+        protected readonly IEntityRepository<Role> _userRoleRepository;
+        protected readonly IEntityRepository<UserTask> _userTaskRepository;
         protected readonly IMapper _mapper;
         protected readonly RoleAccess _roleAccess;
         protected readonly ITemplateService _templateService;
         protected readonly ClientUrl _clientUrl;
         private readonly IMetrics _metrics;
 
-        public WorkspaceService(IRepository<User> user,
+        public WorkspaceService(IEntityRepository<User> user,
+
+            IWorkspaceRepository workspaceRepositoryDapper,
+            IUserWorkspaceRepository userWorkspaceRepositoryDapper,
+            IInviteUserRepository inviteUserRepositoryDapper,
+            IUserRepository userRepositoryDapper,
+            IRoleRepository userRoleRepositoryDapper,
+            IUserTaskRepository userTaskRepositoryDapper,
+
             UserManager<User> userManager,
-            IRepository<Workspace> workspace,
-            IRepository<UserWorkspace> userWorkspace,
-            IRepository<InviteUser> inviteUser,
-            IRepository<Role> userRoleRepository,
+            IEntityRepository<Workspace> workspace,
+            IEntityRepository<UserWorkspace> userWorkspace,
+            IEntityRepository<InviteUser> inviteUser,
+            IEntityRepository<Role> userRoleRepository,
             IEmailSenderService emailSenderService,
-            IRepository<UserTask> userTasksRepository,
+            IEntityRepository<UserTask> userTasksRepository,
             IMapper mapper,
             RoleAccess roleAccess,
             ITemplateService templateService,
             IOptions<ClientUrl> options,
             IMetrics metrics)
         {
+            _workspaceRepositoryDapper = workspaceRepositoryDapper;
+            _userWorkspaceRepositoryDapper = userWorkspaceRepositoryDapper;
+            _inviteUserRepositoryDapper = inviteUserRepositoryDapper;
+            _userRepositoryDapper = userRepositoryDapper;
+            _userRoleRepositoryDapper = userRoleRepositoryDapper;
+            _userTaskRepositoryDapper = userTaskRepositoryDapper;
+
             _userRepository = user;
             _userManager = userManager;
             _workspaceRepository = workspace;
@@ -101,14 +125,16 @@ namespace Provis.Core.Services
 
         public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
         {
-            var workspaceRec = await _workspaceRepository.GetByKeyAsync(workspaceUpdateDTO.WorkspaceId);
+            //var workspaceRec = await _workspaceRepository.GetByKeyAsync(workspaceUpdateDTO.WorkspaceId);
+            var workspaceRec = await _workspaceRepositoryDapper.GetByKeyAsync(workspaceUpdateDTO.WorkspaceId);
             workspaceRec.WorkspaceNullChecking();
 
             _mapper.Map(workspaceUpdateDTO, workspaceRec);
 
-            await _workspaceRepository.UpdateAsync(workspaceRec);
+            //await _workspaceRepository.UpdateAsync(workspaceRec);
+            await _workspaceRepositoryDapper.UpdateAsync(workspaceRec);
 
-            await _workspaceRepository.SaveChangesAsync();
+            //await _workspaceRepository.SaveChangesAsync();
 
             await Task.CompletedTask;
         }

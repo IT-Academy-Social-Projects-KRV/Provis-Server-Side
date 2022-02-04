@@ -27,8 +27,8 @@ namespace Provis.UnitTests.Core.Services
         protected UserService _userService;
 
         protected Mock<UserManager<User>> _userManagerMock;
-        protected Mock<IRepository<User>> _userRepositoryMock;
-        protected Mock<IRepository<InviteUser>> _inviteUserRepositoryMock;
+        protected Mock<IEntityRepository<User>> _userRepositoryMock;
+        protected Mock<IEntityRepository<InviteUser>> _inviteUserRepositoryMock;
         protected Mock<IMapper> _mapperMock;
         protected Mock<IEmailSenderService> _emailSenderServiceMock;
         protected Mock<IFileService> _fileServiceMock;
@@ -40,8 +40,8 @@ namespace Provis.UnitTests.Core.Services
         public void OneTimeSetUp()
         {
             _userManagerMock = UserManagerMock.GetUserManager<User>();
-            _userRepositoryMock = new Mock<IRepository<User>>();
-            _inviteUserRepositoryMock = new Mock<IRepository<InviteUser>>();
+            _userRepositoryMock = new Mock<IEntityRepository<User>>();
+            _inviteUserRepositoryMock = new Mock<IEntityRepository<InviteUser>>();
             _mapperMock = new Mock<IMapper>();
             _emailSenderServiceMock = new Mock<IEmailSenderService>();
             _fileServiceMock = new Mock<IFileService>();

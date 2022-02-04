@@ -12,12 +12,12 @@ using System.Threading.Tasks;
 
 namespace Provis.Infrastructure.Data.Repositories
 {
-    public class BaseRepository<TEntity>: IRepository<TEntity> where TEntity: class, IBaseEntity
+    public class EntityBaseRepository<TEntity>: IEntityRepository<TEntity> where TEntity: class, IBaseEntity
     {
         protected readonly ProvisDbContext _dbContext;
         protected readonly DbSet<TEntity> _dbSet;
 
-        public BaseRepository(ProvisDbContext dbContext)
+        public EntityBaseRepository(ProvisDbContext dbContext)
         {
             _dbContext = dbContext;
             _dbSet = _dbContext.Set<TEntity>();
@@ -28,7 +28,7 @@ namespace Provis.Infrastructure.Data.Repositories
             return await _dbSet.ToListAsync();
         }
 
-        public async Task<TEntity> GetByKeyAsync<TKey>(TKey key)
+        public async Task<TEntity> GetByKeyAsync<TKey>(params TKey[] key)
         {
             return await _dbSet.FindAsync(key);
         }
@@ -116,7 +116,5 @@ namespace Provis.Infrastructure.Data.Repositories
             var evaluator = new SpecificationEvaluator();
             return evaluator.GetQuery(_dbSet, specification);
         }
-
-        
     }
 }

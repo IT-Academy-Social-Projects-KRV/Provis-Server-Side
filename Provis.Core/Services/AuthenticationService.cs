@@ -21,7 +21,7 @@ namespace Provis.Core.Services
         protected readonly SignInManager<User> _signInManager;
         protected readonly IJwtService _jwtService;
         protected readonly RoleManager<IdentityRole> _roleManager;
-        protected readonly IRepository<RefreshToken> _refreshTokenRepository;
+        protected readonly IEntityRepository<RefreshToken> _refreshTokenRepository;
         protected readonly IEmailSenderService _emailSenderService;
         protected readonly ITemplateService _templateService;
         protected readonly ClientUrl _clientUrl;
@@ -31,7 +31,7 @@ namespace Provis.Core.Services
             SignInManager<User> signInManager,
             IJwtService jwtService,
             RoleManager<IdentityRole> roleManager,
-            IRepository<RefreshToken> refreshTokenRepository,
+            IEntityRepository<RefreshToken> refreshTokenRepository,
             IEmailSenderService emailSenderService,
             ITemplateService templateService,
             IOptions<ClientUrl> options)

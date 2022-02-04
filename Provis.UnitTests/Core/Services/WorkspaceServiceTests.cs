@@ -25,12 +25,12 @@ namespace Provis.UnitTests.Core.Services
 
         protected Mock<IEmailSenderService> _emailSendServiceMock;
         protected Mock<UserManager<User>> _userManagerMock;
-        protected Mock<IRepository<Workspace>> _workspaceRepositoryMock;
-        protected Mock<IRepository<UserWorkspace>> _userWorkspaceRepositoryMock;
-        protected Mock<IRepository<InviteUser>> _inviteUserRepositoryMock;
-        protected Mock<IRepository<User>> _userRepositoryMock;
-        protected Mock<IRepository<Role>> _userRoleRepositoryMock;
-        protected Mock<IRepository<UserTask>> _userTaskRepositoryMock;
+        protected Mock<IEntityRepository<Workspace>> _workspaceRepositoryMock;
+        protected Mock<IEntityRepository<UserWorkspace>> _userWorkspaceRepositoryMock;
+        protected Mock<IEntityRepository<InviteUser>> _inviteUserRepositoryMock;
+        protected Mock<IEntityRepository<User>> _userRepositoryMock;
+        protected Mock<IEntityRepository<Role>> _userRoleRepositoryMock;
+        protected Mock<IEntityRepository<UserTask>> _userTaskRepositoryMock;
         protected Mock<IMapper> _mapperMock;
         protected Mock<RoleAccess> _roleAccessMock;
         protected Mock<ITemplateService> _templateServiceMock;
@@ -42,12 +42,12 @@ namespace Provis.UnitTests.Core.Services
         {
             _emailSendServiceMock = new Mock<IEmailSenderService>();
             _userManagerMock = new Mock<UserManager<User>>();
-            _workspaceRepositoryMock = new Mock<IRepository<Workspace>>();
-            _userWorkspaceRepositoryMock = new Mock<IRepository<UserWorkspace>>();
-            _inviteUserRepositoryMock = new Mock<IRepository<InviteUser>>();
-            _userRepositoryMock = new Mock<IRepository<User>>();
-            _userRoleRepositoryMock = new Mock<IRepository<Role>>();
-            _userTaskRepositoryMock = new Mock<IRepository<UserTask>>();
+            _workspaceRepositoryMock = new Mock<IEntityRepository<Workspace>>();
+            _userWorkspaceRepositoryMock = new Mock<IEntityRepository<UserWorkspace>>();
+            _inviteUserRepositoryMock = new Mock<IEntityRepository<InviteUser>>();
+            _userRepositoryMock = new Mock<IEntityRepository<User>>();
+            _userRoleRepositoryMock = new Mock<IEntityRepository<Role>>();
+            _userTaskRepositoryMock = new Mock<IEntityRepository<UserTask>>();
             _mapperMock = new Mock<IMapper>();
             _roleAccessMock = new Mock<RoleAccess>();
             _templateServiceMock = new Mock<ITemplateService>();

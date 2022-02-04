@@ -21,8 +21,8 @@ namespace Provis.Core.Services
     public class UserService : IUserService
     {
         protected readonly UserManager<User> _userManager;
-        protected readonly IRepository<User> _userRepository;
-        protected readonly IRepository<InviteUser> _inviteUserRepository;
+        protected readonly IEntityRepository<User> _userRepository;
+        protected readonly IEntityRepository<InviteUser> _inviteUserRepository;
         protected readonly IEmailSenderService _emailSenderService;
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
@@ -32,8 +32,8 @@ namespace Provis.Core.Services
 
 
         public UserService(UserManager<User> userManager,
-            IRepository<User> userRepository,
-            IRepository<InviteUser> inviteUser,
+            IEntityRepository<User> userRepository,
+            IEntityRepository<InviteUser> inviteUser,
             IMapper mapper,
             IEmailSenderService emailSenderService,
             IFileService fileService,
