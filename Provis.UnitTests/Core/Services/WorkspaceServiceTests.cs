@@ -20,6 +20,7 @@ using Provis.Core.Interfaces.Services;
 using Provis.Core.Services;
 using Provis.UnitTests.Base;
 using Provis.UnitTests.Base.TestData;
+using Provis.UnitTests.Resources;
 using System;
 using System.Net;
 using System.Threading.Tasks;
@@ -141,7 +142,7 @@ namespace Provis.UnitTests.Core.Services
 
         [Test]
         [TestCase("1")]
-        public async Task SendInviteAsync_WrongEmail_ThrowHTTPException(string ownerId)
+        public async Task SendInviteAsync_SendInviteYourself_ThrowHTTPException(string ownerId)
         {
             var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
             var userMock = UserTestData.GetTestUser();
@@ -154,7 +155,47 @@ namespace Provis.UnitTests.Core.Services
             await act.Should()
                 .ThrowAsync<HttpException>()
                 .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
-                .WithMessage(ErrorMessages.Invalid2FVCode);
+                .WithMessage(ErrorMessages.SendInviteYourself);
+        }
+
+        [Test]
+        [TestCase("2")]
+        public async Task SendInviteAsync_UserHasInvite_ThrowHTTPException(string ownerId)
+        {
+            var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
+            var userMock = UserTestData.GetTestUser();
+            var workspaceMock = WorkspaceTestData.GetTestWorkspace();
+
+            SetupGetUserByIdAsync(ownerId, userMock);
+
+            SetupGetUserByEmailAsync(workspaceInviteDTOMock.UserEmail, userMock);
+            SetupGetWorkspaceByKeyAsync(workspaceInviteDTOMock.WorkspaceId, workspaceMock);
+
+            Func<Task> act = () => _workspaceService
+                .SendInviteAsync(workspaceInviteDTOMock, ownerId);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.UserAlreadyHasInvite);
+        }
+
+        [Test]
+        [TestCase(1)]
+        [TestCase("1")]
+        public async Task DenyInviteAsync_NotYoursInvite_ThrowHTTPException(int inviteId, string ownerId)
+        {
+            var inviteUserMock = UserTestData.GetTestUser();
+
+            SetupGetUserByIdAsync(ownerId, userMock);
+
+            Func<Task> act = () => _workspaceService
+                .SendInviteAsync(workspaceInviteDTOMock, ownerId);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.SendInviteYourself);
         }
 
         protected void SetupMap<TSource, TDestination>(TSource source, TDestination destination)
@@ -173,10 +214,26 @@ namespace Provis.UnitTests.Core.Services
                 .Verifiable();
         }
 
+        protected void SetupGetInviteUserByKeyAsync(int inviteId, InviteUser inviteUserInstance)
+        {
+            _inviteUserRepositoryMock
+                .Setup(x => x.GetByKeyAsync(inviteId))
+                .Returns(Task.FromResult(inviteUserInstance))
+                .Verifiable();
+        }
+
         protected void SetupGetUserByIdAsync(string userId, User userInstance)
         {
             _userManagerMock
                 .Setup(x => x.FindByIdAsync(userId ?? It.IsAny<string>()))
+                .ReturnsAsync(userInstance)
+                .Verifiable();
+        }
+
+        protected void SetupGetUserByEmailAsync(string userEmail, User userInstance)
+        {
+            _userManagerMock
+                .Setup(x => x.FindByEmailAsync(userEmail ?? It.IsAny<string>()))
                 .ReturnsAsync(userInstance)
                 .Verifiable();
         }

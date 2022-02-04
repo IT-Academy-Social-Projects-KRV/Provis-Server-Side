@@ -88,8 +88,8 @@ namespace Provis.Core.Services
                 RoleId = (int)WorkSpaceRoles.OwnerId
             };
 
-            _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
-              MetricTagsConstructor.MembersCountByWorkspaceRole(workspace.Id, (int)WorkSpaceRoles.OwnerId));
+            //_metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
+            //  MetricTagsConstructor.MembersCountByWorkspaceRole(workspace.Id, (int)WorkSpaceRoles.OwnerId));
 
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _userWorkspaceRepository.SaveChangesAsync();

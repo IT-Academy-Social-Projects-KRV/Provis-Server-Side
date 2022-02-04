@@ -56,7 +56,7 @@ namespace Provis.UnitTests.Base.TestData
             return new WorkspaceInviteUserDTO()
             {
                 WorkspaceId = 1,
-                UserEmail = "misha@m.m"
+                UserEmail = "test1@gmail.com"
             };
         }
     }
