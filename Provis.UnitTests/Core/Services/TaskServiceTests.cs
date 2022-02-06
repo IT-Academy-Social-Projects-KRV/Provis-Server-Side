@@ -329,7 +329,7 @@ namespace Provis.UnitTests.Core.Services
             SetupUserGetByKeyAsync(userId, userMock);
             SetupTaskGetByKeyAsync(taskMock);
             SetupWorkspaceGetByKeyASync(workspaceMock);
-            SetupUserTaskGetListBySpecAsync(assignEmailsMock);
+            SetupUserTaskEmailsGetListBySpecAsync(assignEmailsMock);
             SetupChangeStatusSendManyMailsASync();
             SetupClientUrlOptions(urlMock);
             SetupMetricsIncrement();
@@ -406,7 +406,7 @@ namespace Provis.UnitTests.Core.Services
             SetupUserWorkspaceAllBySpecAsync(havePermission);
             SetupUserGetByKeyAsync(userId, userMock);
             SetupWorkspaceGetByKeyASync(workspaceMock);
-            SetupUserTaskGetListBySpecAsync(assignEmailsMock);
+            SetupUserTaskEmailsGetListBySpecAsync(assignEmailsMock);
             SetupChangeTaskSendManyMailsASync();
             SetupClientUrlOptions(uriMock);
             _mapperMock.Setup(m =>
@@ -486,6 +486,7 @@ namespace Provis.UnitTests.Core.Services
             SetupTaskAddAsync(taskMock);
             SetupTaskSaveChangesAsync();
             SetupMetricsIncrement();
+            SetupTransactionRollback();
 
             Func<Task> act = () => _taskService.CreateTaskAsync(taskCreateDTO, userId);
 
@@ -495,7 +496,51 @@ namespace Provis.UnitTests.Core.Services
                 .WithMessage(ErrorMessages.TransactionFailed);
         }
         [Test]
-        /*public async Task CreateTask_TransactionCompleted_ReturnCompletedTask()
+        public async Task GetTasks_UserIdNull_ReturnTaskGroupDTO()
+        {
+            var taskMock = TaskTestData.GetWorkspaceTasks();
+            var taskDTO = TaskTestData.GetTasksDTOs();
+            var expectedList = new TaskGroupByStatusDTO()
+            {
+                UserId = null,
+                Tasks = taskDTO
+            };
+            string userId = null;
+            var workspaceId = 1;
+
+            SetupTaskGetListBySpecAsync(taskMock);
+            _mapperMock.SetupMap(taskMock[0], taskDTO.Values.First()[0]);
+
+            var result = await _taskService.GetTasks(userId, workspaceId);
+
+            result
+                .Should()
+                .BeEquivalentTo(expectedList);
+        }
+        [Test]
+        [TestCase("2")]
+        public async Task GetTasks_UserIdExist_ReturnTaskGroupDTO(string userId)
+        {
+            var taskMock = TaskTestData.GetTasks();
+            var taskDTO = TaskTestData.GetTasksDTOs();
+            var expectedList = new TaskGroupByStatusDTO()
+            {
+                UserId = userId,
+                Tasks = taskDTO
+            };
+            var workspaceId = 1;
+
+            SetupUserTaskGetListBySpecAsync(taskMock);
+            _mapperMock.SetupMap(taskMock[0], taskDTO.Values.First()[0]);
+
+            var result = await _taskService.GetTasks(userId, workspaceId);
+
+            result
+                .Should()
+                .BeEquivalentTo(expectedList);
+        }
+        [Test]
+        public async Task CreateTask_TransactionCompleted_ReturnCompletedTask()
         {
             var workspaceMock = TaskTestData.GetWorkspace();
             var taskCreateDTO = TaskTestData.GetTaskCreateDTO();
@@ -515,16 +560,15 @@ namespace Provis.UnitTests.Core.Services
             SetupMetricsIncrement();
             SetupUserTaskAddRangeAsync();
             SetupUserTaskSaveChangesAsync();
-            SetupTransaction();
-            SetupTransactionRollback();
             SetupTransactionCommitAsync();
+
             var result = _taskService.CreateTaskAsync(taskCreateDTO, userId);
 
             result.IsCompleted.Should().BeTrue();
             result.IsCompletedSuccessfully.Should().BeTrue();
 
             await Task.CompletedTask;
-        }*/
+        }
         [TearDown]
         public void TearDown()
         {
@@ -635,11 +679,21 @@ namespace Provis.UnitTests.Core.Services
                 .ReturnsAsync(workspace)
                 .Verifiable();
         }
-        protected void SetupUserTaskGetListBySpecAsync(List<string> emails)
+        protected void SetupUserTaskEmailsGetListBySpecAsync(List<string> emails)
         {
             _userTaskRepositoryMock
                 .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<UserTask, string>>()))
                 .ReturnsAsync(emails)
+                .Verifiable();
+        }
+        protected void SetupTaskGetListBySpecAsync(IEnumerable<Tuple
+            <int, WorkspaceTask, int, int, string>> tasks)
+        {
+            _workspaceTaskRepositoryMock
+                .Setup(x => x.GetListBySpecAsync(
+                    It.IsAny<ISpecification<WorkspaceTask,
+                    Tuple<int, WorkspaceTask, int, int, string>>>()))
+                .ReturnsAsync(tasks)
                 .Verifiable();
         }
         protected void SetupChangeTaskSendManyMailsASync()
@@ -712,6 +766,30 @@ namespace Provis.UnitTests.Core.Services
             _userTaskRepositoryMock
                 .Setup(x => x.AddRangeAsync(It.IsAny<List<UserTask>>()))
                 .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+        protected void SetupUserTaskGetListBySpecAsync(IEnumerable<Tuple
+            <int, UserTask, int, int, string>> tasks)
+        {
+            _userTaskRepositoryMock
+                .Setup(x => x.GetListBySpecAsync(
+                    It.IsAny<ISpecification<UserTask, Tuple<int, UserTask, int, int, string>>>()))
+                .ReturnsAsync(tasks)
+                .Verifiable();
+        }
+        protected void SetupTransactionCommitAsync()
+        {
+            _workspaceTaskRepositoryMock
+                .Setup(x => x.BeginTransactionAsync(It.IsAny<IsolationLevel>())
+                    .Result.CommitAsync(It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+        protected void SetupTransactionRollback()
+        {
+            _workspaceTaskRepositoryMock
+                .Setup(x => x.BeginTransactionAsync(It.IsAny<IsolationLevel>())
+                    .Result.Rollback())
                 .Verifiable();
         }
     }

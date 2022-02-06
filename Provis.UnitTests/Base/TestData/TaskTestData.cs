@@ -225,5 +225,63 @@ namespace Provis.UnitTests.Base.TestData
                 }
             };
         }
+        public static List<Tuple<int, UserTask, int, int, string>> GetTasks()
+        {
+            return new List<Tuple<int, UserTask, int, int, string>>()
+            {
+                new Tuple<int, UserTask, int, int, string>(
+                    1,
+                    new UserTask()
+                    {
+                        IsUserDeleted = false,
+                        TaskId = 1,
+                        UserId = "1",
+                        UserRoleTagId = 1
+                    },
+                    3,4,"Test")
+            };
+        }
+        public static List<Tuple<int, WorkspaceTask, int, int, string>> GetWorkspaceTasks()
+        {
+            return new List<Tuple<int, WorkspaceTask, int, int, string>>()
+            {
+                new Tuple<int, WorkspaceTask, int, int, string>(
+                    1,
+                    new WorkspaceTask()
+                    {
+                        Id = 1,
+                        Name = "TestTask",
+                        DateOfCreate = DateTimeOffset.UtcNow,
+                        DateOfEnd = DateTimeOffset.UtcNow,
+                        Description = "Test description",
+                        StatusId = 1,
+                        StoryPoints = 3,
+                        TaskCreatorId = "1",
+                        WorkspaceId = 2
+                    },
+                    3,4,"Test1")
+            };
+        }
+        public static Dictionary<int, List<TaskDTO>> GetTasksDTOs()
+        {
+            return new Dictionary<int, List<TaskDTO>>()
+            {
+                { 1, new List<TaskDTO>()
+                {
+                    new TaskDTO()
+                    {
+                        Id = 1,
+                        CommentCount = 1,
+                        CreatorUsername ="Test",
+                        Deadline = DateTimeOffset.UtcNow,
+                        MemberCount = 3,
+                        Name = "TestTask",
+                        StoryPoints = 3,
+                        WorkerRoleId = 2
+                    }
+                }
+                }
+            };
+        }
     }
 }
