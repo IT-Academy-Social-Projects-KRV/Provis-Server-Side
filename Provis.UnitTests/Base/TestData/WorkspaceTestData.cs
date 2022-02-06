@@ -11,6 +11,26 @@ namespace Provis.UnitTests.Base.TestData
 {
     public class WorkspaceTestData
     {
+        public static List<WorkspaceInfoDTO> GetTestWorkspaceListInfoDTO()
+        {
+            return new List<WorkspaceInfoDTO>()
+            {
+                new WorkspaceInfoDTO()
+                {
+                    Id = 1,
+                    Name = "Name1",
+                    Role = 1
+                },
+
+                new WorkspaceInfoDTO()
+                {
+                    Id = 2,
+                    Name = "Name2",
+                    Role = 2
+                }
+            };
+        }
+
         public static Workspace GetTestWorkspace()
         {
             return new Workspace()
@@ -57,6 +77,16 @@ namespace Provis.UnitTests.Base.TestData
             {
                 WorkspaceId = 1,
                 UserEmail = "test1@gmail.com"
+            };
+        }
+
+        public static WorkspaceChangeRoleDTO GetTestWorkspaceChangeRoleDTO()
+        {
+            return new WorkspaceChangeRoleDTO()
+            {
+                UserId = "1",
+                RoleId = 1,
+                WorkspaceId = 1
             };
         }
     }

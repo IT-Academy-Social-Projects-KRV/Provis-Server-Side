@@ -24,6 +24,14 @@ using Provis.UnitTests.Resources;
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using System.Linq;
+using System.Collections.Generic;
+using Ardalis.Specification;
+using Provis.Core.DTO.UserDTO;
+using App.Metrics.Counter;
+using System.Linq.Expressions;
+using Provis.Core.Helpers.Mails.ViewModels;
+using Provis.Core.Roles;
 
 namespace Provis.UnitTests.Core.Services
 {
@@ -45,6 +53,7 @@ namespace Provis.UnitTests.Core.Services
         protected Mock<ITemplateService> _templateServiceMock;
         protected Mock<IOptions<ClientUrl>> _optionsMock;
         protected Mock<IMetrics> _metricsMock;
+        protected Mock<IOptions<ClientUrl>> _clientUrlMock;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -62,6 +71,7 @@ namespace Provis.UnitTests.Core.Services
             _templateServiceMock = new Mock<ITemplateService>();
             _optionsMock = new Mock<IOptions<ClientUrl>>();
             _metricsMock = new Mock<IMetrics>();
+            _clientUrlMock = new Mock<IOptions<ClientUrl>>();
 
             _workspaceService = new WorkspaceService(
                 _userRepositoryMock.Object,
@@ -75,7 +85,7 @@ namespace Provis.UnitTests.Core.Services
                 _mapperMock.Object,
                 _roleAccessMock.Object,
                 _templateServiceMock.Object,
-                _optionsMock.Object,
+                _clientUrlMock.Object,
                 _metricsMock.Object);
         }
 
@@ -108,6 +118,8 @@ namespace Provis.UnitTests.Core.Services
             SetupWorkspaceSaveChangesAsync();
 
             var userWorkspaceMock = WorkspaceTestData.GetTestUserWorkspace();
+
+            SetupMetricsIncrement();
 
             SetupAddUserWorkspaceAsync(userWorkspaceMock);
             SetupUserWorkspaceSaveChangesAsync();
@@ -160,16 +172,49 @@ namespace Provis.UnitTests.Core.Services
 
         [Test]
         [TestCase("2")]
+        public async Task SendInviteAsync_UserAlredyAcceptedInvite_ThrowHTTPException(string ownerId)
+        {
+            var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
+            var userOwnerMock = UserTestData.GetTestUserList()[1];
+            SetupGetUserByIdAsync(ownerId, userOwnerMock);
+
+            var userInviteMock = UserTestData.GetTestUser();
+            SetupGetUserByEmailAsync(workspaceInviteDTOMock.UserEmail, userInviteMock);
+
+            var workspaceMock = WorkspaceTestData.GetTestWorkspace();
+            SetupGetWorkspaceByKeyAsync(workspaceInviteDTOMock.WorkspaceId, workspaceMock);
+
+            bool isConfirm = true;
+            SetupAnyBySpecAsync(isConfirm);
+
+            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
+            SetupGetFirstBySpecAsync(userWorkspaceMock);
+
+            Func<Task> act = () => _workspaceService
+                .SendInviteAsync(workspaceInviteDTOMock, ownerId);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.UserAcceptedInvite);
+        }
+
+        [Test]
+        [TestCase("2")]
         public async Task SendInviteAsync_UserHasInvite_ThrowHTTPException(string ownerId)
         {
             var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
-            var userMock = UserTestData.GetTestUser();
+            var userOwnerMock = UserTestData.GetTestUserList()[1];
+            SetupGetUserByIdAsync(ownerId, userOwnerMock);
+
+            var userInviteMock = UserTestData.GetTestUser();
+            SetupGetUserByEmailAsync(workspaceInviteDTOMock.UserEmail, userInviteMock);
+
             var workspaceMock = WorkspaceTestData.GetTestWorkspace();
-
-            SetupGetUserByIdAsync(ownerId, userMock);
-
-            SetupGetUserByEmailAsync(workspaceInviteDTOMock.UserEmail, userMock);
             SetupGetWorkspaceByKeyAsync(workspaceInviteDTOMock.WorkspaceId, workspaceMock);
+
+            bool isConfirm = true;
+            SetupAnyBySpecAsync(isConfirm);
 
             Func<Task> act = () => _workspaceService
                 .SendInviteAsync(workspaceInviteDTOMock, ownerId);
@@ -181,21 +226,246 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(1)]
-        [TestCase("1")]
+        [TestCase("2")]
+        public async Task SendInviteAsync_InviteIsValid_ReturnCompletedTask(string ownerId)
+        {
+            var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
+            var userOwnerMock = UserTestData.GetTestUserList()[1];
+            SetupGetUserByIdAsync(ownerId, userOwnerMock);
+
+            var userInviteMock = UserTestData.GetTestUser();
+            SetupGetUserByEmailAsync(workspaceInviteDTOMock.UserEmail, userInviteMock);
+
+            var workspaceMock = WorkspaceTestData.GetTestWorkspace();
+            SetupGetWorkspaceByKeyAsync(workspaceInviteDTOMock.WorkspaceId, workspaceMock);
+
+            bool isConfirm = false;
+            SetupAnyBySpecAsync(isConfirm);
+
+            var inviteUserMock = InviteUserTestData.GetInviteUserList()[0];
+            SetupAddInviteUserAsync(inviteUserMock);
+            SetupInviteUserSaveChangesAsync();
+
+            var templateStringMock = "template";
+            var viewName = "Mails/WorkspaceInvite";
+            var uriStringMock = "http://localhost:4200/";
+            Uri uriMock = new(uriStringMock);
+            SetupApplicationUrl(new() { ApplicationUrl = uriMock });
+
+            SetupGetTemplateHtmlAsStringAsync(viewName, templateStringMock);
+            SetupSendEmailAsync();
+
+            var result = _workspaceService.SendInviteAsync(workspaceInviteDTOMock, ownerId);
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
+        [Test]
+        [TestCase(1,"2")]
         public async Task DenyInviteAsync_NotYoursInvite_ThrowHTTPException(int inviteId, string ownerId)
         {
-            var inviteUserMock = UserTestData.GetTestUser();
-
-            SetupGetUserByIdAsync(ownerId, userMock);
+            var inviteUserMock = InviteUserTestData.GetInviteUserList()[0];
+            SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
 
             Func<Task> act = () => _workspaceService
-                .SendInviteAsync(workspaceInviteDTOMock, ownerId);
+                .DenyInviteAsync(inviteId, ownerId);
 
             await act.Should()
                 .ThrowAsync<HttpException>()
                 .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
-                .WithMessage(ErrorMessages.SendInviteYourself);
+                .WithMessage(ErrorMessages.CannotDenyInvite);
+        }
+
+        [Test]
+        [TestCase(1, "1")]
+        public async Task DenyInviteAsync_InviteIsValid_ReturnCompletedTask(int inviteId, string ownerId)
+        {
+            var inviteUserMock = InviteUserTestData.GetInviteUserList()[0];
+            SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
+
+            var result = _workspaceService.DenyInviteAsync(inviteId, ownerId);
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
+        [Test]
+        [TestCase("1")]
+        public async Task GetWorkspaceListAsync_UserIsValid_ReturnWorkspaceList(string userId)
+        {
+            var expectedWorkspaceListMock = WorkspaceTestData.GetTestWorkspaceListInfoDTO();
+            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList();
+
+            SetupGetWorkspaceListBySpecAsync(userWorkspaceMock);
+            _mapperMock.SetupMap(userWorkspaceMock, expectedWorkspaceListMock);
+
+            var result = await _workspaceService.GetWorkspaceListAsync(userId);
+
+            result.Should().NotBeNull();
+            result.Should().Equal(expectedWorkspaceListMock);
+        }
+
+        [Test]
+        [TestCase(1, "2")]
+        public async Task AcceptInviteAsync_CannotAcceptInvite_ThrowHTTPException(int inviteId, string userId)
+        {
+            var inviteUserMock = InviteUserTestData.GetInviteUserList()[0];
+            SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
+
+            Func<Task> act = () => _workspaceService
+                .AcceptInviteAsync(inviteId, userId);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.CannotAcceptInvite);
+        }
+
+        [Test]
+        [TestCase(1, "1")]
+        public async Task AcceptInviteAsync_InviteAlredyAccepted_ThrowHTTPException(int inviteId, string userId)
+        {
+            var inviteUserMock = InviteUserTestData.GetInviteUserList()[0];
+            SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
+
+            Func<Task> act = () => _workspaceService
+                .AcceptInviteAsync(inviteId, userId);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.InviteAlreadyAccerted);
+        }
+
+        [Test]
+        [TestCase(2, "1")]
+        public async Task AcceptInviteAsync_InviteIsValid_ReturnCompletedTask(int inviteId, string ownerId)
+        {
+            var inviteUserMock = InviteUserTestData.GetInviteUserList()[1];
+            SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
+
+            var userTaskListMock = UserTaskTestData.GetTestUserTaskList();
+            SetupGetUserTaskListBySpecAsync(userTaskListMock);
+
+            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
+            SetupMetricsIncrement();
+            SetupAddUserWorkspaceAsync(userWorkspaceMock);
+            SetupInviteUserSaveChangesAsync();
+
+            var result = _workspaceService.AcceptInviteAsync(inviteId, ownerId);
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
+        [Test]
+        [TestCase(1, "1")]
+        public async Task GetWorkspaceInfoAsync_UserIsValid_ReturnWorkspaceInfo(int workspaceId, string userId)
+        {
+            var expectedWorkspaceMock = WorkspaceTestData.GetTestWorkspaceListInfoDTO()[0];
+            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
+
+            SetupGetFirstBySpecAsync(userWorkspaceMock);
+            _mapperMock.SetupMap(userWorkspaceMock, expectedWorkspaceMock);
+
+            var result = await _workspaceService.GetWorkspaceInfoAsync(workspaceId, userId);
+
+            result.Should().NotBeNull();
+            result.Should().Be(expectedWorkspaceMock);
+        }
+
+        [Test]
+        [TestCase("1")]
+        public async Task ChangeUserRoleAsync_HasNotPermissions_ThrowHTTPException(string userId)
+        {
+            var workspaceChangeRoleDTOMock = WorkspaceTestData.GetTestWorkspaceChangeRoleDTO();
+            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[1];
+            SetupGetFirstBySpecAsync(userWorkspaceMock);
+
+            var targetWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
+            SetupGetFirstBySpecAsync(targetWorkspaceMock);
+
+            //var roleId = (WorkSpaceRoles)userWorkspaceMock.RoleId;
+
+            Func<Task> act = () => _workspaceService
+                .ChangeUserRoleAsync(userId, workspaceChangeRoleDTOMock);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
+                .WithMessage(ErrorMessages.NotPermission);
+        }
+
+        protected void SetupApplicationUrl(ClientUrl clientUri)
+        {
+            _clientUrlMock
+                .Setup(x => x.Value)
+                .Returns(clientUri)
+                .Verifiable();
+        }
+
+        protected void SetupGetTemplateHtmlAsStringAsync(string viewName,
+            string templateInstance)
+        {
+            _templateServiceMock
+                .Setup(x => x.GetTemplateHtmlAsStringAsync(viewName ?? It.IsAny<string>(),
+                                                           It.IsAny<WorkspaceInvite>()))
+                .ReturnsAsync(templateInstance)
+                .Verifiable();
+        }
+
+        protected void SetupSendEmailAsync()
+        {
+            _emailSendServiceMock
+                .Setup(x => x.SendEmailAsync(It.IsAny<MailRequest>()))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+
+        protected void SetupMetricsIncrement()
+        {
+            _metricsMock
+                .Setup(x => x.Measure.Counter.Increment(It.IsAny<CounterOptions>(), It.IsAny<MetricTags>()))
+                .Verifiable();
+        }
+
+        protected void SetupAnyBySpecAsync(bool isConfirm)
+        {
+            _inviteUserRepositoryMock
+                .Setup(x => x.AnyBySpecAsync(It.IsAny<ISpecification<InviteUser>>(), It.IsAny<Expression<Func<InviteUser, bool>>>()))
+                .ReturnsAsync(isConfirm)
+                .Verifiable();
+        }
+
+        protected void SetupGetUserTaskListBySpecAsync(List<UserTask> listInstance)
+        {
+            _userTaskRepositoryMock
+                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<UserTask>>()))
+                .ReturnsAsync(listInstance)
+                .Verifiable();
+        }
+
+        protected void SetupGetWorkspaceListBySpecAsync(List<UserWorkspace> listInstance)
+        {
+            _userWorkspaceRepositoryMock
+                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<UserWorkspace>>()))
+                .ReturnsAsync(listInstance)
+                .Verifiable();
+        }
+
+        protected void SetupGetFirstBySpecAsync(UserWorkspace userWorkspaceInstance)
+        {
+            _userWorkspaceRepositoryMock
+                .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<UserWorkspace>>()))
+                .Returns(Task.FromResult(userWorkspaceInstance))
+                .Verifiable();
         }
 
         protected void SetupMap<TSource, TDestination>(TSource source, TDestination destination)
@@ -262,9 +532,25 @@ namespace Provis.UnitTests.Core.Services
                 .Verifiable();
         }
 
+        protected void SetupAddInviteUserAsync(InviteUser inviteUserInstance)
+        {
+            _inviteUserRepositoryMock
+                .Setup(x => x.AddAsync(It.IsAny<InviteUser>()))
+                .ReturnsAsync(inviteUserInstance)
+                .Verifiable();
+        }
+
         protected void SetupWorkspaceSaveChangesAsync()
         {
             _workspaceRepositoryMock
+                .Setup(x => x.SaveChangesAsync())
+                .Returns(Task.FromResult(1))
+                .Verifiable();
+        }
+
+        protected void SetupInviteUserSaveChangesAsync()
+        {
+            _inviteUserRepositoryMock
                 .Setup(x => x.SaveChangesAsync())
                 .Returns(Task.FromResult(1))
                 .Verifiable();
@@ -277,19 +563,5 @@ namespace Provis.UnitTests.Core.Services
                 .Returns(Task.FromResult(1))
                 .Verifiable();
         }
-
-        //protected void SetupCounterIncrement(Workspace workspaceInstance)
-        //{
-        //    _workspaceRepositoryMock
-        //        .Setup(x => x.AddAsync(workspaceInstance))
-        //        .Verifiable();
-        //}
-
-        //protected void SetupMembersCountByWorkspaceRole(Workspace workspaceInstance)
-        //{
-        //    _workspaceRepositoryMock
-        //        .Setup(x => x.AddAsync(workspaceInstance))
-        //        .Verifiable();
-        //}
     }
 }

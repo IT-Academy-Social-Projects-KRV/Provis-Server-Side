@@ -1,4 +1,5 @@
-﻿using Provis.Core.Entities.InviteUserEntity;
+﻿using Provis.Core.DTO.UserDTO;
+using Provis.Core.Entities.InviteUserEntity;
 using System;
 using System.Collections.Generic;
 
@@ -33,6 +34,37 @@ namespace Provis.UnitTests.Base.TestData
                     ToUserId = "1",
                     IsConfirm = null,
                     WorkspaceId = 3
+                }
+            };
+        }
+
+        public List<UserInviteInfoDTO> GetUserInviteInfoList()
+        {
+            return new List<UserInviteInfoDTO>()
+            {
+                new UserInviteInfoDTO()
+                {
+                    Id = 1,
+                    FromUserName = "username2",
+                    ToUserId = "1",
+                    IsConfirm = true,
+                    WorkspaceName = "worksace1"
+                },
+                new UserInviteInfoDTO()
+                {
+                    Id = 1,
+                    FromUserName = "username2",
+                    ToUserId = "1",
+                    IsConfirm = false,
+                    WorkspaceName = "worksace2"
+                },
+                new UserInviteInfoDTO()
+                {
+                    Id = 1,
+                    FromUserName = "username2",
+                    ToUserId = "1",
+                    IsConfirm = true,
+                    WorkspaceName = "worksace2"
                 }
             };
         }

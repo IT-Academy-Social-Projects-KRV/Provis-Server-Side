@@ -39,7 +39,7 @@ namespace Provis.Core.Services
         protected readonly IMapper _mapper;
         protected readonly RoleAccess _roleAccess;
         protected readonly ITemplateService _templateService;
-        protected readonly ClientUrl _clientUrl;
+        protected readonly IOptions<ClientUrl> _clientUrl;
         private readonly IMetrics _metrics;
 
         public WorkspaceService(IRepository<User> user,
@@ -67,7 +67,7 @@ namespace Provis.Core.Services
             _userRoleRepository = userRoleRepository;
             _templateService = templateService;
             _userTaskRepository = userTasksRepository;
-            _clientUrl = options.Value;
+            _clientUrl = options;
             _metrics = metrics;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
@@ -88,8 +88,8 @@ namespace Provis.Core.Services
                 RoleId = (int)WorkSpaceRoles.OwnerId
             };
 
-            //_metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
-            //  MetricTagsConstructor.MembersCountByWorkspaceRole(workspace.Id, (int)WorkSpaceRoles.OwnerId));
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
+              MetricTagsConstructor.MembersCountByWorkspaceRole(workspace.Id, (int)WorkSpaceRoles.OwnerId));
 
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _userWorkspaceRepository.SaveChangesAsync();
@@ -128,18 +128,19 @@ namespace Provis.Core.Services
             workspace.WorkspaceNullChecking();
 
             var inviteUserListSpecification = new InviteUsers.InviteList(inviteUser.Id, workspace.Id);
-            if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x=>x.IsConfirm == null))
-            {
-                throw new HttpException(HttpStatusCode.BadRequest,
-                    ErrorMessages.UserAlreadyHasInvite);
-            }
-
             var userWorkspaceInviteSpecification = new UserWorkspaces.WorkspaceMember(inviteUser.Id, workspace.Id);
+
             if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x => x.IsConfirm.Value == true)
                 && await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspaceInviteSpecification) != null)
             {
                 throw new HttpException(HttpStatusCode.BadRequest,
                     ErrorMessages.UserAcceptedInvite);
+            }
+
+            if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x=>x.IsConfirm == null))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.UserAlreadyHasInvite);
             }
 
             InviteUser user = new InviteUser
@@ -164,7 +165,7 @@ namespace Provis.Core.Services
                         Owner = owner.UserName,
                         WorkspaceName = workspace.Name,
                         UserName = inviteUser.UserName,
-                        Uri = _clientUrl.ApplicationUrl
+                        Uri = _clientUrl.Value.ApplicationUrl
                     })
             });
 

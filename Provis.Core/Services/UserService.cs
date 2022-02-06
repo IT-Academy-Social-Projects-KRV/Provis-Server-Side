@@ -177,7 +177,7 @@ namespace Provis.Core.Services
                 Subject = "Provis 2fa code",
                 Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode",
                     new UserToken() { Token = twoFactorToken, UserName = user.UserName, Uri = _clientUrl.Value.ApplicationUrl })
-        };
+            };
 
             await _emailSenderService.SendEmailAsync(message);
 

@@ -18,19 +18,6 @@ namespace Provis.UnitTests.Base.TestData
             };
         }
 
-        public static User GetTestUser2()
-        {
-            return new User()
-            {
-                Id = "2",
-                Email = "test2@gmail.com",
-                Name = "Name2",
-                Surname = "Surname2",
-                UserName = "Username2",
-                ImageAvatarUrl = "Path2"
-            };
-        }
-
         public static List<User> GetTestUserList()
         {
             return new List<User>()
