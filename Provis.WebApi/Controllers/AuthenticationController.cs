@@ -71,6 +71,24 @@ namespace Provis.WebApi.Controllers
             return NoContent();
         }
 
+        [HttpGet]
+        [Route("forgot-password/{email}")]
+        public async Task<IActionResult> SentResetPasswordTokenAsync(string email)
+        {
+            await authenticationService.SentResetPasswordTokenAsync(email);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("reset-password")]
+        public async Task<IActionResult> ResetPasswordAsync([FromBody] UserChangePasswordDTO userChangePasswordDTO)
+        {
+            await authenticationService.ResetPasswordAsync(userChangePasswordDTO);
+
+            return Ok();
+        }
+
         [HttpPost]
         [Route("signin-google")]
         public async Task<IActionResult> ExternalLoginAsync([FromBody] UserExternalAuthDTO authDTO)

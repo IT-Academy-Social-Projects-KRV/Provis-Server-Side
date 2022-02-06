@@ -11,6 +11,8 @@ namespace Provis.Core.Interfaces.Services
         Task<UserAutorizationDTO> RefreshTokenAsync(UserAutorizationDTO userTokensDTO);
         Task LogoutAsync(UserAutorizationDTO userTokensDTO);
         Task<UserAutorizationDTO> LoginTwoStepAsync(UserTwoFactorDTO twoFactorDTO);
+        Task SentResetPasswordTokenAsync(string userEmail);
+        Task ResetPasswordAsync(UserChangePasswordDTO userChangePasswordDTO);
         Task<UserAuthResponseDTO> ExternalLoginAsync(UserExternalAuthDTO authDTO);
     }
 }

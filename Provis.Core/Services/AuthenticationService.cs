@@ -25,6 +25,7 @@ namespace Provis.Core.Services
         protected readonly RoleManager<IdentityRole> _roleManager;
         protected readonly IRepository<RefreshToken> _refreshTokenRepository;
         protected readonly IEmailSenderService _emailSenderService;
+        protected readonly IConfirmEmailService _confirmEmailService;
         protected readonly ITemplateService _templateService;
         protected readonly ClientUrl _clientUrl;
 
@@ -35,6 +36,7 @@ namespace Provis.Core.Services
             RoleManager<IdentityRole> roleManager,
             IRepository<RefreshToken> refreshTokenRepository,
             IEmailSenderService emailSenderService,
+            IConfirmEmailService confirmEmailService,
             ITemplateService templateService,
             IOptions<ClientUrl> options)
         {
@@ -44,6 +46,7 @@ namespace Provis.Core.Services
             _roleManager = roleManager;
             _refreshTokenRepository = refreshTokenRepository;
             _emailSenderService = emailSenderService;
+            _confirmEmailService = confirmEmailService;
             _templateService = templateService;
             _clientUrl = options.Value;
         }
@@ -198,6 +201,38 @@ namespace Provis.Core.Services
 
             await _refreshTokenRepository.DeleteAsync(refeshTokenFromDb);
             await _refreshTokenRepository.SaveChangesAsync();
+        }
+
+        public async Task SentResetPasswordTokenAsync(string userEmail)
+        {
+            var user = await _userManager.FindByEmailAsync(userEmail);
+            user.UserNullChecking();
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var encodedCode = Convert.ToBase64String(Encoding.Unicode.GetBytes(token));
+
+            await _emailSenderService.SendEmailAsync(new MailRequest()
+            {
+                ToEmail = user.Email,
+                Subject = "Provis Reset Password",
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/ResetPassword",
+                    new UserToken() { Token = encodedCode, UserName = user.UserName, Uri = _clientUrl.ApplicationUrl })
+            });
+        }
+
+        public async Task ResetPasswordAsync(UserChangePasswordDTO userChangePasswordDTO)
+        {
+            var user = await _userManager.FindByEmailAsync(userChangePasswordDTO.Email);
+            user.UserNullChecking();
+
+            var decodedCode = _confirmEmailService.DecodeUnicodeBase64(userChangePasswordDTO.Code);
+
+            var result = await _userManager.ResetPasswordAsync(user, decodedCode, userChangePasswordDTO.NewPassword);
+
+            if (!result.Succeeded)
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Wrong code or this code is deprecated, try again!");
+            }
         }
 
         public async Task<UserAuthResponseDTO> ExternalLoginAsync(UserExternalAuthDTO authDTO)
