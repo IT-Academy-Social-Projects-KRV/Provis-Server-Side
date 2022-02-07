@@ -241,7 +241,7 @@ namespace Provis.Core.Services
             if (payload == null)
             {
                 throw new HttpException(HttpStatusCode.BadRequest,
-                    ErrorMessages.InvalidExternalAuthentication);
+                    ErrorMessages.InvalidRequest);
             }
 
             var info = new UserLoginInfo(authDTO.Provider, payload.Subject, authDTO.Provider);

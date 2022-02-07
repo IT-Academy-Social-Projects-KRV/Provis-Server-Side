@@ -428,11 +428,5 @@ namespace Provis.Core.Resources {
                 return ResourceManager.GetString("WorkspaceNotFound", resourceCulture);
             }
         }
-
-        internal static string InvalidExternalAuthentication {
-            get {
-                return ResourceManager.GetString("Invalid External Authentication", resourceCulture);
-            }
-        }
     }
 }

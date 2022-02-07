@@ -1,17 +1,24 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using FluentAssertions;
+using Google.Apis.Auth;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.RefreshTokenEntity;
 using Provis.Core.Entities.UserEntity;
+using Provis.Core.Exeptions;
 using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Services;
 using Provis.UnitTests.Base;
 using Provis.UnitTests.Base.TestData;
+using Provis.UnitTests.Resources;
 using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Provis.UnitTests.Core.Services
@@ -83,6 +90,50 @@ namespace Provis.UnitTests.Core.Services
 
         }
 
+        [Test]
+        public async Task ExternalLoginAsync_PayloadIsInvalid_ThrowHttpException()
+        {
+            var authDTOMock = AuthenticationTestData.GetUserAuthDTO();
+
+            Func<Task> act = () =>
+                _authentifiactioService.ExternalLoginAsync(authDTOMock);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.InvalidRequest);
+        }
+
+        [Test]
+        public async Task ExternalLoginAsync_PayloadIsValid_ReturnUserAuthResponseDTO()
+        {
+            var userAuthDTO = AuthenticationTestData.GetUserAuthDTO();
+            var payloadMock = AuthenticationTestData.GetPayload();
+
+            SetupVerifyGoogleToken(payloadMock);
+
+            var userMock = UserTestData.GetTestUserList()[0];
+            SetupFindByEmailAsync(userMock.Email, userMock);
+
+            var claimsMock = AuthenticationTestData.GetClaims();
+
+            SetupAddLoginAsync();
+            SetupSetClaimsAsync(claimsMock);
+            SetupCreateToken("token");
+            SetupCreateRefreshToken("refToken");
+
+            var expectedResult = new UserAuthResponseDTO
+            {
+                Token = "token",
+                RefreshToken = "refToken"
+            };
+
+            var result = await _authentifiactioService.ExternalLoginAsync(userAuthDTO);
+
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(expectedResult);
+        }
+
         [TearDown]
         public void TearDown()
         {
@@ -95,6 +146,46 @@ namespace Provis.UnitTests.Core.Services
             _confirmEmailServiceMock.Verify();
             _templateServiceMock.Verify();
             _clientUrlMock.Verify();
+        }
+
+        protected void SetupCreateRefreshToken(string token)
+        {
+            _jwtServiceMock
+                .Setup(x => x.CreateRefreshToken())
+                .Returns(token)
+                .Verifiable();
+        }
+
+        protected void SetupCreateToken(string token)
+        {
+            _jwtServiceMock
+                .Setup(x => x.CreateToken(It.IsAny<System.Collections.Generic.IEnumerable<System.Security.Claims.Claim>>()))
+                .Returns(token)
+                .Verifiable();
+        }
+
+        protected void SetupSetClaimsAsync(IEnumerable<Claim> claims)
+        {
+            _jwtServiceMock
+                .Setup(x => x.SetClaims(It.IsAny<User>()))
+                .Returns(claims)
+                .Verifiable();
+        }
+
+        protected void SetupAddLoginAsync()
+        {
+            _userManagerMock
+                .Setup(x => x.AddLoginAsync(It.IsAny<User>(), It.IsAny<UserLoginInfo>()))
+                .ReturnsAsync(IdentityResult.Success)
+                .Verifiable();
+        }
+
+        protected void SetupVerifyGoogleToken(GoogleJsonWebSignature.Payload payload)
+        {
+            _jwtServiceMock
+                .Setup(x => x.VerifyGoogleToken(It.IsAny<UserExternalAuthDTO>()))
+                .Returns(Task.FromResult(payload))
+                .Verifiable();
         }
 
         protected void SetupFindByEmailAsync(string email, User userInstance)
