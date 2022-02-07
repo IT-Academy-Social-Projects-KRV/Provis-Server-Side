@@ -251,8 +251,6 @@ namespace Provis.Core.Services
             var modifierSpecification = new UserWorkspaces.WorkspaceMember(userId, userChangeRole.WorkspaceId);
             var modifier = await _userWorkspaceRepository.GetFirstBySpecAsync(modifierSpecification);
 
-            modifier.User.UserNullChecking();
-
             var targetSpecification = new UserWorkspaces.WorkspaceMember(userChangeRole.UserId, userChangeRole.WorkspaceId);
             var target = await _userWorkspaceRepository.GetFirstBySpecAsync(targetSpecification);
 

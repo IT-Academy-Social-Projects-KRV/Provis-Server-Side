@@ -89,5 +89,15 @@ namespace Provis.UnitTests.Base.TestData
                 WorkspaceId = 1
             };
         }
+
+        public static WorkspaceChangeRoleDTO GetTestWorkspaceChangeRoleDTO2()
+        {
+            return new WorkspaceChangeRoleDTO()
+            {
+                UserId = "4",
+                RoleId = 3,
+                WorkspaceId = 1
+            };
+        }
     }
 }

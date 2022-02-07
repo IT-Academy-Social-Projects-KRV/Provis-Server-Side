@@ -32,6 +32,7 @@ using App.Metrics.Counter;
 using System.Linq.Expressions;
 using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Roles;
+using Provis.Core.Entities.WorkspaceTaskEntity;
 
 namespace Provis.UnitTests.Core.Services
 {
@@ -349,8 +350,9 @@ namespace Provis.UnitTests.Core.Services
             var inviteUserMock = InviteUserTestData.GetInviteUserList()[1];
             SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
 
-            var userTaskListMock = UserTaskTestData.GetTestUserTaskList();
-            SetupGetUserTaskListBySpecAsync(userTaskListMock);
+            //var userTaskListMock = UserTaskTestData.GetTestUserTaskList();
+            var userTasksMock = UserTaskTestData.GetWorkspaceUserTasks();
+            SetupGetUserTaskListBySpecAsync(userTasksMock);
 
             var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
             SetupMetricsIncrement();
@@ -382,17 +384,19 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("1")]
+        [TestCase("2")]
         public async Task ChangeUserRoleAsync_HasNotPermissions_ThrowHTTPException(string userId)
         {
             var workspaceChangeRoleDTOMock = WorkspaceTestData.GetTestWorkspaceChangeRoleDTO();
             var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[1];
-            SetupGetFirstBySpecAsync(userWorkspaceMock);
 
-            var targetWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
+            var targetWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[2];
             SetupGetFirstBySpecAsync(targetWorkspaceMock);
 
-            //var roleId = (WorkSpaceRoles)userWorkspaceMock.RoleId;
+            var roleAccess = GetTestRoleAccess();
+            var dictionaryAccess = roleAccess.RolesAccess;
+                
+            _roleAccessMock.Object.RolesAccess = dictionaryAccess;
 
             Func<Task> act = () => _workspaceService
                 .ChangeUserRoleAsync(userId, workspaceChangeRoleDTOMock);
@@ -401,6 +405,31 @@ namespace Provis.UnitTests.Core.Services
                 .ThrowAsync<HttpException>()
                 .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
                 .WithMessage(ErrorMessages.NotPermission);
+        }
+
+        [Test]
+        [TestCase("3")]
+        public async Task ChangeUserRoleAsync_UsersIsValid_ReturnCompletedTask(string userId)
+        {
+            var workspaceChangeRoleDTOMock = WorkspaceTestData.GetTestWorkspaceChangeRoleDTO();
+
+            var modifierUserWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[2];
+            SetupGetFirstBySpecAsync(modifierUserWorkspaceMock);
+
+            var targetUserWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[3];
+            SetupGetFirstBySpecAsync(targetUserWorkspaceMock);
+
+            var roleAccess = GetTestRoleAccess();
+            var dictionaryAccess = roleAccess.RolesAccess;
+
+            _roleAccessMock.Object.RolesAccess = dictionaryAccess;
+
+            var result = _workspaceService.ChangeUserRoleAsync(userId, workspaceChangeRoleDTOMock);
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
         }
 
         protected void SetupApplicationUrl(ClientUrl clientUri)
@@ -444,11 +473,12 @@ namespace Provis.UnitTests.Core.Services
                 .Verifiable();
         }
 
-        protected void SetupGetUserTaskListBySpecAsync(List<UserTask> listInstance)
+        protected void SetupGetUserTaskListBySpecAsync(IEnumerable<Tuple<int, UserTask, int, int, string>> tasks)
         {
             _userTaskRepositoryMock
-                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<UserTask>>()))
-                .ReturnsAsync(listInstance)
+                .Setup(x => x.GetListBySpecAsync(
+                    It.IsAny<ISpecification<UserTask, Tuple<int, UserTask, int, int, string>>>()))
+                .ReturnsAsync(tasks)
                 .Verifiable();
         }
 
@@ -562,6 +592,29 @@ namespace Provis.UnitTests.Core.Services
                 .Setup(x => x.SaveChangesAsync())
                 .Returns(Task.FromResult(1))
                 .Verifiable();
+        }
+
+        public static RoleAccess GetTestRoleAccess()
+        {
+            return new RoleAccess()
+            {
+                RolesAccess = new Dictionary<WorkSpaceRoles, List<WorkSpaceRoles>>() 
+                {
+                    {
+                        WorkSpaceRoles.OwnerId, new List<WorkSpaceRoles>
+                        {
+                            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId
+                        } 
+                    },
+
+                    {
+                        WorkSpaceRoles.ManagerId, new List<WorkSpaceRoles>
+                        {
+                            WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId
+                        } 
+                    }
+                }
+            };
         }
     }
 }
