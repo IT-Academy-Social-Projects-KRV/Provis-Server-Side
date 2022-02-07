@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Provis.Infrastructure.Data;
 
 namespace Provis.Infrastructure.Migrations
 {
     [DbContext(typeof(ProvisDbContext))]
-    partial class ProvisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220202141237_AddIsUsingSprintsFieldInWorkspaceEntity")]
+    partial class AddIsUsingSprintsFieldInWorkspaceEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -285,10 +287,10 @@ namespace Provis.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTimeOffset?>("DateOfEnd")
+                    b.Property<DateTimeOffset>("DateOfEnd")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTimeOffset?>("DateOfStart")
+                    b.Property<DateTimeOffset>("DateOfStart")
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Description")
