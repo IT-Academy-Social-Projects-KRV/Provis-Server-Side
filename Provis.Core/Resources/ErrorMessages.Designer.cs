@@ -79,6 +79,15 @@ namespace Provis.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Bad sprint value.
+        /// </summary>
+        internal static string BadSprintValue {
+            get {
+                return ResourceManager.GetString("BadSprintValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You cannot accept this invite.
         /// </summary>
         internal static string CannotAcceptInvite {
@@ -327,6 +336,42 @@ namespace Provis.Core.Resources {
         internal static string SendInviteYourself {
             get {
                 return ResourceManager.GetString("SendInviteYourself", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sprint not found.
+        /// </summary>
+        internal static string SprintNotFound {
+            get {
+                return ResourceManager.GetString("SprintNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sprints already off.
+        /// </summary>
+        internal static string SprintsAlreadyOff {
+            get {
+                return ResourceManager.GetString("SprintsAlreadyOff", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Sprints already on.
+        /// </summary>
+        internal static string SprintsAlreadyOn {
+            get {
+                return ResourceManager.GetString("SprintsAlreadyOn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to You don&apos;t add sprint, because it isn&apos;t used in this workspace.
+        /// </summary>
+        internal static string SprintsNotOn {
+            get {
+                return ResourceManager.GetString("SprintsNotOn", resourceCulture);
             }
         }
         

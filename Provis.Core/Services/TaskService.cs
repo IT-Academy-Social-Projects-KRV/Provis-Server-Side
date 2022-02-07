@@ -158,6 +158,12 @@ namespace Provis.Core.Services
             var workspace = await _workspaceRepository.GetByKeyAsync(taskCreateDTO.WorkspaceId);
             workspace.WorkspaceNullChecking();
 
+            if(workspace.isUseSprints && !taskCreateDTO.SprintId.HasValue ||
+               !workspace.isUseSprints && taskCreateDTO.SprintId.HasValue)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest, ErrorMessages.BadSprintValue);
+            }
+
             foreach (var item in taskCreateDTO.AssignedUsers)
             {
                 var specification = new UserWorkspaces.WorkspaceMember(item.UserId, workspace.Id);
@@ -224,11 +230,11 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-        public async Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId)
+        public async Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId, int? sprintId)
         {
             if (!String.IsNullOrEmpty(userId))
             {
-                var specification = new UserTasks.UserTaskList(userId, workspaceId);
+                var specification = new UserTasks.UserTaskList(userId, workspaceId, sprintId);
                 var selection = await _userTaskRepository.GetListBySpecAsync(specification);
 
                 var result = selection
@@ -245,7 +251,7 @@ namespace Provis.Core.Services
             }
             else
             {
-                var specification = new WorkspaceTasks.UnassignedTaskList(workspaceId);
+                var specification = new WorkspaceTasks.UnassignedTaskList(workspaceId, sprintId);
                 var selection = await _taskRepository.GetListBySpecAsync(specification);
 
                 var result = selection

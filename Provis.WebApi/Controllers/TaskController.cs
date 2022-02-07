@@ -53,9 +53,9 @@ namespace Provis.WebApi.Controllers
         [Authorize]
         [HttpGet]
         [Route("tasks")]
-        public async Task<IActionResult> GetTasks(string userId, int workspaceId)
+        public async Task<IActionResult> GetTasks(string userId, int workspaceId, int? sprintId)
         {
-            var getTasks = await _taskService.GetTasks(userId, workspaceId);
+            var getTasks = await _taskService.GetTasks(userId, workspaceId, sprintId);
 
             return Ok(getTasks);
         }

@@ -4,6 +4,7 @@ using Provis.Core.Entities.CommentEntity;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RefreshTokenEntity;
 using Provis.Core.Entities.RoleEntity;
+using Provis.Core.Entities.SprintEntity;
 using Provis.Core.Entities.StatusEntity;
 using Provis.Core.Entities.StatusHistoryEntity;
 using Provis.Core.Entities.UserEntity;
@@ -41,6 +42,7 @@ namespace Provis.Infrastructure.Data
             modelBuilder.ApplyConfiguration(new WorkspaceConfiguration());
             modelBuilder.ApplyConfiguration(new WorkspaceTaskConfiguration());
             modelBuilder.ApplyConfiguration(new WorkspaceTaskAttachmentConfiguration());
+            modelBuilder.ApplyConfiguration(new SprintConfiguration());
 
             modelBuilder.Seed();
         }
@@ -57,5 +59,6 @@ namespace Provis.Infrastructure.Data
         public DbSet<Workspace> Workspaces { get; set; }
         public DbSet<WorkspaceTask> Tasks { get; set; }
         public DbSet<WorkspaceTaskAttachment> TaskAttachments { get; set; }
+        public DbSet<Sprint> Sprints { get; set; }
     }
 }

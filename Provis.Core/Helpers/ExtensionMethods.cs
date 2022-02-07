@@ -1,4 +1,5 @@
 ﻿using Provis.Core.Entities.InviteUserEntity;
+using Provis.Core.Entities.SprintEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
@@ -50,6 +51,15 @@ namespace Provis.Core.Helpers.Mails
         public static void TaskNullChecking(this WorkspaceTask workspaceTask)
         {
             if (workspaceTask == null)
+            {
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.TaskNotFound);
+            }
+        }
+
+        public static void SprintNullChecking(this Sprint sprint)
+        {
+            if (sprint == null)
             {
                 throw new HttpException(HttpStatusCode.NotFound,
                     ErrorMessages.TaskNotFound);

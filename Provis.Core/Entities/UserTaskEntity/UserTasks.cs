@@ -7,7 +7,7 @@ namespace Provis.Core.Entities.UserTaskEntity
     {
         internal class UserTaskList : Specification<UserTask, Tuple<int, UserTask, int, int, string>>
         {
-            public UserTaskList(string userId, int workspaceId)
+            public UserTaskList(string userId, int workspaceId, int? sprintId)
             {
                 Query
                     .Select(x => new Tuple<int, UserTask, int, int, string>(
@@ -17,7 +17,8 @@ namespace Provis.Core.Entities.UserTaskEntity
                         x.Task.UserTasks.Count,
                         x.Task.TaskCreator.UserName))
                     .Include(x => x.Task)
-                    .Where(x => x.UserId == userId && x.Task.WorkspaceId == workspaceId)
+                    .Where(x => x.UserId == userId && x.Task.WorkspaceId == workspaceId &&
+                        (x.Task.SprintId == sprintId || !sprintId.HasValue))
                     .OrderBy(x => x.Task.StatusId);
             }
         }

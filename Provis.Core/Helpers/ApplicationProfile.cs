@@ -20,6 +20,8 @@ using Provis.Core.Entities.CommentEntity;
 using Provis.Core.DTO.CommentDTO;
 using Provis.Core.DTO.CommentsDTO;
 using System;
+using Provis.Core.Entities.SprintEntity;
+using Provis.Core.DTO.SprintDTO;
 
 namespace Provis.Core.Helpers
 {
@@ -43,7 +45,8 @@ namespace Provis.Core.Helpers
             CreateMap<UserWorkspace, WorkspaceInfoDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.WorkspaceId))
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Workspace.Name))
-                .ForMember(x => x.Role, act => act.MapFrom(srs => srs.RoleId));
+                .ForMember(x => x.Role, act => act.MapFrom(srs => srs.RoleId))
+                .ForMember(x=>x.isUseSprints, act=>act.MapFrom(srs=>srs.Workspace.isUseSprints));
 
             CreateMap<Workspace, WorkspaceDescriptionDTO>();
 
@@ -78,7 +81,8 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
                 .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
                 .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
-                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints));
+                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints))
+                .ForMember(x => x.SprintId, act => act.MapFrom(srs => srs.SprintId));
 
             CreateMap<UserTask, TaskDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.TaskId))
@@ -186,6 +190,10 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.Id))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.AssignedUser.UserId))
                 .ForMember(x => x.UserRoleTagId, act => act.MapFrom(srs => srs.AssignedUser.RoleTagId));
+
+            CreateMap<ChangeSprintInfoDTO, Sprint>();
+            CreateMap<Sprint, SprintInfoDTO>();
+            CreateMap<Sprint, SprintDetailInfoDTO>();
         }
     }
 }

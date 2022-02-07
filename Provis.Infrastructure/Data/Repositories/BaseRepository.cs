@@ -117,6 +117,9 @@ namespace Provis.Infrastructure.Data.Repositories
             return evaluator.GetQuery(_dbSet, specification);
         }
 
-        
+        public async Task<int> SqlQuery(string sqlQuery)
+        {
+            return await _dbContext.Database.ExecuteSqlRawAsync(sqlQuery);
+        }
     }
 }

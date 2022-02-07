@@ -45,6 +45,11 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                 .WithMany(x => x.Tasks)
                 .HasForeignKey(x => x.TaskCreatorId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .HasOne(x => x.Sprint)
+                .WithMany(x => x.Tasks)
+                .HasForeignKey(x => x.SprintId);
         }
     }
 }

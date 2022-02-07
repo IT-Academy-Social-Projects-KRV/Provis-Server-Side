@@ -8,7 +8,7 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
     {
         internal class UnassignedTaskList : Specification<WorkspaceTask, Tuple<int, WorkspaceTask, int, int, string>>
         {
-            public UnassignedTaskList(int workspaceId)
+            public UnassignedTaskList(int workspaceId, int? sprintId)
             {
                 Query
                     .Select(x => new Tuple<int, WorkspaceTask, int, int, string>(
@@ -17,7 +17,9 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                         x.Comments.Count,
                         x.UserTasks.Count,
                         x.TaskCreator.UserName))
-                    .Where(x => x.WorkspaceId == workspaceId && (!x.UserTasks.Any() || x.UserTasks.All(y => y.IsUserDeleted == true)))
+                    .Where(x => x.WorkspaceId == workspaceId &&
+                        (!x.UserTasks.Any() || x.UserTasks.All(y => y.IsUserDeleted == true)) &&
+                        (x.SprintId == sprintId || !sprintId.HasValue))
                     .OrderBy(x => x.StatusId);
             }
         }
@@ -31,6 +33,20 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                     .Include(p => p.UserTasks
                         .Where(x => !x.IsUserDeleted))
                         .ThenInclude(x => x.User);
+            }
+        }
+
+        internal class GetSprintIdOfTask : Specification<WorkspaceTask, WorkspaceTask>
+        {
+            public GetSprintIdOfTask(int workspaceId)
+            {
+                Query
+                    .Select(x => new WorkspaceTask()
+                    {
+                        Id = x.Id,
+                        SprintId = x.SprintId
+                    })
+                    .Where(x=>x.WorkspaceId == workspaceId);
             }
         }
     }
