@@ -417,7 +417,7 @@ namespace Provis.Core.Services
             }
             else
             {
-                await _sprintService.OffSprints(workspaceId);
+                await _sprintService.OffSprintsAsync(workspaceId);
             }
         }
     }

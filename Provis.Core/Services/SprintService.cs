@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace Provis.Core.Services
 {
-    class SprintService: ISprintService
+    public class SprintService: ISprintService
     {
         private readonly IRepository<Workspace> _workspaceRepository;
         private readonly IRepository<WorkspaceTask> _taskRepository;
@@ -66,7 +66,7 @@ namespace Provis.Core.Services
             return _mapper.Map<List<SprintInfoDTO>>(sprintList);
         }
 
-        public async Task OffSprints(int workspaceId)
+        public async Task OffSprintsAsync(int workspaceId)
         {
             var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
 
