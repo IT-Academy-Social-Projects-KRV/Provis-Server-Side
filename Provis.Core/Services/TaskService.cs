@@ -30,6 +30,7 @@ using Provis.Core.Metrics;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net;
 using Provis.Core.Resources;
+using Microsoft.EntityFrameworkCore;
 
 namespace Provis.Core.Services
 {
@@ -328,10 +329,10 @@ namespace Provis.Core.Services
             var worspaceMemberSpecefication = new UserWorkspaces
                 .WorkspaceMember(userId, taskChangeInfoDTO.WorkspaceId);
 
-            if (!workspaceTask.RowVersion.SequenceEqual(taskChangeInfoDTO.RowVersion))
-            {
-                throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
-            }
+            //if (!workspaceTask.RowVersion.SequenceEqual(taskChangeInfoDTO.RowVersion))
+            //{
+            //    throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
+            //}
 
             if (!(workspaceTask.TaskCreatorId == userId ||
                 await _userWorkspaceRepository
@@ -343,38 +344,49 @@ namespace Provis.Core.Services
 
             if (workspaceTask.TaskDataIsUpdated(taskChangeInfoDTO))
             {
-                var user = await _userRepository.GetByKeyAsync(userId);
-
-                var workspace = await _workspaceRepository.GetByKeyAsync(taskChangeInfoDTO.WorkspaceId);
-
-                var assignedUserEmails = await _userTaskRepository.GetListBySpecAsync(
-                    new UserTasks.TaskAssignedUserEmailList(taskChangeInfoDTO.Id));
-
-                if (assignedUserEmails.Count() > 1)
+                try
                 {
-                    await Task.Factory.StartNew(async () =>
-                    {
-                        await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskEdited>()
-                        {
-                            Emails = assignedUserEmails,
-                            Subject = $"Task {workspaceTask.Name} was edited",
-                            Body = "TaskChange",
-                            ViewModel = new TaskEdited()
-                            {
-                                Uri = _clientUrl.Value.ApplicationUrl,
-                                WhoEditUserName = user.Name,
-                                TaskChangeInfo = taskChangeInfoDTO,
-                                WorkspaceName = workspace.Name
-                            }
-                        });
-                    });
+                    _mapper.Map(taskChangeInfoDTO, workspaceTask);
+
+                    await _taskRepository.ChangeRowVersion(workspaceTask, taskChangeInfoDTO.RowVersion);
+
+                    await _taskRepository.UpdateAsync(workspaceTask);
+
+                    await _taskRepository.SaveChangesAsync();
                 }
+                catch(DbUpdateConcurrencyException)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
+                }
+                finally
+                {
+                    var user = await _userRepository.GetByKeyAsync(userId);
 
-                _mapper.Map(taskChangeInfoDTO, workspaceTask);
+                    var workspace = await _workspaceRepository.GetByKeyAsync(taskChangeInfoDTO.WorkspaceId);
 
-                await _taskRepository.UpdateAsync(workspaceTask);
+                    var assignedUserEmails = await _userTaskRepository.GetListBySpecAsync(
+                        new UserTasks.TaskAssignedUserEmailList(taskChangeInfoDTO.Id));
 
-                await _taskRepository.SaveChangesAsync();
+                    if (assignedUserEmails.Count() > 1)
+                    {
+                        await Task.Factory.StartNew(async () =>
+                        {
+                            await _emailSenderService.SendManyMailsAsync(new MailingRequest<TaskEdited>()
+                            {
+                                Emails = assignedUserEmails,
+                                Subject = $"Task {workspaceTask.Name} was edited",
+                                Body = "TaskChange",
+                                ViewModel = new TaskEdited()
+                                {
+                                    Uri = _clientUrl.Value.ApplicationUrl,
+                                    WhoEditUserName = user.Name,
+                                    TaskChangeInfo = taskChangeInfoDTO,
+                                    WorkspaceName = workspace.Name
+                                }
+                            });
+                        });
+                    }
+                }
             }
 
             return _mapper.Map<TaskInfoDTO>(await _taskRepository.GetByKeyAsync(workspaceTask.Id));

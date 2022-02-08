@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace Provis.Core.Entities.WorkspaceTaskEntity
 {
-    public class WorkspaceTask : IBaseEntity
+    public class WorkspaceTask : IBaseEntity, IRowVersion
     {
         public int Id { get; set; }
         public string Name { get; set; }
