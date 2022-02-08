@@ -206,7 +206,7 @@ namespace Provis.Core.Services
 
         public async Task<DownloadFile> GetCommentAttachmentPreviewAsync(int attachmentId)
         {
-            var specification = new CommentAttachments.CommentAttachmentsList(attachmentId);
+            var specification = new CommentAttachments.CommentAttachmentInfo(attachmentId);
             var attachment = await _commentAttachmentRepository.GetFirstBySpecAsync(specification);
 
             _ = attachment ?? throw new HttpException(HttpStatusCode.NotFound,
