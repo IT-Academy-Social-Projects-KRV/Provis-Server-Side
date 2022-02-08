@@ -105,7 +105,7 @@ namespace Provis.Core.Services
                 try
                 {
                     task.StatusId = changeTaskStatus.StatusId;
-                    await _taskRepository.ChangeRowVersion(task, changeTaskStatus.RowVersion);
+                    await _taskRepository.SetOriginalRowVersion(task, changeTaskStatus.RowVersion);
 
                     await _taskRepository.UpdateAsync(task);
                     await _taskRepository.SaveChangesAsync();
@@ -346,7 +346,7 @@ namespace Provis.Core.Services
                 {
                     _mapper.Map(taskChangeInfoDTO, workspaceTask);
 
-                    await _taskRepository.ChangeRowVersion(workspaceTask, taskChangeInfoDTO.RowVersion);
+                    await _taskRepository.SetOriginalRowVersion(workspaceTask, taskChangeInfoDTO.RowVersion);
 
                     await _taskRepository.UpdateAsync(workspaceTask);
 
@@ -547,7 +547,7 @@ namespace Provis.Core.Services
                 try
                 {
                     userTaskMember.UserRoleTagId = changeRoleDTO.RoleId;
-                    await _userTaskRepository.ChangeRowVersion(userTaskMember, changeRoleDTO.RowVersion);
+                    await _userTaskRepository.SetOriginalRowVersion(userTaskMember, changeRoleDTO.RowVersion);
 
                     await _userTaskRepository.SaveChangesAsync();
                 }

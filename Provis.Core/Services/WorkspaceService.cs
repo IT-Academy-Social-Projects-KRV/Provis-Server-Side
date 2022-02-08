@@ -272,7 +272,7 @@ namespace Provis.Core.Services
                 try
                 {
                     target.RoleId = userChangeRole.RoleId;
-                    await _userWorkspaceRepository.ChangeRowVersion(target, userChangeRole.RowVersion);
+                    await _userWorkspaceRepository.SetOriginalRowVersion(target, userChangeRole.RowVersion);
                     await _userWorkspaceRepository.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
