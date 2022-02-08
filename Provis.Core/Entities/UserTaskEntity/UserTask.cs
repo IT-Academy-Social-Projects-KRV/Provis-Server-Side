@@ -5,7 +5,7 @@ using Provis.Core.Interfaces;
 
 namespace Provis.Core.Entities.UserTaskEntity
 {
-    public class UserTask : IBaseEntity
+    public class UserTask : IBaseEntity, IRowVersion
     {
         public bool IsUserDeleted { get; set; }
 

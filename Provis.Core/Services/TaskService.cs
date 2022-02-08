@@ -528,11 +528,6 @@ namespace Provis.Core.Services
             _ = userTaskMember ?? throw new HttpException(HttpStatusCode.NotFound,
                 ErrorMessages.UserNotFound);
 
-            if (!userTaskMember.RowVersion.SequenceEqual(changeRoleDTO.RowVersion))
-            {
-                throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
-            }
-
             var taskSpecification = new WorkspaceTasks
                     .TaskById(changeRoleDTO.TaskId);
             var task = await _taskRepository
@@ -549,15 +544,24 @@ namespace Provis.Core.Services
             if (task.TaskCreatorId == userId ||
                 (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
             {
+                try
+                {
+                    userTaskMember.UserRoleTagId = changeRoleDTO.RoleId;
+                    await _userTaskRepository.ChangeRowVersion(userTaskMember, changeRoleDTO.RowVersion);
+
+                    await _userTaskRepository.SaveChangesAsync();
+                }
+                catch(DbUpdateConcurrencyException)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
+                }
+
                 _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskRolesCountByWorkspace,
                     MetricTagsConstructor.TaskRolesCountByWorkspace(changeRoleDTO.WorkspaceId, userTaskMember.UserRoleTagId));
-
-                userTaskMember.UserRoleTagId = changeRoleDTO.RoleId;
 
                 _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
                     MetricTagsConstructor.TaskRolesCountByWorkspace(changeRoleDTO.WorkspaceId, changeRoleDTO.RoleId));
 
-                await _userTaskRepository.SaveChangesAsync();
             }
             else
             {
