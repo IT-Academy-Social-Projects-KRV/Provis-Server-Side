@@ -258,6 +258,14 @@ namespace Provis.Core.Services
                         CreateDate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero) };
                     await _userManager.CreateAsync(user);
                     //prepare and send an email for the email confirmation
+
+                    var findRole = await _roleManager.FindByNameAsync(SystemRoles.User);
+
+                    if (findRole == null)
+                    {
+                        await _roleManager.CreateAsync(new IdentityRole(SystemRoles.User));
+                    }
+
                     await _userManager.AddToRoleAsync(user, SystemRoles.User);
                     await _userManager.AddLoginAsync(user, info);
                 }
