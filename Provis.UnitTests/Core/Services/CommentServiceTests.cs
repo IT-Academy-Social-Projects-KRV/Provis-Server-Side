@@ -67,7 +67,6 @@ namespace Provis.UnitTests.Core.Services
                 DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 UserId = userId
             };
-
             CreateCommentDTO createCommentDTO = new()
             {
                 CommentText = "Text",
@@ -76,19 +75,15 @@ namespace Provis.UnitTests.Core.Services
             };
             
             comment.CommentText = createCommentDTO.CommentText;
-
             comment.TaskId = createCommentDTO.TaskId;
 
             _mapperMock.Setup(x => 
                 x.Map(It.IsAny<CreateCommentDTO>(), It.IsAny<Comment>()))
                     .Returns(comment);
-
             SetupCommentAddAsync(comment);
-
             SetupCommentSaveChangesAsync();
 
             comment.Id = 1;
-
             comment.User = new User() { UserName = "Username1" };
 
             CommentListDTO commentListDTO = new()
@@ -108,9 +103,7 @@ namespace Provis.UnitTests.Core.Services
             var result = await _commentService.AddCommentAsync(createCommentDTO, userId);
 
             result.Should().NotBeNull();
-
             result.Should().BeEquivalentTo(commentListDTO);
-
             await Task.CompletedTask;
         }
 
@@ -119,19 +112,15 @@ namespace Provis.UnitTests.Core.Services
         public async Task GetCommentListsAsync_TaskIdValid_ReturnListOfComments(int taskId)
         {
             var comments = CommentTestData.GetCommentsList();
-
             var commentsDTO = CommentTestData.GetCommentsListDTOs();
 
             SetupGetCommentsListBySpecAsync(comments);
-
             _mapperMock.SetupMap(comments, commentsDTO);
 
             var result = await _commentService.GetCommentListsAsync(taskId);
 
             result.Should().NotBeNull();
-
             result.Should().Equal(commentsDTO);
-
             await Task.CompletedTask;
         }
 
@@ -140,25 +129,20 @@ namespace Provis.UnitTests.Core.Services
         public async Task EditCommentAsync_UserIsCreator_ReturnTaskComplete(string creatorId)
         {
             var comment = CommentTestData.GetComment();
-
             var editCommentDTO = CommentTestData.GetEditCommentDTO();
 
             SetupCommentGetByKeyASync(comment);
 
             comment.DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero);
-
             comment.CommentText = editCommentDTO.CommentText;
 
             SetupCommentUpdateAsync();
-
             SetupCommentSaveChangesAsync();
 
             var result = _commentService.EditCommentAsync(editCommentDTO, creatorId);
 
             result.IsCompleted.Should().BeTrue();
-
             result.IsCompletedSuccessfully.Should().BeTrue();
-
             await Task.CompletedTask;
         }
 
@@ -167,13 +151,11 @@ namespace Provis.UnitTests.Core.Services
         public async Task EditCommentAsync_UserIsNotCreator_ThrowHttpException(string creatorId)
         {
             var comment = CommentTestData.GetComment();
-
             var editCommentDTO = CommentTestData.GetEditCommentDTO();
 
             SetupCommentGetByKeyASync(comment);
 
             comment.DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero);
-
             comment.CommentText = editCommentDTO.CommentText;
 
             Func<Task> act = () => _commentService.EditCommentAsync(editCommentDTO, creatorId);
@@ -189,23 +171,17 @@ namespace Provis.UnitTests.Core.Services
         public async Task DeleteCommentAsync_UserIsHavePermission_ReturnTaskComplete(int id, string userId, int workspaceId)
         {
             var userWorkspaceMock = CommentTestData.GetUserWorkspace();
-
             var comment = CommentTestData.GetComment();
 
             SetupUserWorkspaceGetFirstBySpecAsync(userWorkspaceMock);
-
             SetupCommentGetByKeyASync(comment);
-
             SetupDeleteCommentAsync(comment);
-
             SetupCommentSaveChangesAsync();
 
             var result = _commentService.DeleteCommentAsync(id, userId, workspaceId);
 
             result.IsCompleted.Should().BeTrue();
-
             result.IsCompletedSuccessfully.Should().BeTrue();
-
             await Task.CompletedTask;
         }
 
@@ -214,11 +190,9 @@ namespace Provis.UnitTests.Core.Services
         public async Task DeleteCommentAsync_UserIsNotPermission_ThrowHttpException(int id, string userId, int workspaceId)
         {
             var userWorkspaceMock = CommentTestData.GetUserWorkspace();
-
             var comment = CommentTestData.GetComment();
 
             SetupUserWorkspaceGetFirstBySpecAsync(userWorkspaceMock);
-
             SetupCommentGetByKeyASync(comment);
 
             Func<Task> act = async () => await _commentService.DeleteCommentAsync(id, userId, workspaceId);
