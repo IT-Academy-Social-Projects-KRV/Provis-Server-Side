@@ -1,4 +1,7 @@
 ﻿using Provis.Core.Entities.UserEntity;
+using Provis.Core.Helpers.Mails;
+using Provis.Core.Helpers.Mails.ViewModels;
+using System;
 using System.Collections.Generic;
 
 namespace Provis.UnitTests.Base.TestData
@@ -42,6 +45,16 @@ namespace Provis.UnitTests.Base.TestData
                     ImageAvatarUrl = "Path2"
                 }
             };
+        }
+
+        public static UserToken GetTestUserToken()
+        {
+            return new UserToken()
+            {
+                Token = "token",
+                Uri = new Uri("http://localhost:4200/"),
+                UserName = "name"
+                };
         }
     }
 }
