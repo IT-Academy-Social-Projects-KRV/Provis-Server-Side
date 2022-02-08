@@ -42,16 +42,6 @@ namespace Provis.UnitTests.Base.TestData
             };
         }
 
-        public static UserWorkspace GetTestUserWorkspace()
-        {
-            return new UserWorkspace()
-            {
-                UserId = "1",
-                WorkspaceId = 1,
-                RoleId = 1
-            };
-        }
-
         public static WorkspaceCreateDTO GetWorkspaceCreateDTO()
         {
             return new WorkspaceCreateDTO()

@@ -118,7 +118,7 @@ namespace Provis.UnitTests.Core.Services
             SetupAddWorkspaceAsync(workspaceMock);
             SetupWorkspaceSaveChangesAsync();
 
-            var userWorkspaceMock = WorkspaceTestData.GetTestUserWorkspace();
+            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
 
             SetupMetricsIncrement();
 
@@ -412,11 +412,9 @@ namespace Provis.UnitTests.Core.Services
 
         [Test]
         [TestCase("3")]
-        public async Task ChangeUserRoleAsync_UsersIsValid_ReturnCompletedTask(string userId)
+        public async Task ChangeUserRoleAsync_UsersIsValid_ReturnChangeRoleDTO(string userId)
         {
             var workspaceChangeRoleDTOMock = WorkspaceTestData.GetTestWorkspaceChangeRoleDTO2();
-
-            var modifierUserWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
             var targetUserWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[2];
             SetupGetFirstBySpecAsync(targetUserWorkspaceMock);
 
@@ -425,12 +423,15 @@ namespace Provis.UnitTests.Core.Services
 
             _roleAccessMock.Object.RolesAccess = dictionaryAccess;
 
-            var result = _workspaceService.ChangeUserRoleAsync(userId, workspaceChangeRoleDTOMock);
+            SetupMetricsDecrement();
+            SetupMetricsIncrement();
+            SetupUserWorkspaceSaveChangesAsync();
+            _mapperMock.SetupMap(targetUserWorkspaceMock, workspaceChangeRoleDTOMock);
+            
+            var result = await _workspaceService.ChangeUserRoleAsync(userId, workspaceChangeRoleDTOMock);
 
-            result.IsCompleted.Should().BeTrue();
-            result.IsCompletedSuccessfully.Should().BeTrue();
-
-            await Task.CompletedTask;
+            result.Should().NotBeNull();
+            result.Should().Be(workspaceChangeRoleDTOMock);
         }
 
         protected void SetupApplicationUrl(ClientUrl clientUri)
@@ -466,6 +467,13 @@ namespace Provis.UnitTests.Core.Services
                 .Verifiable();
         }
 
+        protected void SetupMetricsDecrement()
+        {
+            _metricsMock
+                .Setup(x => x.Measure.Counter.Decrement(It.IsAny<CounterOptions>(), It.IsAny<MetricTags>()))
+                .Verifiable();
+        }
+
         protected void SetupAnyBySpecAsync(bool isConfirm)
         {
             _inviteUserRepositoryMock
@@ -498,14 +506,6 @@ namespace Provis.UnitTests.Core.Services
                 .Returns(Task.FromResult(userWorkspaceInstance))
                 .Verifiable();
         }
-
-        //protected void SetupGetFirstBySpecAsyncReturnNull(UserWorkspace userWorkspaceInstance, User user)
-        //{
-        //    _userWorkspaceRepositoryMock
-        //        .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<UserWorkspace>>()))
-        //        .Returns(new UserWorkspace() {nu})
-        //        .Verifiable();
-        //}
 
         protected void SetupMap<TSource, TDestination>(TSource source, TDestination destination)
         {
