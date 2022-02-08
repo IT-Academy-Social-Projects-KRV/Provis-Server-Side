@@ -173,7 +173,7 @@ namespace Provis.UnitTests.Core.Services
 
         [Test]
         [TestCase("2")]
-        public async Task SendInviteAsync_UserAlredyAcceptedInvite_ThrowHTTPException(string ownerId)
+        public async Task SendInviteAsync_UserAcceptedInvite_ThrowHTTPException(string ownerId)
         {
             var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
             var userOwnerMock = UserTestData.GetTestUserList()[1];
@@ -201,8 +201,8 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("2")]
-        public async Task SendInviteAsync_UserHasInvite_ThrowHTTPException(string ownerId)
+        [TestCase("1")]
+        public async Task SendInviteAsync_UserAlredyHasInvite_ThrowHTTPException(string ownerId)
         {
             var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
             var userOwnerMock = UserTestData.GetTestUserList()[1];
@@ -216,6 +216,9 @@ namespace Provis.UnitTests.Core.Services
 
             bool isConfirm = true;
             SetupAnyBySpecAsync(isConfirm);
+
+            UserWorkspace userNull = null;
+            SetupGetFirstBySpecAsync(userNull);
 
             Func<Task> act = () => _workspaceService
                 .SendInviteAsync(workspaceInviteDTOMock, ownerId);
@@ -411,12 +414,10 @@ namespace Provis.UnitTests.Core.Services
         [TestCase("3")]
         public async Task ChangeUserRoleAsync_UsersIsValid_ReturnCompletedTask(string userId)
         {
-            var workspaceChangeRoleDTOMock = WorkspaceTestData.GetTestWorkspaceChangeRoleDTO();
+            var workspaceChangeRoleDTOMock = WorkspaceTestData.GetTestWorkspaceChangeRoleDTO2();
 
-            var modifierUserWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[2];
-            SetupGetFirstBySpecAsync(modifierUserWorkspaceMock);
-
-            var targetUserWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[3];
+            var modifierUserWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
+            var targetUserWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[2];
             SetupGetFirstBySpecAsync(targetUserWorkspaceMock);
 
             var roleAccess = GetTestRoleAccess();
@@ -497,6 +498,14 @@ namespace Provis.UnitTests.Core.Services
                 .Returns(Task.FromResult(userWorkspaceInstance))
                 .Verifiable();
         }
+
+        //protected void SetupGetFirstBySpecAsyncReturnNull(UserWorkspace userWorkspaceInstance, User user)
+        //{
+        //    _userWorkspaceRepositoryMock
+        //        .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<UserWorkspace>>()))
+        //        .Returns(new UserWorkspace() {nu})
+        //        .Verifiable();
+        //}
 
         protected void SetupMap<TSource, TDestination>(TSource source, TDestination destination)
         {
@@ -610,7 +619,7 @@ namespace Provis.UnitTests.Core.Services
                     {
                         WorkSpaceRoles.ManagerId, new List<WorkSpaceRoles>
                         {
-                            WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId
+                            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId
                         } 
                     }
                 }

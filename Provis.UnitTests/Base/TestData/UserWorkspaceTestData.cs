@@ -27,7 +27,7 @@ namespace Provis.UnitTests.Base.TestData
                 new UserWorkspace
                 {
                     UserId = "3",
-                    RoleId = 1,
+                    RoleId = 2,
                     WorkspaceId = 1,
                     User = new User
                     {
@@ -54,7 +54,7 @@ namespace Provis.UnitTests.Base.TestData
                         UserName = "Username4",
                         ImageAvatarUrl = "Path4"
                     }
-                },
+                }
             };
         }
     }
