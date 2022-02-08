@@ -159,6 +159,7 @@ namespace Provis.Core.Services
                     MetricTagsConstructor.TaskCountByStatus(task.WorkspaceId, task.StatusId));
 
                 await _statusHistoryRepository.AddAsync(statusHistory);
+                await _statusHistoryRepository.SaveChangesAsync();
             }
 
             return _mapper.Map<TaskChangeStatusDTO>(await _taskRepository.GetByKeyAsync(task.Id));
