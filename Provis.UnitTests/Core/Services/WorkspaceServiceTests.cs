@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
-using Provis.Core.DTO.WorkspaceDTO;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RoleEntity;
 using Provis.Core.Entities.UserEntity;
@@ -27,12 +26,10 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
 using Ardalis.Specification;
-using Provis.Core.DTO.UserDTO;
 using App.Metrics.Counter;
 using System.Linq.Expressions;
 using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Roles;
-using Provis.Core.Entities.WorkspaceTaskEntity;
 
 namespace Provis.UnitTests.Core.Services
 {
@@ -353,7 +350,6 @@ namespace Provis.UnitTests.Core.Services
             var inviteUserMock = InviteUserTestData.GetInviteUserList()[1];
             SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
 
-            //var userTaskListMock = UserTaskTestData.GetTestUserTaskList();
             var userTasksMock = UserTaskTestData.GetWorkspaceUserTasks();
             SetupGetUserTaskListBySpecAsync(userTasksMock);
 
