@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
+using Provis.Core.ApiModels;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.CommentEntity;
@@ -33,6 +34,7 @@ using Provis.UnitTests.Resources;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Net;
@@ -494,7 +496,7 @@ namespace Provis.UnitTests.Core.Services
                 .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
                 .WithMessage(ErrorMessages.TransactionFailed);
         }
-        [Test]
+        //[Test]
         /*public async Task CreateTask_TransactionCompleted_ReturnCompletedTask()
         {
             var workspaceMock = TaskTestData.GetWorkspace();
@@ -525,6 +527,424 @@ namespace Provis.UnitTests.Core.Services
 
             await Task.CompletedTask;
         }*/
+
+        [Test]
+        [TestCase("2")]
+        public async Task GetTaskAttachments_ContentTypeNotFound_ThrowHttpExeption(int taskId)
+        {
+            var listAttachments = TaskTestData.GetWorkspaceListTaskAttachments().Take(1).ToList();
+            var attachmentsListDTO = TaskTestData.GetAttachmentInfoDTOs().Take(1).ToList();
+            attachmentsListDTO[0].Name = "name";
+
+            SetupTaskAttachmentGetListById(listAttachments);
+            _mapperMock.SetupMap(listAttachments[0], attachmentsListDTO[0]);
+
+            Func<Task> act = () => _taskService.GetTaskAttachmentsAsync(taskId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.CannotGetFileContentType);
+        }
+
+        [Test]
+        [TestCase("2")]
+        public async Task GetTaskAttachments_ThereIsAccessAndExistingData_ReturnTaskAttachmentInfoDTO(int taskId)
+        {
+            var listAttachments = TaskTestData.GetWorkspaceListTaskAttachments().Take(1).ToList();
+            var attachmentsListDTO = TaskTestData.GetAttachmentInfoDTOs().Take(1).ToList();
+
+            SetupTaskAttachmentGetListById(listAttachments);
+            _mapperMock.SetupMap(listAttachments[0], attachmentsListDTO[0]);
+
+            var result = await _taskService.GetTaskAttachmentsAsync(taskId);
+
+            result.Should()
+                .NotBeNull();
+            result.Should()
+                .BeEquivalentTo(attachmentsListDTO);
+        }
+
+        [Test]
+        [TestCase("2")]
+        public async Task GetTaskAttachment_AttachmnetsNotFound_ThrowHttpExeption(int attachmentId)
+        {
+            WorkspaceTaskAttachment attachment = null;
+
+            SetupGetFirstBySpec(attachment);
+
+            Func<Task> act = () => _taskService.GetTaskAttachmentAsync(attachmentId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.AttachmentNotFound);
+        }
+
+        [Test]
+        [TestCase("2")]
+        public async Task GetTaskAttachment_AttachmnetsExist_ReturnDownloadFile(int attachmentId)
+        {
+            var attachment = TaskTestData.GetWorkspaceTaskAttachment();
+            var file = SetupGetDownloadFile();
+
+            SetupGetFirstBySpec(attachment);
+            SetupGetFileAsync(file);
+
+            var result = await _taskService.GetTaskAttachmentAsync(attachmentId);
+
+            result.Should()
+                .NotBeNull();
+            result.Should()
+                .BeEquivalentTo(file);
+        }
+
+        [Test]
+        [TestCase("1")]
+        public async Task DeleteTaskAttachment_AttachmentsNotFound_ThrowHttpExeption(int attachmentId)
+        {
+            WorkspaceTaskAttachment attachment = null;
+
+            SetupGetFirstBySpec(attachment);
+
+            Func<Task> act = () => _taskService.DeleteTaskAttachmentAsync(attachmentId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.AttachmentNotFound);
+        }
+
+        [Test]
+        [TestCase("1")]
+        public async Task DeleteTaskAttachment_AttachmentsExist_ReturnTaskComplate(int attachmentId)
+        {
+            var attachment = TaskTestData.GetWorkspaceTaskAttachment();
+
+            SetupGetFirstBySpec(attachment);
+            SetupDeleteFileAsync(attachment.AttachmentPath);
+            SetupAttachmentDeleteAsync(attachment);
+            SetupAttachmentSaveChangesAsync();
+
+            var result = Task.Run(() =>
+                _taskService.DeleteTaskAttachmentAsync(attachmentId)
+            );
+            result.Wait();
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
+        [Test]
+        public async Task SendTaskAttachments_AttachmentsMaxCount_ReturnHttpExeption()
+        {
+            var attachmentsList = TaskTestData.GetWorkspaceListTaskAttachments();
+            var taskAttachmentsDTO = TaskTestData.GetTaskAttachmentDTO();
+            var maxCount = 2;
+
+            SetupTaskGetListBySpec(attachmentsList);
+            SetupAttachmentOptions(maxCount);
+
+            Func<Task> act = () => _taskService.SendTaskAttachmentsAsync(taskAttachmentsDTO);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage($"You have exceeded limit of {maxCount} attachments");
+        }
+
+        [Test]
+        public async Task SendTaskAttachments_AttachmentsSend_ReturnTaskAttachmentDTO()
+        {
+            var taskAttachmentsDTO = TaskTestData.GetTaskAttachmentDTO();
+            var file = taskAttachmentsDTO.Attachment;
+            var folderPath = "file";
+            var path = "path";
+            var attachmentExpected = TaskTestData.GetAttachmentExpected();
+            var maxCount = 1;
+
+            SetupAddFileAsync(folderPath, file.FileName, path);
+            SetupAddAttachmentAsync(It.IsAny<WorkspaceTaskAttachment>());
+            SetupAttachmentSaveChangesAsync();
+            SetupAttachmentOptions(maxCount);
+            _mapperMock.SetupMap(It.IsAny<WorkspaceTaskAttachment>(), attachmentExpected);
+
+            var res = await _taskService.SendTaskAttachmentsAsync(taskAttachmentsDTO);
+            res.Should().NotBeNull();
+            res.Should().BeEquivalentTo(attachmentExpected);        
+        }
+
+        [Test]
+        [TestCase("2")]
+        public async Task GetTaskAttachmentPreview_AttachmnetNotFound_ThrowHttpExeption(int attachmentId)
+        {
+            WorkspaceTaskAttachment attachment = null;
+
+            SetupGetFirstBySpec(attachment);
+
+            Func<Task> act = () => _taskService.GetTaskAttachmentPreviewAsync(attachmentId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.AttachmentNotFound);
+        }
+
+        //[Test]
+        //[TestCase("2")]
+        //public async Task GetTaskAttachmentPreview_AttachmnetNotPreview_ThrowHttpExeption(int attachmentId)
+        //{
+        //    var attachment = TaskTestData.GetWorkspaceTaskAttachment();
+
+        //    SetupGetFirstBySpec(attachment);
+        //    _imageSettingsOptionsMock(attachment.AttachmentPath)
+
+        //    Func<Task> act = () => _taskService.GetTaskAttachmentPreviewAsync(attachmentId);
+        //    await act.Should()
+        //        .ThrowAsync<HttpException>()
+        //        .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+        //        .WithMessage(ErrorMessages.NotPreview);
+        //}
+
+        //[Test]
+        //[TestCase("2")]
+        //public async Task GetTaskAttachmentPreview_ThereIsAccessAndExistingData_ReturnDownloadFile(int attachmentId)
+        //{
+        //    var attachment = TaskTestData.GetWorkspaceTaskAttachment();
+        //    //var file = TaskTestData.
+
+        //    //SetupGetFirstBySpec(attachment);
+        //    //SetupGetFileAsync();
+
+        //    Func<Task> act = () => _taskService.GetTaskAttachmentPreviewAsync(attachmentId);
+        //    await act.Should()
+        //        .ThrowAsync<HttpException>()
+        //        .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+        //        .WithMessage(ErrorMessages.NotPreview);
+        //}
+
+        [Test]
+        [TestCase("1")]
+        public async Task ChangeMemberRole_TaskNotFound_ReturnHttpExeption(string userId)
+        {
+            var changeRoleDTO = TaskTestData.GetChengeRoleDTO();
+            WorkspaceTask task = null;
+
+            SetupTaskGetFirstBySpecAsync(task);
+
+            Func<Task> act = () => _taskService.ChangeMemberRoleAsync(changeRoleDTO, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.TaskNotFound);
+        }
+
+        [Test]
+        [TestCase("1")]
+        public async Task ChangeMemberRole_UserNotFound_ReturnHttpExeption(string userId)
+        {
+            var changeRoleDTO = TaskTestData.GetChengeRoleDTO();
+            var task = TaskTestData.GetWorkspaceTask();
+            UserTask userTask = null;
+
+            SetupTaskGetFirstBySpecAsync(task);
+            SetupGetUserTaskFirstBySpec(userTask);
+
+            Func<Task> act = () => _taskService.ChangeMemberRoleAsync(changeRoleDTO, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.UserNotFound);
+        }
+
+        [Test]
+        [TestCase("3")]
+        public async Task ChangeMemberRole_UserNotPermission_ReturnHttpExeption(string userId)
+        {
+            var changeRoleDTO = TaskTestData.GetChengeRoleDTO();
+            var task = TaskTestData.GetWorkspaceTask();
+            var userTask = TaskTestData.GetUserTask();
+            var userWorkspace = TaskTestData.GetUserWorkspace();
+
+            SetupTaskGetFirstBySpecAsync(task);
+            SetupGetUserTaskFirstBySpec(userTask);
+            SetupUserWorkspaceGetFirstBySpecAsync(userWorkspace);
+
+            Func<Task> act = () => _taskService.ChangeMemberRoleAsync(changeRoleDTO, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
+                .WithMessage(ErrorMessages.NotPermission);
+        }
+
+        [Test]
+        [TestCase("1")]
+        public async Task ChangeMemberRole_ThereIsAccessAndExistingData_ReturnTaskComplated(string userId)
+        {
+            var changeRoleDTO = TaskTestData.GetChengeRoleDTO();
+            var task = TaskTestData.GetWorkspaceTask();
+                task.TaskCreatorId = userId;
+            var userTask = TaskTestData.GetUserTask();
+            var userWorkspace = TaskTestData.GetUserWorkspace();
+
+            SetupTaskGetFirstBySpecAsync(task);
+            SetupGetUserTaskFirstBySpec(userTask);
+            SetupUserWorkspaceGetFirstBySpecAsync(userWorkspace);
+            SetupMetricsDecrement();
+            SetupMetricsIncrement();
+            SetupUserTaskSaveChangesAsync();
+
+            var result = Task.Run(() =>
+                _taskService.ChangeMemberRoleAsync(changeRoleDTO, userId)
+            );
+            result.Wait();
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
+        [Test]
+        [TestCase(2, 2, "2")]
+        public async Task DeleteTask_TaskNotFound_ReturnHttpExeption(int workspaceId, int taskId, string userId)
+        {
+            WorkspaceTask workspaceTask = null;
+
+            SetupTaskGetByKeyAsync(workspaceTask);
+
+            Func<Task> act = () => _taskService.DeleteTaskAsync(workspaceId, taskId, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.TaskNotFound);
+        }
+
+        [Test]
+        [TestCase(2, 2, "1")]
+        public async Task DeleteTask_UserNotPermission_ReturnHttpExeption(int workspaceId, int taskId, string userId)
+        {
+            var workspaceTask = TaskTestData.GetWorkspaceTask();
+
+            SetupTaskGetByKeyAsync(workspaceTask);
+
+            Func<Task> act = () => _taskService.DeleteTaskAsync(workspaceId, taskId, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
+                .WithMessage(ErrorMessages.NotPermission);
+        }
+
+        [Test]
+        [TestCase(2, 2, "2")]
+        public async Task DeleteTask_ThereIsAccessAndExistingData_ReturnTaskComplated(int workspaceId, int taskId, string userId)
+        {
+            var workspaceTask = TaskTestData.GetWorkspaceTask();
+            var statusHistoriesList = TaskTestData.GetStatusHistoriesList();
+            var commentList = TaskTestData.GetCommentList();
+            var attachmentList = TaskTestData.GetWorkspaceListTaskAttachments();
+            var userTaskList = TaskTestData.GetListUserTask();
+
+
+            SetupTaskGetByKeyAsync(workspaceTask);
+            SetupMetricsDecrement();
+            SetupStatusHistoryGetListBySpecAsync(statusHistoriesList);
+            SetupStatusHistoryDeleteRange();
+            SetupCommentGetListBySpecAsync(commentList);
+            SetupCommentDeleteRange();
+            SetupAttachmentGetListBySpecAsync(attachmentList);
+            SetupAttachmentDeleteRange();
+            SetupUserTaskGetListBySpecAsync(userTaskList);
+            SetupUserTaskDeleteRange();
+            SetupMetricsIncrement();
+            SetupWorkspaceTaskDeleteAsync();
+            SetupWorkspaceTaskSaveChangesAsync();
+
+            var result = Task.Run(() =>
+                _taskService.DeleteTaskAsync(workspaceId, taskId, userId)
+            );
+            result.Wait();
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
+        [Test]
+        [TestCase(2, 2, "1", "2")]
+        public async Task DisjoinTask_TaskNotFound_ReturnHttpExeption(int workspaceId, int taskId, string disUserId, string userId)
+        {
+            WorkspaceTask task = null;
+
+            SetupTaskGetFirstBySpecAsync(task);
+
+            Func<Task> act = () => _taskService.DisjoinTaskAsync(workspaceId, taskId, disUserId, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.TaskNotFound);
+        }
+
+        [Test]
+        [TestCase(2, 2, "1", "2")]
+        public async Task DisjoinTask_UserTaskNotFound_ReturnHttpExeption(int workspaceId, int taskId, string disUserId, string userId)
+        {
+            var task = TaskTestData.GetWorkspaceTask();
+            UserTask userTask = null;
+
+            SetupTaskGetFirstBySpecAsync(task);
+            SetupUserTaskGetFirstBySpecAsync(userTask);
+
+            Func<Task> act = () => _taskService.DisjoinTaskAsync(workspaceId, taskId, disUserId, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.UserNotFound);
+        }
+
+        [Test]
+        [TestCase(2, 2, "1", "3")]
+        public async Task DisjoinTask_UserNotPermission_ReturnHttpExeption(int workspaceId, int taskId, string disUserId, string userId)
+        {
+            var task = TaskTestData.GetWorkspaceTask();
+            var userTask = TaskTestData.GetUserTask();
+            var userWorkspace = TaskTestData.GetUserWorkspace();
+
+            SetupTaskGetFirstBySpecAsync(task);
+            SetupUserTaskGetFirstBySpecAsync(userTask);
+            SetupUserWorkspaceGetFirstBySpecAsync(userWorkspace);
+
+            Func<Task> act = () => _taskService.DisjoinTaskAsync(workspaceId, taskId, disUserId, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
+                .WithMessage(ErrorMessages.NotPermission);
+        }
+
+        [Test]
+        [TestCase(2, 2, "1", "2")]
+        public async Task DisjoinTask_ThereIsAccessAndExistingData_ReturnTaskComplated(int workspaceId, int taskId, string disUserId, string userId)
+        {
+            var task = TaskTestData.GetWorkspaceTask();
+            var userTask = TaskTestData.GetUserTask();
+            var userWorkspace = TaskTestData.GetUserWorkspace();
+
+            SetupTaskGetFirstBySpecAsync(task);
+            SetupUserTaskGetFirstBySpecAsync(userTask);
+            SetupUserWorkspaceGetFirstBySpecAsync(userWorkspace);
+            SetupMetricsDecrement();
+            SetupUserTaskDeleteAsync();
+            SetupUserTaskSaveChangesAsync();
+
+            var result = Task.Run(() =>
+                _taskService.DisjoinTaskAsync(workspaceId, taskId, disUserId, userId)
+            );
+            result.Wait();
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
         [TearDown]
         public void TearDown()
         {
@@ -711,6 +1131,210 @@ namespace Provis.UnitTests.Core.Services
         {
             _userTaskRepositoryMock
                 .Setup(x => x.AddRangeAsync(It.IsAny<List<UserTask>>()))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+
+        protected void SetupTaskAttachmentGetListById(IEnumerable<WorkspaceTaskAttachment> attachments)
+        {
+            _workspaceTaskAttachmentsRepositoryMock
+                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<WorkspaceTaskAttachment>>()))
+                .ReturnsAsync(attachments)
+                .Verifiable();
+        }
+
+        protected void SetupGetFirstBySpec(WorkspaceTaskAttachment attachment)
+        {
+            _workspaceTaskAttachmentsRepositoryMock
+                .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<WorkspaceTaskAttachment>>()))
+                .ReturnsAsync(attachment)
+                .Verifiable();
+        }
+
+        protected void SetupGetFileAsync(DownloadFile downloadFile)
+        {
+            _fileServiceMock
+                .Setup(x => x.GetFileAsync(It.IsAny<string>()))
+                .ReturnsAsync(downloadFile)
+                .Verifiable();
+        }
+
+        protected DownloadFile SetupGetDownloadFile()
+        {
+            return new DownloadFile()
+            {
+                Content = null,
+                ContentType = "txt",
+                Name = "name.txt"
+            };
+        }
+
+        protected void SetupDeleteFileAsync(string path)
+        {
+            _fileServiceMock
+                .Setup(x => x.DeleteFileAsync(It.IsAny<string>()))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+
+        protected void SetupAttachmentDeleteAsync(WorkspaceTaskAttachment attachment)
+        {
+            _workspaceTaskAttachmentsRepositoryMock
+                .Setup(x => x.DeleteAsync(It.IsAny<WorkspaceTaskAttachment>()))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+
+        protected void SetupAttachmentSaveChangesAsync()
+        {
+            _workspaceTaskAttachmentsRepositoryMock
+                .Setup(x => x.SaveChangesAsync())
+                .ReturnsAsync(1)
+                .Verifiable();
+        }
+
+        protected void SetupAttachmentOptions(int max)
+        {
+            _attachmentsSettingsOptionsMock
+                .Setup(x => x.Value)
+                .Returns(new TaskAttachmentSettings { MaxCount = max })
+                .Verifiable();
+        }
+
+        protected void SetupTaskGetListBySpec(IEnumerable<WorkspaceTaskAttachment> workspaceTasks)
+        {
+            _workspaceTaskAttachmentsRepositoryMock
+                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<WorkspaceTaskAttachment>>()))
+                .ReturnsAsync(workspaceTasks)
+                .Verifiable();
+        }
+
+        protected void SetupAddFileAsync(string folderPath, string fileName, string dbPathInstance)
+        {
+            _fileServiceMock
+                .Setup(x => x.AddFileAsync(It.IsAny<Stream>(),
+                                           folderPath ?? It.IsAny<string>(),
+                                           fileName ?? It.IsAny<string>()))
+                .Returns(Task.FromResult(dbPathInstance))
+                .Verifiable();
+        }
+
+        protected void SetupAddAttachmentAsync(WorkspaceTaskAttachment taskAttachment)
+        {
+            _workspaceTaskAttachmentsRepositoryMock
+                .Setup(x => x.AddAsync(It.IsAny<WorkspaceTaskAttachment>()))
+                .ReturnsAsync(taskAttachment)
+                .Verifiable();
+        }
+
+        protected void SetupGetUserTaskFirstBySpec(UserTask userTask)
+        {
+            _userTaskRepositoryMock
+                .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<UserTask>>()))
+                .ReturnsAsync(userTask)
+                .Verifiable();
+        }
+
+        protected void SetupStatusHistoryGetListBySpecAsync(IEnumerable<StatusHistory> statusHistories)
+        {
+            _statusHistoryRepositoryMock
+                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<StatusHistory>>()))
+                .ReturnsAsync(statusHistories)
+                .Verifiable();
+        }
+
+        protected void SetupStatusHistoryDeleteRange()
+        {
+            _statusHistoryRepositoryMock
+                .Setup(x => x.DeleteRangeAsync(It.IsAny<IEnumerable<StatusHistory>>()))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+
+        protected void SetupCommentGetListBySpecAsync(IEnumerable<Comment> comments)
+        {
+            _commentRepositoryMock
+                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<Comment>>()))
+                .ReturnsAsync(comments)
+                .Verifiable();
+        }
+
+        protected void SetupCommentDeleteRange()
+        {
+            _commentRepositoryMock
+                .Setup(x => x.DeleteRangeAsync(It.IsAny<IEnumerable<Comment>>()))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+
+        protected void SetupAttachmentGetListBySpecAsync(IEnumerable<WorkspaceTaskAttachment> workspaceTaskAttachments)
+        {
+            _workspaceTaskAttachmentsRepositoryMock
+                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<WorkspaceTaskAttachment>>()))
+                .ReturnsAsync(workspaceTaskAttachments)
+                .Verifiable();
+        }
+
+        protected void SetupAttachmentDeleteRange()
+        {
+            _workspaceTaskAttachmentsRepositoryMock
+                .Setup(x => x.DeleteRangeAsync(It.IsAny<IEnumerable<WorkspaceTaskAttachment>>()))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+
+        protected void SetupUserTaskGetListBySpecAsync(IEnumerable<UserTask> userTasks)
+        {
+            _userTaskRepositoryMock
+                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<UserTask>>()))
+                .ReturnsAsync(userTasks)
+                .Verifiable();
+        }
+
+        protected void SetupUserTaskDeleteRange()
+        {
+            _userTaskRepositoryMock
+                .Setup(x => x.DeleteRangeAsync(It.IsAny<IEnumerable<UserTask>>()))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+
+        protected void SetupWorkspaceTaskDeleteAsync()
+        {
+            _workspaceTaskRepositoryMock
+                .Setup(x => x.DeleteAsync(It.IsAny<WorkspaceTask>()))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+
+        protected void SetupWorkspaceTaskSaveChangesAsync()
+        {
+            _workspaceTaskRepositoryMock
+                .Setup(x => x.SaveChangesAsync())
+                .Returns(Task.FromResult(1))
+                .Verifiable();
+        }
+
+        protected void SetupUserTaskGetFirstBySpecAsync(UserTask userTask)
+        {
+            _userTaskRepositoryMock
+               .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<UserTask>>()))
+               .ReturnsAsync(userTask)
+               .Verifiable();
+        }
+
+        protected void SetupUserGetFirstBySpecAsync(User user)
+        {
+            _userRepositoryMock
+                .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<User>>()))
+                .ReturnsAsync(user)
+                .Verifiable();
+        }
+
+        protected void SetupUserTaskDeleteAsync()
+        {
+            _userTaskRepositoryMock
+                .Setup(x => x.DeleteAsync(It.IsAny<UserTask>()))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
         }

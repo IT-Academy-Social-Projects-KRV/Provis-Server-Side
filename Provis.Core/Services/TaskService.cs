@@ -392,7 +392,7 @@ namespace Provis.Core.Services
             return taskToRerutn;
         }
 
-        public async Task<List<TaskAttachmentInfoDTO>> GetTaskAttachmentsAsync(int taskId)
+        public async Task<List<TaskAttachmentInfoDTO>> GetTaskAttachmentsAsync(int taskId)// OK
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachments(taskId);
             var listAttachments = await _taskAttachmentRepository.GetListBySpecAsync(specification);
@@ -414,7 +414,7 @@ namespace Provis.Core.Services
             return listToReturn;
         }
 
-        public async Task<DownloadFile> GetTaskAttachmentAsync(int attachmentId)
+        public async Task<DownloadFile> GetTaskAttachmentAsync(int attachmentId) //OK
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
             var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
@@ -427,7 +427,7 @@ namespace Provis.Core.Services
             return file;
         }
 
-        public async Task DeleteTaskAttachmentAsync(int attachmentId)
+        public async Task DeleteTaskAttachmentAsync(int attachmentId) //OK
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
             var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
@@ -444,7 +444,7 @@ namespace Provis.Core.Services
             await _taskAttachmentRepository.SaveChangesAsync();
         }
 
-        public async Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO)
+        public async Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO) // 1 of 2 - problems
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachments(taskAttachmentsDTO.TaskId);
             var result = await _taskAttachmentRepository.GetListBySpecAsync(specification);
@@ -476,7 +476,7 @@ namespace Provis.Core.Services
             return res;
         }
 
-        public async Task<DownloadFile> GetTaskAttachmentPreviewAsync(int attachmentId)
+        public async Task<DownloadFile> GetTaskAttachmentPreviewAsync(int attachmentId)// 1 of 3
         {
             var specification = new WorkspaceTaskAttachments.TaskAttachmentInfo(attachmentId);
             var attachment = await _taskAttachmentRepository.GetFirstBySpecAsync(specification);
@@ -498,7 +498,7 @@ namespace Provis.Core.Services
             return file;
         }
 
-        public async Task ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId)
+        public async Task ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId) // OK
         {
             var taskSpecification = new WorkspaceTasks
                     .TaskById(changeRoleDTO.TaskId);
@@ -541,7 +541,7 @@ namespace Provis.Core.Services
             }
         }
 
-        public async Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId)
+        public async Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId)// OK
         {
             var taskSpecification = new WorkspaceTasks
                     .TaskById(taskId);
@@ -580,7 +580,7 @@ namespace Provis.Core.Services
             }
         }
 
-        public async Task DeleteTaskAsync(int workspaceId, int taskId, string userId)
+        public async Task DeleteTaskAsync(int workspaceId, int taskId, string userId) // Ok
         {
             var workspaceTask = await _taskRepository.GetByKeyAsync(taskId);
 

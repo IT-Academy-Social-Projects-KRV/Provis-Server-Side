@@ -1,5 +1,6 @@
 ﻿using Provis.Core.DTO.TaskDTO;
 using Provis.Core.DTO.UserDTO;
+using Provis.Core.Entities.CommentEntity;
 using Provis.Core.Entities.StatusEntity;
 using Provis.Core.Entities.StatusHistoryEntity;
 using Provis.Core.Entities.UserEntity;
@@ -7,6 +8,7 @@ using Provis.Core.Entities.UserRoleTagEntity;
 using Provis.Core.Entities.UserTaskEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
+using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Helpers.Mails;
 using System;
@@ -42,7 +44,7 @@ namespace Provis.UnitTests.Base.TestData
         {
             return new User()
             {
-                Id = "2",
+                Id = "1",
                 Email = "test1@gmail.com",
                 Name = "Name1",
                 Surname = "Surname1",
@@ -81,7 +83,7 @@ namespace Provis.UnitTests.Base.TestData
                 DateOfEnd = DateTimeOffset.UtcNow,
                 Description = "Nope",
                 StatusId = 1,
-                WorkspaceId = 1,
+                WorkspaceId = 2,
                 TaskCreatorId = "2"
             };
         }
@@ -142,8 +144,8 @@ namespace Provis.UnitTests.Base.TestData
         {
             return new UserWorkspace()
             {
-                UserId = "1",
-                RoleId = 1,
+                UserId = "3",
+                RoleId = 3,
                 WorkspaceId = 2
             };
         }
@@ -173,7 +175,7 @@ namespace Provis.UnitTests.Base.TestData
                 {
                     Id = 1,
                     DateOfChange = DateTimeOffset.UtcNow,
-                    TaskId = 1,
+                    TaskId = 2,
                     StatusId = 1,
                     UserId = "1"
                 },
@@ -181,15 +183,15 @@ namespace Provis.UnitTests.Base.TestData
                 {
                     Id = 2,
                     DateOfChange = DateTimeOffset.UtcNow,
-                    TaskId = 1,
-                    StatusId = 1,
+                    TaskId = 2,
+                    StatusId = 2,
                     UserId = "3"
                 },
                 new StatusHistory()
                 {
                     Id = 3,
                     DateOfChange = DateTimeOffset.UtcNow,
-                    TaskId = 1,
+                    TaskId = 2,
                     StatusId = 3,
                     UserId = "4"
                 }
@@ -222,6 +224,140 @@ namespace Provis.UnitTests.Base.TestData
                     StatusId = 3,
                     UserId = "4",
                     UserName = "Vasyl"
+                }
+            };
+        }
+
+        public static List<WorkspaceTaskAttachment> GetWorkspaceListTaskAttachments()
+        {
+            return new List<WorkspaceTaskAttachment>()
+            {
+                new WorkspaceTaskAttachment()
+                {
+                    Id = 1,
+                    AttachmentPath = "name1.txt",
+                    TaskId = 2
+                },
+                new WorkspaceTaskAttachment()
+                {
+                    Id = 2,
+                    AttachmentPath = "name2.png",
+                    TaskId = 2
+                }
+            };
+        }
+
+        public static List<TaskAttachmentInfoDTO> GetAttachmentInfoDTOs()
+        {
+            return new List<TaskAttachmentInfoDTO>()
+            {
+                new TaskAttachmentInfoDTO()
+                {
+                    Id = 1,
+                    Name = "name1.txt",
+                    ContentType = "png"
+                },
+                new TaskAttachmentInfoDTO()
+                {
+                    Id = 2,
+                    Name = "name2.png",
+                    ContentType = "txt"
+                }
+            };
+        }
+
+        public static WorkspaceTaskAttachment GetWorkspaceTaskAttachment()
+        {
+            return new WorkspaceTaskAttachment()
+            {
+                Id = 1,
+                AttachmentPath = "name3.png",
+                TaskId = 2  
+            };
+        }
+
+        public static TaskAttachmentsDTO GetTaskAttachmentDTO()
+        {
+            return new TaskAttachmentsDTO()
+            {
+                Attachment = FileTestData.GetTestFormFile("name.txt", "content", "txt"),
+                TaskId = 1,
+                WorkspaceId = 2
+            };
+        }
+
+        public static TaskAttachmentInfoDTO GetAttachmentExpected()
+        {
+            return new TaskAttachmentInfoDTO()
+            {
+                Id = 1,
+                Name = "Name",
+                ContentType = "txt"
+            };
+        }
+
+        public static TaskChangeRoleDTO GetChengeRoleDTO()
+        {
+            return new TaskChangeRoleDTO()
+            {
+                RoleId = 1,
+                TaskId = 1,
+                UserId = "1",
+                WorkspaceId = 1
+            };
+        }
+
+        public static UserTask GetUserTask()
+        {
+            return new UserTask()
+            {
+                IsUserDeleted = false,
+                TaskId = 1,
+                UserId = "3",
+                UserRoleTagId = 3
+            };
+        }
+
+        public static List<Comment> GetCommentList()
+        {
+            return new List<Comment>()
+            {
+                new Comment()
+                {
+                    CommentText = "sdsd",
+                    DateOfCreate = new DateTimeOffset(DateTime.UtcNow,TimeSpan.Zero),
+                    Id = 1,
+                    TaskId = 2,
+                    UserId = "1"
+                },
+                new Comment()
+                {
+                    CommentText = "dsds",
+                    DateOfCreate = new DateTimeOffset(DateTime.UtcNow,TimeSpan.Zero),
+                    Id = 2,
+                    TaskId = 2,
+                    UserId = "2"
+                }
+            };
+        }
+
+        public static List<UserTask> GetListUserTask()
+        {
+            return new List<UserTask>()
+            {
+                new UserTask()
+                {
+                    IsUserDeleted = false,
+                    TaskId = 2,
+                    UserId = "3",
+                    UserRoleTagId = 3
+                },
+                new UserTask()
+                {
+                    IsUserDeleted = false,
+                    TaskId = 2,
+                    UserId = "2",
+                    UserRoleTagId = 1
                 }
             };
         }

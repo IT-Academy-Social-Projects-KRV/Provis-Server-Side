@@ -15,11 +15,14 @@ namespace Provis.Core.Interfaces.Services
         Task<List<TaskRoleDTO>> GetWorkerRoles();
         Task<List<TaskStatusHistoryDTO>> GetStatusHistories(int taskId);
         Task<TaskInfoDTO> GetTaskInfoAsync(int taskId);
+        
+
         Task<List<TaskAttachmentInfoDTO>> GetTaskAttachmentsAsync(int taskId);
         Task<DownloadFile> GetTaskAttachmentAsync(int attachmentId);
         Task DeleteTaskAttachmentAsync(int attachmentId);
         Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO);
         Task<DownloadFile> GetTaskAttachmentPreviewAsync(int attachmentId);
+
         Task ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId);
         Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId);
         Task DeleteTaskAsync(int workspaceId, int taskId, string userId);
