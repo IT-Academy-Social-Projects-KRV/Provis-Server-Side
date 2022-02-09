@@ -18,6 +18,7 @@ using Provis.UnitTests.Resources;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Provis.UnitTests.Core.Services
@@ -85,14 +86,11 @@ namespace Provis.UnitTests.Core.Services
         {
             var userMock = UserTestData.GetTestUser();
             string userPassword = "Password_1";
-            IList<string> list = new List<string>()
-            {
-                "ssss"
-            };
+            IList<string> list = new List<string>() {"ssss"};
 
             SetupFindByEmailAsync(email, userMock);
             SetupCheckPasswordAsync(userMock, userPassword);
-            SetupGetTwoFactorEnabled(userMock);
+            SetupGetTwoFactorEnabled(userMock, true);
             SetupGetValidTwoFactorProviders(userMock, list);
 
             Func<Task<UserAutorizationDTO>> act = () => _authentificationService.LoginAsync(email, null);
@@ -109,6 +107,11 @@ namespace Provis.UnitTests.Core.Services
         {
             var userMock = UserTestData.GetTestUser();
             string userPassword = "Password_1";
+            var uriStringMock = "http://localhost:4200/";
+            var viewName = "Mails/TwoFactorCode";
+            var templateStringMock = "template";
+            Uri uriMock = new Uri(uriStringMock);
+
             IList<string> list = new List<string>()
             {
                 "ssss",
@@ -119,14 +122,17 @@ namespace Provis.UnitTests.Core.Services
                 Is2StepVerificationRequired = true,
                 Provider = "Email"
             };
+            
 
             SetupFindByEmailAsync(email, userMock);
             SetupCheckPasswordAsync(userMock, userPassword);
-            SetupGetTwoFactorEnabled(userMock);
+            SetupGetTwoFactorEnabled(userMock, true);
             SetupGetValidTwoFactorProviders(userMock, list);
             SetupGenerateTwoFactorTokenAsync(userMock, "Email");
             SetupSendEmail();
-            SetupGetTemplateHtmlAsString("View", UserTestData.GetTestUserToken());
+
+            SetupGetTemplateHtmlAsStringAsync(viewName, templateStringMock);
+            SetupApplicationUrl(new() { ApplicationUrl = uriMock });
 
             var result = await _authentificationService.LoginAsync(email, userPassword);
 
@@ -134,21 +140,81 @@ namespace Provis.UnitTests.Core.Services
             result.Should().BeEquivalentTo(expectedUserAutorizationDTO);
         }
 
-        //[Test]
-        //public async Task GenerateTwoStepVerificationCode_ContainEmail_ThrowException()
-        //{
-        //    var userMock = UserTestData.GetTestUser();
-        //    IList<string> list = new List<string>()
-        //    {
-        //        "ssss"
-        //    };
+        [Test]
+        [TestCase("test1@gmail.com")]
+        public async Task LoginAsync_2FaDisabled_ReturnUserAutorizationDTO(string email)
+        {
+            var claims = AuthentificationTestData.GetClaimList();
+            var userMock = UserTestData.GetTestUser();
+            string userPassword = "Password_1";
+            var expectedUserAutorizationDTO = new UserAutorizationDTO()
+            {
+                Token = "token",
+                RefreshToken = "refreshToken"
+            };
 
-        //    SetupGetValidTwoFactorProviders(userMock, list);
+            SetupFindByEmailAsync(email, userMock);
+            SetupCheckPasswordAsync(userMock, userPassword);
+            SetupGetTwoFactorEnabled(userMock, false);
+            SetupSetClaims(userMock, claims);
+            SetupCreateToken(claims, "token");
+            SetupCreateRefreshToken("refreshToken");
 
-        //    //var result = await _authentificationService.
-        //}
+            var result = await _authentificationService.LoginAsync(email, userPassword);
 
-        [TearDown]
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(expectedUserAutorizationDTO);
+        }
+
+        [Test]
+        public async Task LoginTwoStepAsync_InvalidVerifiction_ThrowException()
+        {
+            var userMock = UserTestData.GetTestUser();
+            var userTwoFactorDTOMock = AuthentificationTestData.GetUserTwoFactorDTO();
+
+            SetupFindByEmailAsync(userMock.Email, userMock);
+            SetupVerifyTwoFactorTokenAsync(userMock, 
+                                           userTwoFactorDTOMock.Provider, 
+                                           userTwoFactorDTOMock.Token, 
+                                           false);
+
+            Func<Task<UserAutorizationDTO>> act = () => 
+                _authentificationService.LoginTwoStepAsync(userTwoFactorDTOMock);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.InvalidTokenVerification);
+        }
+
+        [Test]
+        public async Task LoginTwoStepAsync_ValidVerifiction_ReturnUserAutorizationDTO()
+        {
+            var userMock = UserTestData.GetTestUser();
+            var userTwoFactorDTOMock = AuthentificationTestData.GetUserTwoFactorDTO();
+            var claims = AuthentificationTestData.GetClaimList();
+            var expectedUserAutorizationDTO = new UserAutorizationDTO()
+            {
+                Token = "token",
+                RefreshToken = "refreshToken"
+            };
+
+            SetupFindByEmailAsync(userMock.Email, userMock);
+            SetupSetClaims(userMock, claims);
+            SetupCreateToken(claims, "token");
+            SetupCreateRefreshToken("refreshToken");
+            SetupVerifyTwoFactorTokenAsync(userMock,
+                                           userTwoFactorDTOMock.Provider,
+                                           userTwoFactorDTOMock.Token,
+                                           true);
+
+            var result = await _authentificationService.LoginTwoStepAsync(userTwoFactorDTOMock);
+
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(expectedUserAutorizationDTO);
+        }
+
+            [TearDown]
         public void TearDown()
         {
             _userManagerMock.Verify();
@@ -178,27 +244,6 @@ namespace Provis.UnitTests.Core.Services
                 .Verifiable();
         }
 
-        protected void SetupCreateRefreshToken(string token)
-        {
-            _jwtServiceMock
-                .Setup(x => x.CreateRefreshToken())
-                .Returns(token)
-                .Verifiable();
-            
-            _jwtServiceMock
-                .Setup(x => x.CreateToken(It.IsAny<IEnumerable<System.Security.Claims.Claim>>()))
-                .Returns(token)
-                .Verifiable();
-        }
-
-        //protected void SetupCreateToken(string token)
-        //{
-        //    _jwtServiceMock
-        //        .Setup(x => x.CreateToken(It.IsAny<System.Collections.Generic.IEnumerable<System.Security.Claims.Claim>>()))
-        //        .Returns(token)
-        //        .Verifiable();
-        //}
-
         protected void SetupGetValidTwoFactorProviders(User user, IList<string> list)
         {
             _userManagerMock
@@ -207,11 +252,11 @@ namespace Provis.UnitTests.Core.Services
                 .Verifiable();
         }
 
-        protected void SetupGetTwoFactorEnabled(User user)
+        protected void SetupGetTwoFactorEnabled(User user, bool result)
         {
             _userManagerMock
                 .Setup(x => x.GetTwoFactorEnabledAsync(It.IsAny<User>()))
-                .Returns(Task.FromResult(true))
+                .Returns(Task.FromResult(result))
                 .Verifiable();
         }
 
@@ -231,12 +276,58 @@ namespace Provis.UnitTests.Core.Services
                 .Verifiable();
         }
 
-        protected void SetupGetTemplateHtmlAsString(string viewName, UserToken userToken)
+        protected void SetupGetTemplateHtmlAsStringAsync(string viewName,
+            string templateInstance)
         {
             _templateServiceMock
-                .Setup(x => x.GetTemplateHtmlAsStringAsync(It.IsAny<string>(), It.IsAny<UserToken>()))
-                .Returns(Task.FromResult("OK"))
+                .Setup(x => x.GetTemplateHtmlAsStringAsync(viewName ?? It.IsAny<string>(),
+                                                           It.IsAny<UserToken>()))
+                .ReturnsAsync(templateInstance)
                 .Verifiable();
+        }
+        protected void SetupApplicationUrl(ClientUrl clientUri)
+        {
+            _clientUrlMock
+                .Setup(x => x.Value)
+                .Returns(clientUri)
+                .Verifiable();
+        }
+
+        protected void SetupSetClaims(User user, IEnumerable<Claim> claims)
+        {
+            _jwtServiceMock
+                .Setup(x => x.SetClaims(It.IsAny<User>()))
+                .Returns(claims)
+                .Verifiable();
+        }
+
+        protected void SetupCreateToken(IEnumerable<Claim> claims, string token)
+        {
+            _jwtServiceMock
+                .Setup(x => x.CreateToken(It.IsAny<IEnumerable<Claim>>()))
+                .Returns(token)
+                .Verifiable();
+        }
+
+        protected void SetupCreateRefreshToken(string refreshToken)
+        {
+            _jwtServiceMock
+               .Setup(x => x.CreateRefreshToken())
+               .Returns(refreshToken)
+               .Verifiable();
+        }
+
+        protected void SetupVerifyTwoFactorTokenAsync(User user, 
+            string tokenProvider, 
+            string token,
+            bool result)
+        {
+            _userManagerMock
+               .Setup(x => x.VerifyTwoFactorTokenAsync(user ?? It.IsAny<User>(),
+                                                      tokenProvider ?? It.IsAny<string>(),
+                                                      token ?? It.IsAny<string>()))
+               .ReturnsAsync(result)
+               .Verifiable();
         }
     }
 }
