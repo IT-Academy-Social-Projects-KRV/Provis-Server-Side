@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Identity;
 using Provis.Core.DTO.CalendarDTO;
 using Provis.Core.DTO.EventDTO;
-using Provis.Core.Entities;
-using Provis.Core.Entities.CommentEntity;
 using Provis.Core.Entities.EventEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.UserEventsEntity;
@@ -14,8 +12,6 @@ using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
-using Provis.Core.Roles;
-using Provis.Core.Statuses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
