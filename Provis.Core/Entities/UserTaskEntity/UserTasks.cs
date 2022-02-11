@@ -34,7 +34,7 @@ namespace Provis.Core.Entities.UserTaskEntity
                 Query
                     .Select(x => new EventDTO()
                     {
-                        EventDay = x.Task.DateOfEnd,
+                        EventDay = x.Task.DateOfEnd.UtcDateTime,
                         Status = CalendarStatuses.TaskDeadline
                     })
                     .Include(x => x.Task)
@@ -55,7 +55,7 @@ namespace Provis.Core.Entities.UserTaskEntity
                     {
                         Status = CalendarStatuses.TaskDeadline,
                         Name = x.Task.Name,
-                        DateOfStart = x.Task.DateOfEnd,
+                        DateOfStart = x.Task.DateOfEnd.UtcDateTime,
                         DateOfEnd = null,
                         AssignedUsers = x.Task.UserTasks.Select(y => new UserCalendarInfoDTO()
                         {

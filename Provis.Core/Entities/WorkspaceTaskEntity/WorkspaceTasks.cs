@@ -45,7 +45,7 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                 Query
                     .Select(x => new EventDTO()
                     {
-                        EventDay = x.DateOfEnd,
+                        EventDay = x.DateOfEnd.UtcDateTime,
                         Status = CalendarStatuses.TaskDeadline
                     })
                     .Include(x => x.UserTasks)
@@ -64,7 +64,7 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                     {
                         Status = CalendarStatuses.TaskDeadline,
                         Name = x.Name,
-                        DateOfStart = x.DateOfEnd,
+                        DateOfStart = x.DateOfEnd.UtcDateTime,
                         DateOfEnd = null,
                         AssignedUsers = x.UserTasks.Select(y => new UserCalendarInfoDTO()
                         {
@@ -86,7 +86,7 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                 Query
                     .Select(x => new EventDTO()
                     {
-                        EventDay = x.DateOfEnd,
+                        EventDay = x.DateOfEnd.UtcDateTime,
                         Status = CalendarStatuses.TaskDeadline
                     })
                     .Where(p => p.WorkspaceId == workspaceId &&
@@ -103,7 +103,7 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                     {
                         Status = CalendarStatuses.TaskDeadline,
                         Name = x.Name,
-                        DateOfStart = x.DateOfEnd,
+                        DateOfStart = x.DateOfEnd.UtcDateTime,
                         DateOfEnd = null,
                         AssignedUsers = x.UserTasks.Select(y => new UserCalendarInfoDTO()
                         {
