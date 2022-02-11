@@ -8,5 +8,7 @@ namespace Provis.Core.Interfaces.Services
         Task SendConfirmMailAsync(string userId);
 
         Task ConfirmEmailAsync(string userId, UserConfirmEmailDTO confirmEmailDTO);
+
+        string DecodeUnicodeBase64(string input);
     }
 }

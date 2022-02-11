@@ -10,7 +10,7 @@ namespace Provis.Core.Entities.StatusHistoryEntity
     {
         public int Id { get; set; }
 
-        public DateTime DateOfChange { get; set; }
+        public DateTimeOffset DateOfChange { get; set; }
 
         public int TaskId { get; set; }
         public WorkspaceTask Task { get; set; }

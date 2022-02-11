@@ -2,11 +2,10 @@
 
 @{
     Layout = "_MailLayout";
-    ViewData["UserName"] = Model.UserName;
     ViewData["ClientUrl"] = Model.Uri;
 }
 
-<form style="text-align: center;">
+<form style="text-align: center; word-break: break-all;">
     <h1>That's your email confirmation code:</h1>
     <label style="justify-content: space-between;">@Model.Token</label>
 </form>

@@ -10,6 +10,7 @@ using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
+using Provis.Core.Resources;
 using Provis.Core.Roles;
 using System;
 using System.Collections.Generic;
@@ -44,17 +45,19 @@ namespace Provis.Core.Services
             _mapper = mapper;
         }
 
-        public async Task AddCommentAsync(CommentCreateDTO commentDTO, string userId)
+        public async Task<CommentListDTO> AddCommentAsync(CommentCreateDTO commentDTO, string userId)
         {
             Comment comment = new()
             {
-                DateOfCreate = DateTime.UtcNow,
+                DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 UserId = userId
             };
             _mapper.Map(commentDTO, comment);
 
-            await _commentRepository.AddAsync(comment);
+            var commentInfo = await _commentRepository.AddAsync(comment);
             await _commentRepository.SaveChangesAsync();
+
+            return _mapper.Map(commentInfo, new CommentListDTO());
         }
 
         public async Task<List<CommentListDTO>> GetCommentListsAsync(int taskId)
@@ -74,10 +77,10 @@ namespace Provis.Core.Services
             if (comment.UserId != creatorId)
             {
                 throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                    "Only creator can edit his comment");
+                    ErrorMessages.NotPermissionEditComment);
             }
 
-            comment.DateOfCreate = DateTime.UtcNow;
+            comment.DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero);
             comment.CommentText = editComment.CommentText;
 
             await _commentRepository.UpdateAsync(comment);
@@ -91,11 +94,11 @@ namespace Provis.Core.Services
 
             var comment = await _commentRepository.GetByKeyAsync(id);
 
-            if (!(comment.UserId == userId || 
+            if (!(comment.UserId == userId ||
                 userWorkspace.RoleId == (int)WorkSpaceRoles.OwnerId))
             {
                 throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                    "Only cretor or workspace owner can delete comments");
+                   ErrorMessages.NotPermissionDeleteComment);
             }
 
             await _commentRepository.DeleteAsync(comment);

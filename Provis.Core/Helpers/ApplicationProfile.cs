@@ -21,6 +21,7 @@ using Provis.Core.DTO.CommentDTO;
 using Provis.Core.DTO.CommentsDTO;
 using Provis.Core.DTO.CalendarDTO;
 using Provis.Core.Entities.EventEntity;
+using System;
 
 namespace Provis.Core.Helpers
 {
@@ -78,18 +79,40 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
                 .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
                 .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
-                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId));
+                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
+                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints));
 
             CreateMap<UserTask, TaskDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.TaskId))
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.Task.DateOfEnd))
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Task.Name))
+                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.Task.StoryPoints))
                 .ForMember(x => x.WorkerRoleId, act => act.MapFrom(srs => srs.UserRoleTagId));
+
+            CreateMap<Tuple<int, UserTask, int, int, string>, TaskDTO>()
+               .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Item2.Task.Id))
+               .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.Item2.Task.DateOfEnd))
+               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Item2.Task.Name))
+               .ForMember(x => x.WorkerRoleId, act => act.MapFrom(srs => srs.Item2.UserRoleTagId))
+               .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.Item2.Task.StoryPoints))
+               .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Item3))
+               .ForMember(x => x.MemberCount, act => act.MapFrom(src => src.Item4))
+               .ForMember(x => x.CreatorUsername, act => act.MapFrom(src => src.Item5));
 
             CreateMap<WorkspaceTask, TaskDTO>()
                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
-               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name));
+               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
+               .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints));
+
+            CreateMap<Tuple<int, WorkspaceTask, int, int, string>, TaskDTO>()
+                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Item2.Id))
+                .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.Item2.DateOfEnd))
+                .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Item2.Name))
+                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.Item2.StoryPoints))
+                .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Item3))
+                .ForMember(x => x.MemberCount, act => act.MapFrom(src => src.Item4))
+                .ForMember(x => x.CreatorUsername, act => act.MapFrom(src => src.Item5));
 
             CreateMap<UserChangeInfoDTO, User>();
 
@@ -114,8 +137,9 @@ namespace Provis.Core.Helpers
               .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
               .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
-              .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.Deadline));
-              
+              .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.Deadline))
+              .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints));
+
             CreateMap<StatusHistory, TaskStatusHistoryDTO>()
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
                 .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
@@ -132,10 +156,12 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Role, act => act.MapFrom(srs => srs.RoleId));
 
             CreateMap<WorkspaceTask, TaskInfoDTO>()
+                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
                 .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
                 .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
+                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints))
                 .ForMember(x => x.AssignedUsers, act => act.MapFrom(srs => srs.UserTasks));
 
             CreateMap<WorkspaceTaskAttachment, TaskAttachmentInfoDTO>()
@@ -145,7 +171,7 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
                 .ForMember(x => x.RoleTagId, act => act.MapFrom(srs => srs.UserRoleTagId));
-                
+
             CreateMap<Comment, CommentListDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
                 .ForMember(x => x.CommentText, act => act.MapFrom(srs => srs.CommentText))
@@ -164,6 +190,11 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.DateOfStart, act => act.MapFrom(srs => srs.DateOfStart))
                 .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
                 .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId));
+
+            CreateMap<TaskAssignDTO, UserTask>()
+                .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.Id))
+                .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.AssignedUser.UserId))
+                .ForMember(x => x.UserRoleTagId, act => act.MapFrom(srs => srs.AssignedUser.RoleTagId));
         }
     }
 }

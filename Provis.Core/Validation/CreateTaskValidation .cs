@@ -1,5 +1,6 @@
 ﻿using FluentValidation;
 using Provis.Core.DTO.TaskDTO;
+using Provis.Core.Resources;
 using Provis.Core.Statuses;
 using System;
 
@@ -17,17 +18,21 @@ namespace Provis.Core.Validation
                 .NotEmpty()
                 .NotNull()
                 .GreaterThan(DateTime.UtcNow)
-                .WithMessage("Due date should be not in the past");
+                .WithMessage(ErrorMessages.InvalidDateOfEnd);
 
             RuleFor(task => task.WorkspaceId)
                 .NotEmpty()
                 .NotNull();
 
             RuleFor(task => task.StatusId)
-                .NotEmpty()
+                .NotNull()
                 .NotEmpty()
                 .Must(IsStatusExist)
-                .WithMessage("This status not exist");
+                .WithMessage(ErrorMessages.TaskStatusNotFound);
+
+            RuleFor(task => task.StoryPoints)
+                .InclusiveBetween(1, 99)
+                .WithMessage(ErrorMessages.InvalidStoryPoints);
         }
         public bool IsStatusExist(int StatusId)
         {

@@ -8,6 +8,7 @@ namespace Provis.Core.DTO.TaskDTO
         public int WorkspaceId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
-        public DateTime Deadline { get; set; }
+        public DateTimeOffset Deadline { get; set; }
+        public int? StoryPoints { get; set; }
     }
 }

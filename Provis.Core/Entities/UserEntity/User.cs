@@ -20,6 +20,7 @@ namespace Provis.Core.Entities.UserEntity
         public string Name { get; set; }
         public string Surname { get; set; }
         public string ImageAvatarUrl { get; set; }
+        
         public DateTime CreateDate { get; set; } // DateTime UTC
         public DateTime BirthDate { get; set; }
 

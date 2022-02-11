@@ -5,6 +5,7 @@ using Provis.Core.Entities.UserEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Helpers;
 using Provis.Core.Interfaces.Services;
+using Provis.Core.Resources;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -67,7 +68,7 @@ namespace Provis.Core.Services
             jwtSecurityToken = securityToken as JwtSecurityToken;
 
             if (jwtSecurityToken == null || !jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase))
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "invalid token");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, ErrorMessages.InvalidToken);
 
             return jwtSecurityToken.Claims;
         }

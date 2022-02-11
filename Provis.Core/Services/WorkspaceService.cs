@@ -19,6 +19,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Provis.Core.Entities.UserTaskEntity;
+using App.Metrics;
+using Provis.Core.Metrics;
+using System.Net;
+using Provis.Core.Resources;
 
 namespace Provis.Core.Services
 {
@@ -36,6 +40,7 @@ namespace Provis.Core.Services
         protected readonly RoleAccess _roleAccess;
         protected readonly ITemplateService _templateService;
         protected readonly ClientUrl _clientUrl;
+        private readonly IMetrics _metrics;
 
         public WorkspaceService(IRepository<User> user,
             UserManager<User> userManager,
@@ -48,7 +53,8 @@ namespace Provis.Core.Services
             IMapper mapper,
             RoleAccess roleAccess,
             ITemplateService templateService,
-            IOptions<ClientUrl> options)
+            IOptions<ClientUrl> options,
+            IMetrics metrics)
         {
             _userRepository = user;
             _userManager = userManager;
@@ -62,6 +68,7 @@ namespace Provis.Core.Services
             _templateService = templateService;
             _userTaskRepository = userTasksRepository;
             _clientUrl = options.Value;
+            _metrics = metrics;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -69,7 +76,7 @@ namespace Provis.Core.Services
 
             Workspace workspace = new Workspace()
             {
-                DateOfCreate = DateTime.UtcNow,
+                DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 Name = workspaceDTO.Name,
                 Description = workspaceDTO.Description
             };
@@ -82,6 +89,10 @@ namespace Provis.Core.Services
                 WorkspaceId = workspace.Id,
                 RoleId = (int)WorkSpaceRoles.OwnerId
             };
+
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
+              MetricTagsConstructor.MembersCountByWorkspaceRole(workspace.Id, (int)WorkSpaceRoles.OwnerId));
+
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _userWorkspaceRepository.SaveChangesAsync();
 
@@ -108,7 +119,8 @@ namespace Provis.Core.Services
 
             if (owner.Email == inviteDTO.UserEmail)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You cannot send invite to your account");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.SendInviteYourself);
             }
 
             var inviteUser = await _userManager.FindByEmailAsync(inviteDTO.UserEmail);
@@ -120,21 +132,21 @@ namespace Provis.Core.Services
             var inviteUserListSpecification = new InviteUsers.InviteList(inviteUser.Id, workspace.Id);
             if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x=>x.IsConfirm == null))
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                    "User already has invite, wait for a answer");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.UserAlreadyHasInvite);
             }
 
             var userWorkspaceInviteSpecification = new UserWorkspaces.WorkspaceMember(inviteUser.Id, workspace.Id);
             if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x => x.IsConfirm.Value == true)
                 && await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspaceInviteSpecification) != null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                    "This user already accepted your invite");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.UserAcceptedInvite);
             }
 
             InviteUser user = new InviteUser
             {
-                Date = DateTime.UtcNow,
+                Date = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 FromUser = owner,
                 ToUser = inviteUser,
                 Workspace = workspace,
@@ -148,11 +160,11 @@ namespace Provis.Core.Services
             {
                 ToEmail = inviteDTO.UserEmail,
                 Subject = "Workspace invitation",
-                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/WorkspaceInvite", 
-                    new WorkspaceInvite() 
-                    { 
-                        Owner = owner.UserName, 
-                        WorkspaceName = workspace.Name, 
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/WorkspaceInvite",
+                    new WorkspaceInvite()
+                    {
+                        Owner = owner.UserName,
+                        WorkspaceName = workspace.Name,
                         UserName = inviteUser.UserName,
                         Uri = _clientUrl.ApplicationUrl
                     })
@@ -168,7 +180,8 @@ namespace Provis.Core.Services
 
             if (inviteUserRec.ToUserId != userid)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You cannot deny this invite");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.CannotDenyInvite);
             }
 
             inviteUserRec.IsConfirm ??= false;
@@ -195,12 +208,14 @@ namespace Provis.Core.Services
 
             if (inviteUserRec.ToUserId != userid)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "That's not yours invite!");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.CannotAcceptInvite);
             }
 
             if (inviteUserRec.IsConfirm == true)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "You have already confirmed your invitation!");
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.InviteAlreadyAccerted);
             }
 
             inviteUserRec.IsConfirm = true;
@@ -223,6 +238,9 @@ namespace Provis.Core.Services
                 RoleId = (int)WorkSpaceRoles.MemberId
             };
 
+            _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
+              MetricTagsConstructor.MembersCountByWorkspaceRole(inviteUserRec.WorkspaceId, (int)WorkSpaceRoles.MemberId));
+
             await _userWorkspaceRepository.AddAsync(userWorkspace);
             await _inviteUserRepository.SaveChangesAsync();
 
@@ -233,10 +251,12 @@ namespace Provis.Core.Services
         {
             var modifierSpecification = new UserWorkspaces.WorkspaceMember(userId, userChangeRole.WorkspaceId);
             var modifier = await _userWorkspaceRepository.GetFirstBySpecAsync(modifierSpecification);
+
             modifier.User.UserNullChecking();
 
             var targetSpecification = new UserWorkspaces.WorkspaceMember(userChangeRole.UserId, userChangeRole.WorkspaceId);
             var target = await _userWorkspaceRepository.GetFirstBySpecAsync(targetSpecification);
+
             target.User.UserNullChecking();
 
             var roleId = (WorkSpaceRoles)modifier.RoleId;
@@ -248,13 +268,20 @@ namespace Provis.Core.Services
                     .Any(p => p == (WorkSpaceRoles)userChangeRole.RoleId)
                 )
             {
+                _metrics.Measure.Counter.Decrement(WorkspaceMetrics.MembersCountByWorkspaceRole,
+                    MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, target.RoleId));
+
+                _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
+                    MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, userChangeRole.RoleId));
+
                 target.RoleId = userChangeRole.RoleId;
                 await _userWorkspaceRepository.SaveChangesAsync();
                 return _mapper.Map<WorkspaceChangeRoleDTO>(target);
             }
             else
             {
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden, "You haven't permission to change this Role");
+                throw new HttpException(HttpStatusCode.Forbidden,
+                    ErrorMessages.NotPermission);
             }
         }
 
@@ -308,11 +335,11 @@ namespace Provis.Core.Services
             var userWorkspSpecification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
             var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspSpecification);
 
-            
+
             if (userWorksp.RoleId == (int)WorkSpaceRoles.OwnerId)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                    "Owner can't leave workspace");
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.OwnerCannotLeaveWorkspace);
             }
 
             var userTaskSpecification = new UserTasks.UserTaskList(userId, workspaceId);
@@ -323,8 +350,13 @@ namespace Provis.Core.Services
                 foreach (var userTask in userTasks)
                 {
                     userTask.Item2.IsUserDeleted = true;
+                    _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskRolesCountByWorkspace,
+                        MetricTagsConstructor.TaskRolesCountByWorkspace(workspaceId, userTask.Item2.UserRoleTagId));
                 }
             }
+
+            _metrics.Measure.Counter.Decrement(WorkspaceMetrics.MembersCountByWorkspaceRole,
+                   MetricTagsConstructor.MembersCountByWorkspaceRole(workspaceId, userWorksp.RoleId));
 
             await _userWorkspaceRepository.DeleteAsync(userWorksp);
             await _workspaceRepository.SaveChangesAsync();
@@ -336,8 +368,8 @@ namespace Provis.Core.Services
 
             if (invite == null || invite.IsConfirm != null)
             {
-                throw new HttpException(System.Net.HttpStatusCode.NotFound,
-                "Invite with Id not found or it already answered");
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.InviteNotFound);
             }
 
             var specification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
@@ -350,8 +382,8 @@ namespace Provis.Core.Services
             }
             else
             {
-                throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                            "You don't have permission to do this");
+                throw new HttpException(HttpStatusCode.Forbidden,
+                    ErrorMessages.NotPermission);
             }
 
             await Task.CompletedTask;

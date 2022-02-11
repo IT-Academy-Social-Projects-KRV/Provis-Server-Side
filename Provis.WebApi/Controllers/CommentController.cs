@@ -29,9 +29,9 @@ namespace Provis.WebApi.Controllers
             WorkSpaceRoles.ViewerId})]
         public async Task<IActionResult> CommentAsync([FromBody] CommentCreateDTO commentDTO)
         {
-            await _commentService.AddCommentAsync(commentDTO, UserId);
+            var commentInfo = await _commentService.AddCommentAsync(commentDTO, UserId);
 
-            return Ok();
+            return Ok(commentInfo);
         }
 
         [Authorize]

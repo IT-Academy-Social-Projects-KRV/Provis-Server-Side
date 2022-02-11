@@ -162,8 +162,8 @@ namespace Provis.Infrastructure.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
-                    b.Property<DateTime>("DateOfCreate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("DateOfCreate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("TaskId")
                         .HasColumnType("int");
@@ -229,8 +229,8 @@ namespace Provis.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("Date")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("Date")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("FromUserId")
                         .IsRequired()
@@ -365,8 +365,8 @@ namespace Provis.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("DateOfChange")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("DateOfChange")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<int>("StatusId")
                         .HasColumnType("int");
@@ -403,8 +403,8 @@ namespace Provis.Infrastructure.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("CreateDate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("CreateDate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -573,8 +573,8 @@ namespace Provis.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("DateOfCreate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("DateOfCreate")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -617,11 +617,11 @@ namespace Provis.Infrastructure.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<DateTime>("DateOfCreate")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("DateOfCreate")
+                        .HasColumnType("datetimeoffset");
 
-                    b.Property<DateTime>("DateOfEnd")
-                        .HasColumnType("datetime2");
+                    b.Property<DateTimeOffset>("DateOfEnd")
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -631,6 +631,9 @@ namespace Provis.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("StatusId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("StoryPoints")
                         .HasColumnType("int");
 
                     b.Property<string>("TaskCreatorId")
