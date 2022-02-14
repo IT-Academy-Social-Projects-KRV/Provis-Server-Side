@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Provis.Core.Statuses;
+using System;
 
 namespace Provis.Core.DTO.EventDTO
 {

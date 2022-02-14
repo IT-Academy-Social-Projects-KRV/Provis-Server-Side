@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using Provis.Core.Entities.StatusHistoryEntity;
 using Provis.Core.Entities.EventEntity;
+using Provis.Core.Entities.UserEventsEntity;
 
 namespace Provis.Core.Entities.UserEntity
 {

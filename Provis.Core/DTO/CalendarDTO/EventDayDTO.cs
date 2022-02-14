@@ -1,4 +1,5 @@
 ﻿using Provis.Core.DTO.UserDTO;
+using Provis.Core.Statuses;
 using System;
 using System.Collections.Generic;
 

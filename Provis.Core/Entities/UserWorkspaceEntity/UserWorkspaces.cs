@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Provis.Core.DTO.CalendarDTO;
 using Provis.Core.DTO.EventDTO;
 using Provis.Core.DTO.UserDTO;
+using Provis.Core.Statuses;
 using System;
 using System.Linq;
 
