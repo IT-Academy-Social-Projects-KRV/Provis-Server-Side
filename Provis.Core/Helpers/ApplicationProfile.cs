@@ -20,6 +20,8 @@ using Provis.Core.Entities.CommentEntity;
 using Provis.Core.DTO.CommentDTO;
 using Provis.Core.DTO.CommentsDTO;
 using System;
+using Provis.Core.Entities.EventEntity;
+using Provis.Core.DTO.CalendarDTO;
 
 namespace Provis.Core.Helpers
 {
@@ -186,6 +188,13 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.Id))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.AssignedUser.UserId))
                 .ForMember(x => x.UserRoleTagId, act => act.MapFrom(srs => srs.AssignedUser.RoleTagId));
+
+            CreateMap<EventCreateDTO, Event>()
+                .ForMember(x => x.EventName, act => act.MapFrom(srs => srs.EventName))
+                .ForMember(x => x.EventMessage, act => act.MapFrom(srs => srs.EventMessage))
+                .ForMember(x => x.DateOfStart, act => act.MapFrom(srs => srs.DateOfStart))
+                .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
+                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId));
         }
     }
 }
