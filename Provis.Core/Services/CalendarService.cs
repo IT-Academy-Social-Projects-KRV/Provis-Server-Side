@@ -12,6 +12,7 @@ using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
+using Provis.Core.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -57,7 +58,7 @@ namespace Provis.Core.Services
             if (eventCreateDTO.DateOfStart > eventCreateDTO.DateOfEnd)
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest,
-                        "Wrong date");
+                        ErrorMessages.InvalidDateOfEnd);
             }
 
             var workspaceEvent = new Event()
@@ -75,7 +76,7 @@ namespace Provis.Core.Services
                 if (userEvents.Exists(x => x.UserId == item.UserId))
                 {
                     throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                        "This user already assigned");
+                        ErrorMessages.UserAlreadyHasInvite);
                 }
                 userEvents.Add(new UserEvent
                 {

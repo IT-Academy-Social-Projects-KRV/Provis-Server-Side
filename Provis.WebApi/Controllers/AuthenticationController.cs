@@ -45,7 +45,8 @@ namespace Provis.WebApi.Controllers
                 UserName = regDTO.Username,
                 Surname = regDTO.Surname,
                 Name = regDTO.Name,
-                Email = regDTO.Email
+                Email = regDTO.Email,
+                BirthDate = regDTO.BirthDay
             };
 
             await authenticationService.RegistrationAsync(user, regDTO.Password, SystemRoles.User);

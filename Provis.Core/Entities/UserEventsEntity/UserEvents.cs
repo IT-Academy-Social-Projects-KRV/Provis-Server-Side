@@ -29,7 +29,7 @@ namespace Provis.Core.Entities.UserEventsEntity
 
         internal class GetDayEvents : Specification<UserEvent, EventDayDTO>
         {
-            public GetDayEvents(string userId, int workspaceId, DateTime dateTime)
+            public GetDayEvents(string userId, int workspaceId, DateTimeOffset dateTime)
             {
                 Query
                     .Select(x => new EventDayDTO()

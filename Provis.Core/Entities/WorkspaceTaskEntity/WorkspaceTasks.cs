@@ -2,6 +2,7 @@
 using Provis.Core.DTO.CalendarDTO;
 using Provis.Core.DTO.EventDTO;
 using Provis.Core.DTO.UserDTO;
+using Provis.Core.Statuses;
 using System;
 using System.Linq;
 
@@ -56,7 +57,7 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
 
         internal class TaskDayByUser : Specification<WorkspaceTask, EventDayDTO>
         {
-            public TaskDayByUser(string userId, int workspaceId, DateTime dateTime)
+            public TaskDayByUser(string userId, int workspaceId, DateTimeOffset dateTime)
             {
                 Query
                     .Select(x => new EventDayDTO()
@@ -95,7 +96,7 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
 
         internal class AllWorkspaceDayTasks : Specification<WorkspaceTask, EventDayDTO>
         {
-            public AllWorkspaceDayTasks(int workspaceId, DateTime dateTime)
+            public AllWorkspaceDayTasks(int workspaceId, DateTimeOffset dateTime)
             {
                 Query
                     .Select(x => new EventDayDTO()
