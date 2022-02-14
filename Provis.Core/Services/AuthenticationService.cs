@@ -232,5 +232,17 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Wrong code or this code is deprecated, try again!");
             }
         }
+
+        public async Task SetPasswordAsync(string userId, UserSetPasswordDTO userSetPasswordDTO)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+
+            if(await _userManager.HasPasswordAsync(user))
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, ErrorMessages.PasswordIsExist);
+            }
+
+            await _userManager.AddPasswordAsync(user, userSetPasswordDTO.Password);
+        }
     }
 }

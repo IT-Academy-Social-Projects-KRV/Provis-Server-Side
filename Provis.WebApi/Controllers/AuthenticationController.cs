@@ -4,6 +4,7 @@ using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using System.Threading.Tasks;
 using Provis.Core.Entities.UserEntity;
+using System.Security.Claims;
 
 namespace Provis.WebApi.Controllers
 {
@@ -12,6 +13,7 @@ namespace Provis.WebApi.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationService authenticationService;
+        private string UserId => User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
         public AuthenticationController(IAuthenticationService authenticationService)
         {
@@ -86,6 +88,15 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> ResetPasswordAsync([FromBody] UserChangePasswordDTO userChangePasswordDTO)
         {
             await authenticationService.ResetPasswordAsync(userChangePasswordDTO);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("password")]
+        public async Task<IActionResult> SetPasswordAsync([FromBody] UserSetPasswordDTO userSetPasswordDTO)
+        {
+            await authenticationService.SetPasswordAsync(UserId, userSetPasswordDTO);
 
             return Ok();
         }
