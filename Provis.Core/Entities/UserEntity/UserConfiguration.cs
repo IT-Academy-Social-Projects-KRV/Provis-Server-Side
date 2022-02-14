@@ -30,10 +30,6 @@ namespace Provis.Core.Entities.UserEntity
             builder
                 .Property(x => x.CreateDate)
                 .IsRequired();
-
-            builder
-                .Property(x => x.BirthDate)
-                .IsRequired();
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Provis.Infrastructure.Migrations
                 name: "BirthDate",
                 table: "AspNetUsers",
                 type: "datetime2",
-                nullable: false);
+                nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "Events",
