@@ -12,8 +12,8 @@ namespace Provis.Core.DTO.CalendarDTO
         public string EventName { get; set; }
         public string EventMessage { get; set; }
 
-        public DateTime DateOfStart { get; set; }
-        public DateTime DateOfEnd { get; set; }
+        public DateTimeOffset DateOfStart { get; set; }
+        public DateTimeOffset? DateOfEnd { get; set; }
 
         public List<UserAssignOnEventDTO> AssignedUsers { get; set; }
     }

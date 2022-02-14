@@ -17,25 +17,25 @@ namespace Provis.Core.Entities.EventEntity
                 Query
                     .Select(x => new EventDTO()
                     {
-                        EventDay = x.DateOfStart,
+                        EventDay = x.DateOfStart.UtcDateTime,
                         Status = x.IsCreatorExist?CalendarStatuses.PersonalEventStart:CalendarStatuses.SomebodysEventStart
                     })
                     .Where(c => c.WorkspaceId == workspaceId &&
-                        c.DateOfStart.Month == DateTime.UtcNow.Month &&
+                        c.DateOfStart.Month == DateTimeOffset.UtcNow.Month &&
                         c.CreatorId == userId);
             }
         }
 
         internal class GetDayEvents : Specification<Event, EventDayDTO>
         {
-            public GetDayEvents(string userId, int workspaceId, DateTime dateTime)
+            public GetDayEvents(string userId, int workspaceId, DateTimeOffset dateTime)
             {
                 Query
                     .Select(x => new EventDayDTO()
                     {
                         Status = x.IsCreatorExist ? CalendarStatuses.PersonalEventStart : CalendarStatuses.SomebodysEventStart,
                         Name = x.EventName,
-                        DateOfStart = x.DateOfStart,
+                        DateOfStart = x.DateOfStart.UtcDateTime,
                         DateOfEnd = x.DateOfEnd,
                         AssignedUsers = x.UserEvents.Select(y => new UserCalendarInfoDTO()
                         {

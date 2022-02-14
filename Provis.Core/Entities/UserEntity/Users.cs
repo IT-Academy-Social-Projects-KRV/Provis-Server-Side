@@ -15,10 +15,10 @@ namespace Provis.Core.Entities.UserEntity
                 Query
                     .Select(x => new EventDTO()
                     {
-                        EventDay = x.BirthDate,
+                        EventDay = (DateTimeOffset)x.BirthDate,
                         Status = CalendarStatuses.BirthDay
                     })
-                    .Where(x => x.BirthDate.Month == DateTime.UtcNow.Month &&
+                    .Where(x => x.BirthDate.Value.Month == DateTimeOffset.UtcNow.Month &&
                     x.UserWorkspaces.Exists(x => x.WorkspaceId == workspaceId && x.UserId == userId));
             }
         }

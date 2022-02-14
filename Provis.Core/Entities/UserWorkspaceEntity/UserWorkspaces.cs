@@ -69,14 +69,14 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
 
         internal class UsersDateOfBirthDetail : Specification<UserWorkspace, EventDayDTO>
         {
-            public UsersDateOfBirthDetail(int workspaceId, DateTime dateTime)
+            public UsersDateOfBirthDetail(int workspaceId, DateTimeOffset dateTime)
             {
                 Query
                     .Select(x => new EventDayDTO()
                     {
                         Status = CalendarStatuses.BirthDay,
                         Name = "BirthDay",
-                        DateOfStart = x.User.BirthDate,
+                        DateOfStart = (DateTimeOffset)x.User.BirthDate,
                         DateOfEnd = null,
                         AssignedUsers = x.User.UserWorkspaces.Select(y => new UserCalendarInfoDTO()
                         {
@@ -84,7 +84,7 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
                             UserName = y.User.UserName
                         }).ToList()
                     })
-                    .Where(x => x.User.BirthDate.Date == dateTime.Date && 
+                    .Where(x => x.User.BirthDate.Value.Date == dateTime.Date && 
                     x.WorkspaceId == workspaceId);
             }
         }
@@ -96,10 +96,10 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
                 Query
                     .Select(x => new EventDTO()
                     {
-                        EventDay = x.User.BirthDate,
+                        EventDay = (DateTimeOffset)x.User.BirthDate,
                         Status = CalendarStatuses.BirthDay
                     })
-                    .Where(x => x.User.BirthDate.Month == DateTime.UtcNow.Month &&
+                    .Where(x => x.User.BirthDate.Value.Month == DateTime.UtcNow.Month &&
                     x.WorkspaceId == workspaceId);
             }
         }
