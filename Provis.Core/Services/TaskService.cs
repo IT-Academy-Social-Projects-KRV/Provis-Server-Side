@@ -100,6 +100,8 @@ namespace Provis.Core.Services
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
             task.TaskNullChecking();
 
+            var fromStatus = (TaskStatuses)task.StatusId;
+
             if (task.StatusId != changeTaskStatus.StatusId)
             { 
                 try
@@ -135,7 +137,7 @@ namespace Provis.Core.Services
                             {
                                 Uri = _clientUrl.Value.ApplicationUrl,
                                 WhoChangedUserName = user.Name,
-                                FromStatus = (TaskStatuses)task.StatusId,
+                                FromStatus = fromStatus,
                                 ToStatus = (TaskStatuses)changeTaskStatus.StatusId,
                                 TaskName = task.Name,
                                 WorkspaceName = workspace.Name
