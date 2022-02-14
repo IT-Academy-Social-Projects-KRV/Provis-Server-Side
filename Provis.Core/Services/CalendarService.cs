@@ -10,6 +10,7 @@ using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
+using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Resources;
@@ -61,6 +62,9 @@ namespace Provis.Core.Services
                         ErrorMessages.InvalidDateOfEnd);
             }
 
+            var workspace = await _workspaceRepository.GetByKeyAsync(eventCreateDTO.WorkspaceId);
+            workspace.WorkspaceNullChecking();
+
             var workspaceEvent = new Event()
             {
                 CreatorId = userId,
@@ -73,6 +77,9 @@ namespace Provis.Core.Services
             List<UserEvent> userEvents = new();
             foreach (var item in eventCreateDTO.AssignedUsers)
             {
+                var user = await _userManager.FindByIdAsync(item.UserId);
+                user.UserNullChecking();
+
                 if (userEvents.Exists(x => x.UserId == item.UserId))
                 {
                     throw new HttpException(System.Net.HttpStatusCode.Forbidden,
@@ -97,6 +104,9 @@ namespace Provis.Core.Services
 
         public async Task<List<EventDTO>> GetAllEventsAsync(int workspaceId, string userId)
         {
+            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
+            workspace.WorkspaceNullChecking();
+
             var eventSpecification = new Events.GetMyEvents(userId, workspaceId);
             var eventList = await _eventRepository.GetListBySpecAsync(eventSpecification);
 
@@ -141,6 +151,9 @@ namespace Provis.Core.Services
 
         public async Task<List<EventDayDTO>> GetDayEventsAsync(int workspaceId, DateTimeOffset dateTime, string userId)
         {
+            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
+            workspace.WorkspaceNullChecking();
+
             var eventSpecification = new Events.GetDayEvents(userId, workspaceId, dateTime);
             var eventList = await _eventRepository.GetListBySpecAsync(eventSpecification);
 
