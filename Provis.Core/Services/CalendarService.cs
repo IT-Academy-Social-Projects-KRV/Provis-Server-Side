@@ -59,12 +59,19 @@ namespace Provis.Core.Services
         {
             if (eventCreateDTO.DateOfStart > eventCreateDTO.DateOfEnd)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest,
+                throw new HttpException(HttpStatusCode.BadRequest,
                         ErrorMessages.InvalidDateOfEnd);
             }
 
             var workspace = await _workspaceRepository.GetByKeyAsync(eventCreateDTO.WorkspaceId);
             workspace.WorkspaceNullChecking();
+
+            foreach (var item in eventCreateDTO.AssignedUsers)
+            {
+                var specification = new UserWorkspaces.WorkspaceMember(item.UserId, workspace.Id);
+                var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
+                userWorkspace.UserWorkspaceNullChecking();
+            }    
 
             var workspaceEvent = new Event()
             {
@@ -82,9 +89,6 @@ namespace Provis.Core.Services
                 List<UserEvent> userEvents = new();
                 foreach (var item in eventCreateDTO.AssignedUsers)
                 {
-                    var user = await _userManager.FindByIdAsync(item.UserId);
-                    user.UserNullChecking();
-
                     if (userEvents.Exists(x => x.UserId == item.UserId))
                     {
                         throw new HttpException(System.Net.HttpStatusCode.Forbidden,
