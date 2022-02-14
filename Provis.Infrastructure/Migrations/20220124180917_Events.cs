@@ -17,7 +17,7 @@ namespace Provis.Infrastructure.Migrations
                 table: "Events",
                 newName: "DateOfStart");
 
-            migrationBuilder.AddColumn<DateTime>(
+            migrationBuilder.AddColumn<DateTimeOffset>(
                 name: "DateOfEnd",
                 table: "Events",
                 type: "datetime2",

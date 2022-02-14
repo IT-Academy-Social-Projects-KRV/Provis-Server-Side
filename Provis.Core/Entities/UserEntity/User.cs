@@ -22,7 +22,7 @@ namespace Provis.Core.Entities.UserEntity
         public string ImageAvatarUrl { get; set; }
         
         public DateTimeOffset CreateDate { get; set; } // DateTime UTC
-        public DateTime BirthDate { get; set; }
+        public DateTimeOffset? BirthDate { get; set; }
 
         public List<UserTask> UserTasks { get; set; } = new List<UserTask>();
         public List<WorkspaceTask> Tasks { get; set; } = new List<WorkspaceTask>();

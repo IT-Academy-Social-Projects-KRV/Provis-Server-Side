@@ -14,8 +14,8 @@ namespace Provis.Core.Entities.EventEntity
         public string EventName { get; set; }
         public string EventMessage { get; set; }
 
-        public DateTime DateOfStart { get; set; }
-        public DateTime? DateOfEnd { get; set; }
+        public DateTimeOffset DateOfStart { get; set; }
+        public DateTimeOffset? DateOfEnd { get; set; }
 
         public string CreatorId { get; set; }
         public User User { get; set; }
