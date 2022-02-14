@@ -17,6 +17,7 @@ using Provis.Core.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 
 namespace Provis.Core.Services
@@ -72,34 +73,45 @@ namespace Provis.Core.Services
             };
             _mapper.Map(eventCreateDTO, workspaceEvent);
 
-            await _eventRepository.AddAsync(workspaceEvent);
-
-            List<UserEvent> userEvents = new();
-            foreach (var item in eventCreateDTO.AssignedUsers)
+            using var transaction = await _eventRepository.BeginTransactionAsync(System.Data.IsolationLevel.RepeatableRead);
+            try
             {
-                var user = await _userManager.FindByIdAsync(item.UserId);
-                user.UserNullChecking();
+                await _eventRepository.AddAsync(workspaceEvent);
+                await _eventRepository.SaveChangesAsync();
 
-                if (userEvents.Exists(x => x.UserId == item.UserId))
+                List<UserEvent> userEvents = new();
+                foreach (var item in eventCreateDTO.AssignedUsers)
                 {
-                    throw new HttpException(System.Net.HttpStatusCode.Forbidden,
-                        ErrorMessages.UserAlreadyHasInvite);
+                    var user = await _userManager.FindByIdAsync(item.UserId);
+                    user.UserNullChecking();
+
+                    if (userEvents.Exists(x => x.UserId == item.UserId))
+                    {
+                        throw new HttpException(System.Net.HttpStatusCode.Forbidden,
+                            ErrorMessages.UserAlreadyHasInvite);
+                    }
+                    userEvents.Add(new UserEvent
+                    {
+                        EventId = workspaceEvent.Id,
+                        UserId = item.UserId
+                    });
+                    if (item.UserId == userId)
+                    {
+                        workspaceEvent.IsCreatorExist = true;
+                    }
                 }
-                userEvents.Add(new UserEvent
-                {
-                    EventId = workspaceEvent.Id,
-                    UserId = item.UserId
-                });
-                if (item.UserId == userId)
-                {
-                    workspaceEvent.IsCreatorExist = true;
-                }
+
+                await _userEventRepository.AddRangeAsync(userEvents);
+                await _userEventRepository.SaveChangesAsync();
+
+                await transaction.CommitAsync();
             }
-
-            await _eventRepository.SaveChangesAsync();
-
-            await _userEventRepository.AddRangeAsync(userEvents);
-            await _userEventRepository.SaveChangesAsync();
+            catch (Exception)
+            {
+                transaction.Rollback();
+                throw new HttpException(HttpStatusCode.Forbidden,
+                    ErrorMessages.TransactionFailed);
+            }
         }
 
         public async Task<List<EventDTO>> GetAllEventsAsync(int workspaceId, string userId)
