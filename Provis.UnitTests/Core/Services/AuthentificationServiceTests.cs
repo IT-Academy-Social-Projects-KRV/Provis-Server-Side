@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using Ardalis.Specification;
+using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -147,11 +148,7 @@ namespace Provis.UnitTests.Core.Services
             var claims = AuthentificationTestData.GetClaimList();
             var userMock = UserTestData.GetTestUser();
             string userPassword = "Password_1";
-            var expectedUserAutorizationDTO = new UserAutorizationDTO()
-            {
-                Token = "token",
-                RefreshToken = "refreshToken"
-            };
+            var expectedUserAutorizationDTO = GetUserAutorizationDTO();
 
             SetupFindByEmailAsync(email, userMock);
             SetupCheckPasswordAsync(userMock, userPassword);
@@ -193,11 +190,7 @@ namespace Provis.UnitTests.Core.Services
             var userMock = UserTestData.GetTestUser();
             var userTwoFactorDTOMock = AuthentificationTestData.GetUserTwoFactorDTO();
             var claims = AuthentificationTestData.GetClaimList();
-            var expectedUserAutorizationDTO = new UserAutorizationDTO()
-            {
-                Token = "token",
-                RefreshToken = "refreshToken"
-            };
+            var expectedUserAutorizationDTO = GetUserAutorizationDTO();
 
             SetupFindByEmailAsync(userMock.Email, userMock);
             SetupSetClaims(userMock, claims);
@@ -214,7 +207,133 @@ namespace Provis.UnitTests.Core.Services
             result.Should().BeEquivalentTo(expectedUserAutorizationDTO);
         }
 
-            [TearDown]
+        //[Test]
+        //public async Task RegistrationAsync_CreateResultFalse_
+
+
+        [Test]
+        public async Task RefreshTokenAsync_RefreshTokenNull_ThrowException()
+        {
+            var userMock = UserTestData.GetTestUser();
+            var userAutorizationDTO = GetUserAutorizationDTO();
+            RefreshToken refreshToken = null;
+
+            SetupGetFirstBySpecAsync(refreshToken);
+            Func<Task<UserAutorizationDTO>> act = () =>
+                _authentificationService.RefreshTokenAsync(userAutorizationDTO);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.InvalidToken);
+        }
+
+        [Test]
+        public async Task RefreshTokenAsync_RefreshTokenValid_ReturnUserAutorizationDTO()
+        {
+            var userMock = UserTestData.GetTestUser();
+            var userAutorizationDTO = GetUserAutorizationDTO();
+            var claims = AuthentificationTestData.GetClaimList();
+            string token = "token";
+            var expiredRefreshToken = new RefreshToken();
+            RefreshToken refreshToken = new RefreshToken()
+            {
+                Id = 1,
+                UserId = userMock.Id,
+                User = userMock,
+                Token = "refreshToken"
+            };
+
+            SetupGetFirstBySpecAsync(expiredRefreshToken);
+            SetupGetClaimsFromExpiredToken("token", claims);
+            SetupCreateToken(claims, token);
+            SetupCreateRefreshToken(refreshToken.Token);
+            SetupUpdateAsync(expiredRefreshToken);
+            SetupSaveChangesAsync();
+
+            var result = await _authentificationService.RefreshTokenAsync(userAutorizationDTO);
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(userAutorizationDTO);
+        }
+
+        [Test]
+        public void LogoutAsync_RefreshTokenNull_RefreshTokenIsNull()
+        {
+            var userAutorizationDTO = GetUserAutorizationDTO();
+
+            SetupGetFirstBySpecAsync(null);
+
+            var result = Task.Run(async () =>
+                await _authentificationService.LogoutAsync(userAutorizationDTO));
+            result.Wait();
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue(); // change assert
+        }
+
+        [Test]
+        public void LogoutAsync_RefreshTokenNotNull_RefreshTokenDeleted()
+        {
+            var userMock = UserTestData.GetTestUser();
+            var userAutorizationDTO = GetUserAutorizationDTO();
+            var refreshToken = GetRefreshToken();
+
+            SetupGetFirstBySpecAsync(refreshToken);
+            SetupDeleteAsync(refreshToken);
+            SetupSaveChangesAsync();
+
+            var result = Task.Run(() =>
+                _authentificationService.LogoutAsync(userAutorizationDTO));
+            result.Wait();
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();// change assert
+        }
+
+        [Test]
+        public async Task SentResetPasswordTokenAsync_UserNull_ThrowException()
+        {
+            var userMock = UserTestData.GetTestUser();
+
+            SetupFindByEmailAsync(userMock.Email, null);
+            //SetupUserNullChecking(true);
+            // Is it OK?
+            Func<Task> act = () =>
+                _authentificationService.SentResetPasswordTokenAsync(userMock.Email);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.UserNotFound);
+        }
+
+        [Test]
+        public async Task SentResetPasswordTokenAsync_ValidUser_SendToken()
+        {
+            var userMock = UserTestData.GetTestUser();
+            var uriStringMock = "http://localhost:4200/";
+            UserToken userToken = new UserToken();
+            Uri uriMock = new Uri(uriStringMock);
+            string viewName = "Mails/ResetPassword";
+            string template = "template";
+
+            SetupFindByEmailAsync(userMock.Email, userMock);
+            SetupGeneratePasswordResetTokenAsync(userMock, "token");
+            SetupSendEmail();
+            SetupGetTemplateHtmlAsStringAsync(viewName, template);
+            SetupApplicationUrl(new() { ApplicationUrl = uriMock });
+
+
+            var result = _authentificationService
+                .SentResetPasswordTokenAsync(userMock.Email);
+            
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
+        [TearDown]
         public void TearDown()
         {
             _userManagerMock.Verify();
@@ -226,6 +345,16 @@ namespace Provis.UnitTests.Core.Services
             _confirmEmailServiceMock.Verify();
             _templateServiceMock.Verify();
             _clientUrlMock.Verify();
+        }
+        private RefreshToken GetRefreshToken()
+        {
+            return new RefreshToken()
+            {
+                Id = 1,
+                UserId = "1",
+                User = new User(),
+                Token = "refreshToken"
+            };
         }
 
         protected void SetupFindByEmailAsync(string email, User userInstance)
@@ -328,6 +457,63 @@ namespace Provis.UnitTests.Core.Services
                                                       token ?? It.IsAny<string>()))
                .ReturnsAsync(result)
                .Verifiable();
+        }
+
+        protected void SetupGetFirstBySpecAsync(RefreshToken refreshToken)
+        {
+            _refreshTokenRepositoryMock
+                .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<RefreshToken>>()))
+                .ReturnsAsync(refreshToken)
+                .Verifiable();
+        }
+
+        protected UserAutorizationDTO GetUserAutorizationDTO()
+        {
+            return new UserAutorizationDTO()
+            {
+                Token = "token",
+                RefreshToken = "refreshToken"
+            };
+        }
+
+        protected void SetupGetClaimsFromExpiredToken(string token, IEnumerable<Claim> claims)
+        {
+            _jwtServiceMock
+                .Setup(x => x.GetClaimsFromExpiredToken(token ?? It.IsAny<string>()))
+                .Returns(claims)
+                .Verifiable();
+        }
+
+        protected void SetupSaveChangesAsync()
+        {
+            _refreshTokenRepositoryMock
+                .Setup(x => x.SaveChangesAsync())
+                .ReturnsAsync(1)
+                .Verifiable();
+        }
+
+        protected void SetupUpdateAsync(RefreshToken refreshToken)
+        {
+            _refreshTokenRepositoryMock
+                .Setup(x => x.UpdateAsync(refreshToken))
+                .Returns(Task.FromResult(1))
+                .Verifiable();
+        }
+
+        protected void SetupDeleteAsync(RefreshToken refreshToken)
+        {
+            _refreshTokenRepositoryMock
+                .Setup(x => x.DeleteAsync(refreshToken))
+                .Returns(Task.FromResult(Task.CompletedTask))
+                .Verifiable();
+        }
+
+        protected void SetupGeneratePasswordResetTokenAsync(User user, string token)
+        {
+            _userManagerMock
+                .Setup(x => x.GeneratePasswordResetTokenAsync(user ?? It.IsAny<User>()))
+                .ReturnsAsync(token)
+                .Verifiable();
         }
     }
 }

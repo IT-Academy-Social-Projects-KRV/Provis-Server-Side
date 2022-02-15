@@ -46,15 +46,5 @@ namespace Provis.UnitTests.Base.TestData
                 }
             };
         }
-
-        //public static UserToken GetTestUserToken()
-        //{
-        //    return new UserToken()
-        //    {
-        //        Token = "token",
-        //        Uri = new Uri("http://localhost:4200/"),
-        //        UserName = "name"
-        //        };
-        //}
     }
 }
