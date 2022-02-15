@@ -38,7 +38,7 @@ namespace Provis.WebApi.Controllers
         [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
-        [Route("all/workspace/{workspaceId}")]
+        [Route("workspace/{workspaceId}")]
         public async Task<IActionResult> GetAllEventsAsync(int workspaceId)
         {
             var getEvents = await _calendarService.GetAllEventsAsync(workspaceId, UserId);
@@ -51,7 +51,7 @@ namespace Provis.WebApi.Controllers
         [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
-        [Route("day/workspace/{workspaceId}")]
+        [Route("workspace/{workspaceId}/date/{dateTime}")]
         public async Task<IActionResult> GetDayEventsAsync(int workspaceId, DateTimeOffset dateTime)
         {
             var getEvents = await _calendarService.GetDayEventsAsync(workspaceId, dateTime, UserId);
