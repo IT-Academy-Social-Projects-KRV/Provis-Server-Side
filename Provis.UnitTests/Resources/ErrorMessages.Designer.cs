@@ -428,5 +428,14 @@ namespace Provis.UnitTests.Resources {
                 return ResourceManager.GetString("WorkspaceNotFound", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wrong code or this code is deprecated, try again!.
+        /// </summary>
+        internal static string WrongResetPasswordCode {
+            get {
+                return ResourceManager.GetString("WrongResetPasswordCode", resourceCulture);
+            }
+        }
     }
 }
