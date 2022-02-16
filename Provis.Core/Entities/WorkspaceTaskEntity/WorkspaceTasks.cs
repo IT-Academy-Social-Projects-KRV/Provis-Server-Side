@@ -1,6 +1,7 @@
 ﻿using Ardalis.Specification;
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace Provis.Core.Entities.WorkspaceTaskEntity
 {
@@ -10,17 +11,28 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
         {
             public UnassignedTaskList(int workspaceId, int? sprintId)
             {
+                SetQuery(x => x.WorkspaceId == workspaceId &&
+                    (!x.UserTasks.Any() || x.UserTasks.All(y => y.IsUserDeleted == true)) &&
+                    x.SprintId == sprintId);
+            }
+
+            public UnassignedTaskList(int workspaceId)
+            {
+                SetQuery(x => x.WorkspaceId == workspaceId &&
+                    (!x.UserTasks.Any() || x.UserTasks.All(y => y.IsUserDeleted == true)));
+            }
+
+            private void SetQuery(Expression<Func<WorkspaceTask, bool>> whereCriteria)
+            {
                 Query
-                    .Select(x => new Tuple<int, WorkspaceTask, int, int, string>(
-                        x.StatusId,
-                        x,
-                        x.Comments.Count,
-                        x.UserTasks.Count,
-                        x.TaskCreator.UserName))
-                    .Where(x => x.WorkspaceId == workspaceId &&
-                        (!x.UserTasks.Any() || x.UserTasks.All(y => y.IsUserDeleted == true)) &&
-                        (x.SprintId == sprintId || !sprintId.HasValue))
-                    .OrderBy(x => x.StatusId);
+                   .Select(x => new Tuple<int, WorkspaceTask, int, int, string>(
+                       x.StatusId,
+                       x,
+                       x.Comments.Count,
+                       x.UserTasks.Count,
+                       x.TaskCreator.UserName))
+                   .Where(whereCriteria)
+                   .OrderBy(x => x.StatusId);
             }
         }
 

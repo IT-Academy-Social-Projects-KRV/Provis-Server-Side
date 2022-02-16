@@ -30,6 +30,7 @@ using Provis.Core.Metrics;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net;
 using Provis.Core.Resources;
+using Ardalis.Specification;
 
 namespace Provis.Core.Services
 {
@@ -158,12 +159,6 @@ namespace Provis.Core.Services
             var workspace = await _workspaceRepository.GetByKeyAsync(taskCreateDTO.WorkspaceId);
             workspace.WorkspaceNullChecking();
 
-            if(workspace.isUseSprints && !taskCreateDTO.SprintId.HasValue ||
-               !workspace.isUseSprints && taskCreateDTO.SprintId.HasValue)
-            {
-                throw new HttpException(HttpStatusCode.BadRequest, ErrorMessages.BadSprintValue);
-            }
-
             foreach (var item in taskCreateDTO.AssignedUsers)
             {
                 var specification = new UserWorkspaces.WorkspaceMember(item.UserId, workspace.Id);
@@ -232,9 +227,17 @@ namespace Provis.Core.Services
 
         public async Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId, int? sprintId)
         {
+            var workspase = await _workspaceRepository.GetByKeyAsync(workspaceId);
+
             if (!String.IsNullOrEmpty(userId))
             {
-                var specification = new UserTasks.UserTaskList(userId, workspaceId, sprintId);
+                UserTasks.UserTaskList specification;
+
+                if(workspase.isUseSprints)
+                    specification = new UserTasks.UserTaskList(userId, workspaceId, sprintId);
+                else
+                    specification = new UserTasks.UserTaskList(userId, workspaceId);
+
                 var selection = await _userTaskRepository.GetListBySpecAsync(specification);
 
                 var result = selection
@@ -251,7 +254,13 @@ namespace Provis.Core.Services
             }
             else
             {
-                var specification = new WorkspaceTasks.UnassignedTaskList(workspaceId, sprintId);
+                WorkspaceTasks.UnassignedTaskList specification;
+
+                if(workspase.isUseSprints)
+                    specification = new WorkspaceTasks.UnassignedTaskList(workspaceId, sprintId);
+                else
+                    specification = new WorkspaceTasks.UnassignedTaskList(workspaceId);
+
                 var selection = await _taskRepository.GetListBySpecAsync(specification);
 
                 var result = selection

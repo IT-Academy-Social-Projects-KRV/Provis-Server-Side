@@ -1,5 +1,6 @@
 ﻿using Ardalis.Specification;
 using System;
+using System.Linq.Expressions;
 
 namespace Provis.Core.Entities.UserTaskEntity
 {
@@ -9,6 +10,19 @@ namespace Provis.Core.Entities.UserTaskEntity
         {
             public UserTaskList(string userId, int workspaceId, int? sprintId)
             {
+                SetQuery(x => x.UserId == userId &&
+                    x.Task.WorkspaceId == workspaceId &&
+                    x.Task.SprintId == sprintId);
+            }
+
+            public UserTaskList(string userId, int workspaceId)
+            {
+                SetQuery(x => x.UserId == userId &&
+                    x.Task.WorkspaceId == workspaceId);
+            }
+
+            private void SetQuery(Expression<Func<UserTask, bool>> whereCriteria)
+            {
                 Query
                     .Select(x => new Tuple<int, UserTask, int, int, string>(
                         x.Task.StatusId,
@@ -17,8 +31,7 @@ namespace Provis.Core.Entities.UserTaskEntity
                         x.Task.UserTasks.Count,
                         x.Task.TaskCreator.UserName))
                     .Include(x => x.Task)
-                    .Where(x => x.UserId == userId && x.Task.WorkspaceId == workspaceId &&
-                        (x.Task.SprintId == sprintId || !sprintId.HasValue))
+                    .Where(whereCriteria)
                     .OrderBy(x => x.Task.StatusId);
             }
         }

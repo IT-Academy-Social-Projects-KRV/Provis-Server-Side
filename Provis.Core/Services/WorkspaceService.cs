@@ -411,14 +411,11 @@ namespace Provis.Core.Services
 
         public async Task SetUsingSprintsAsync(int workspaceId, bool isUseSptints)
         {
-            if(isUseSptints)
-            {
-                await _sprintService.OnSprintsAsync(workspaceId);
-            }
-            else
-            {
-                await _sprintService.OffSprintsAsync(workspaceId);
-            }
+            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
+            workspace.isUseSprints = isUseSptints;
+
+            await _workspaceRepository.UpdateAsync(workspace);
+            await _workspaceRepository.SaveChangesAsync();
         }
     }
 }

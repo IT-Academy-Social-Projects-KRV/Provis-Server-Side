@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Provis.WebApi;
+using App.Metrics.Formatters.Prometheus;
 
 namespace Provis.IntegrationTest.Base
 {
@@ -17,7 +18,13 @@ namespace Provis.IntegrationTest.Base
 
                 config.AddConfiguration(integrationConfig);
             });
-
+            builder
+                .UseMetricsEndpoints(options =>
+                {
+                    options.EnvironmentInfoEndpointEnabled = false;
+                    options.MetricsTextEndpointOutputFormatter = new MetricsPrometheusTextOutputFormatter();
+                    options.MetricsEndpointOutputFormatter = new MetricsPrometheusProtobufOutputFormatter();
+                });
             builder.UseEnvironment("Testing");
         }
     }
