@@ -72,7 +72,7 @@ namespace Provis.WebApi.Controllers
         }
 
         [HttpGet]
-        [Route("recover-password/{email}")]
+        [Route("password/{email}")]
         public async Task<IActionResult> SentResetPasswordTokenAsync(string email)
         {
             await authenticationService.SentResetPasswordTokenAsync(email);
@@ -81,7 +81,7 @@ namespace Provis.WebApi.Controllers
         }
 
         [HttpPut]
-        [Route("reset-password")]
+        [Route("password")]
         public async Task<IActionResult> ResetPasswordAsync([FromBody] UserChangePasswordDTO userChangePasswordDTO)
         {
             await authenticationService.ResetPasswordAsync(userChangePasswordDTO);
