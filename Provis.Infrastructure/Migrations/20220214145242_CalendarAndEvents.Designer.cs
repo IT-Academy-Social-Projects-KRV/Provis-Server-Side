@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Provis.Infrastructure.Data;
 
 namespace Provis.Infrastructure.Migrations
 {
     [DbContext(typeof(ProvisDbContext))]
-    partial class ProvisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220214145242_CalendarAndEvents")]
+    partial class CalendarAndEvents
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -148,27 +150,6 @@ namespace Provis.Infrastructure.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
-                });
-
-            modelBuilder.Entity("Provis.Core.Entities.CommentAttachmentEntity.CommentAttachment", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("AttachmentPath")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("CommentId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CommentId");
-
-                    b.ToTable("CommentAttachments");
                 });
 
             modelBuilder.Entity("Provis.Core.Entities.CommentEntity.Comment", b =>
@@ -726,17 +707,6 @@ namespace Provis.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.CommentAttachmentEntity.CommentAttachment", b =>
-                {
-                    b.HasOne("Provis.Core.Entities.CommentEntity.Comment", "Comment")
-                        .WithMany("Attachments")
-                        .HasForeignKey("CommentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Comment");
-                });
-
             modelBuilder.Entity("Provis.Core.Entities.CommentEntity.Comment", b =>
                 {
                     b.HasOne("Provis.Core.Entities.WorkspaceTaskEntity.WorkspaceTask", "Task")
@@ -950,11 +920,6 @@ namespace Provis.Infrastructure.Migrations
                     b.Navigation("Workspace");
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.CommentEntity.Comment", b =>
-                {
-                    b.Navigation("Attachments");
-                });
-                
             modelBuilder.Entity("Provis.Core.Entities.EventEntity.Event", b =>
                 {
                     b.Navigation("UserEvents");
