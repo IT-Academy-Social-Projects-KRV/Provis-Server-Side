@@ -30,6 +30,7 @@ using Provis.Core.Metrics;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net;
 using Provis.Core.Resources;
+using Ardalis.Specification;
 using Microsoft.EntityFrameworkCore;
 
 namespace Provis.Core.Services
@@ -238,11 +239,19 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-        public async Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId)
+        public async Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId, int? sprintId)
         {
+            var workspase = await _workspaceRepository.GetByKeyAsync(workspaceId);
+
             if (!String.IsNullOrEmpty(userId))
             {
-                var specification = new UserTasks.UserTaskList(userId, workspaceId);
+                UserTasks.UserTaskList specification;
+
+                if(workspase.isUseSprints)
+                    specification = new UserTasks.UserTaskList(userId, workspaceId, sprintId);
+                else
+                    specification = new UserTasks.UserTaskList(userId, workspaceId);
+
                 var selection = await _userTaskRepository.GetListBySpecAsync(specification);
 
                 var result = selection
@@ -259,7 +268,13 @@ namespace Provis.Core.Services
             }
             else
             {
-                var specification = new WorkspaceTasks.UnassignedTaskList(workspaceId);
+                WorkspaceTasks.UnassignedTaskList specification;
+
+                if(workspase.isUseSprints)
+                    specification = new WorkspaceTasks.UnassignedTaskList(workspaceId, sprintId);
+                else
+                    specification = new WorkspaceTasks.UnassignedTaskList(workspaceId);
+
                 var selection = await _taskRepository.GetListBySpecAsync(specification);
 
                 var result = selection

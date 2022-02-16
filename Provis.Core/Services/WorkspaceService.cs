@@ -42,6 +42,7 @@ namespace Provis.Core.Services
         protected readonly ITemplateService _templateService;
         protected readonly ClientUrl _clientUrl;
         private readonly IMetrics _metrics;
+        private readonly ISprintService _sprintService;
 
         public WorkspaceService(IRepository<User> user,
             UserManager<User> userManager,
@@ -55,7 +56,8 @@ namespace Provis.Core.Services
             RoleAccess roleAccess,
             ITemplateService templateService,
             IOptions<ClientUrl> options,
-            IMetrics metrics)
+            IMetrics metrics,
+            ISprintService sprintService)
         {
             _userRepository = user;
             _userManager = userManager;
@@ -70,6 +72,7 @@ namespace Provis.Core.Services
             _userTaskRepository = userTasksRepository;
             _clientUrl = options.Value;
             _metrics = metrics;
+            _sprintService = sprintService;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -221,7 +224,7 @@ namespace Provis.Core.Services
 
             inviteUserRec.IsConfirm = true;
 
-            var userTaskSpecification = new UserTasks.UserTaskList(userid, inviteUserRec.WorkspaceId);
+            var userTaskSpecification = new UserTasks.UserTaskList(userid, inviteUserRec.WorkspaceId, null);
             var userTasks = await _userTaskRepository.GetListBySpecAsync(userTaskSpecification);
 
             if (userTasks != null)
@@ -351,7 +354,7 @@ namespace Provis.Core.Services
                     ErrorMessages.OwnerCannotLeaveWorkspace);
             }
 
-            var userTaskSpecification = new UserTasks.UserTaskList(userId, workspaceId);
+            var userTaskSpecification = new UserTasks.UserTaskList(userId, workspaceId, null);
             var userTasks = await _userTaskRepository.GetListBySpecAsync(userTaskSpecification);
 
             if (userTasks != null)
@@ -413,6 +416,15 @@ namespace Provis.Core.Services
             var memberListToReturn = _mapper.Map<List<WorkspaceDetailMemberDTO>>(memberList);
 
             return memberListToReturn;
+        }
+
+        public async Task SetUsingSprintsAsync(int workspaceId, bool isUseSptints)
+        {
+            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
+            workspace.isUseSprints = isUseSptints;
+
+            await _workspaceRepository.UpdateAsync(workspace);
+            await _workspaceRepository.SaveChangesAsync();
         }
     }
 }

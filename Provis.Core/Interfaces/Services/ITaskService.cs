@@ -8,7 +8,7 @@ namespace Provis.Core.Interfaces.Services
     {
         Task<TaskChangeStatusDTO> ChangeTaskStatusAsync(TaskChangeStatusDTO cangeTaskStatus, string userId);
         Task CreateTaskAsync(TaskCreateDTO taskCreateDTO, string userId);
-        Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId);
+        Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId, int? sprintId);
         Task<List<TaskStatusDTO>> GetTaskStatuses();
         Task<TaskInfoDTO> ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId);
         Task JoinTaskAsync(TaskAssignDTO taskAssignDTO, string userId);
