@@ -34,6 +34,18 @@ namespace Provis.WebApi.Controllers
         }
 
         [Authorize]
+        [HttpPut]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId})]
+        public async Task<IActionResult> EditEventAsync([FromBody] EventEditDTO eventCreateDTO)
+        {
+            await _calendarService.EditEventAsync(eventCreateDTO, UserId);
+
+            return Ok();
+        }
+
+        [Authorize]
         [HttpGet]
         [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,

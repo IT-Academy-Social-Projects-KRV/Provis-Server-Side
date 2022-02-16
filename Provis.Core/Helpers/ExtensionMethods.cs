@@ -1,4 +1,5 @@
-﻿using Provis.Core.Entities.InviteUserEntity;
+﻿using Provis.Core.Entities.EventEntity;
+using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
@@ -53,6 +54,15 @@ namespace Provis.Core.Helpers.Mails
             {
                 throw new HttpException(HttpStatusCode.NotFound,
                     ErrorMessages.TaskNotFound);
+            }
+        }
+
+        public static void EventNullChecking(this Event @event)
+        {
+            if (@event == null)
+            {
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.EventNotFound);
             }
         }
     }
