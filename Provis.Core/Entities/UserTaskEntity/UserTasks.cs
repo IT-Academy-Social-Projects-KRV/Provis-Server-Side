@@ -4,6 +4,7 @@ using Provis.Core.DTO.EventDTO;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Statuses;
 using System;
+using System.Linq.Expressions;
 using System.Linq;
 
 namespace Provis.Core.Entities.UserTaskEntity
@@ -12,7 +13,20 @@ namespace Provis.Core.Entities.UserTaskEntity
     {
         internal class UserTaskList : Specification<UserTask, Tuple<int, UserTask, int, int, string>>
         {
+            public UserTaskList(string userId, int workspaceId, int? sprintId)
+            {
+                SetQuery(x => x.UserId == userId &&
+                    x.Task.WorkspaceId == workspaceId &&
+                    x.Task.SprintId == sprintId);
+            }
+
             public UserTaskList(string userId, int workspaceId)
+            {
+                SetQuery(x => x.UserId == userId &&
+                    x.Task.WorkspaceId == workspaceId);
+            }
+
+            private void SetQuery(Expression<Func<UserTask, bool>> whereCriteria)
             {
                 Query
                     .Select(x => new Tuple<int, UserTask, int, int, string>(
@@ -22,7 +36,7 @@ namespace Provis.Core.Entities.UserTaskEntity
                         x.Task.UserTasks.Count,
                         x.Task.TaskCreator.UserName))
                     .Include(x => x.Task)
-                    .Where(x => x.UserId == userId && x.Task.WorkspaceId == workspaceId)
+                    .Where(whereCriteria)
                     .OrderBy(x => x.Task.StatusId);
             }
         }

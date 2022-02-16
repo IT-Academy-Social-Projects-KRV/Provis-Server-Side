@@ -17,6 +17,7 @@ namespace Provis.Core.Interfaces.Repositories
         Task DeleteAsync(TEntity entity);
         Task DeleteRangeAsync(IEnumerable<TEntity> entities);
         IQueryable<TEntity> Query(params Expression<Func<TEntity, object>>[] includes);
+        Task<int> SqlQuery(string sqlQuery);
         Task<int> SaveChangesAsync();
         Task AddRangeAsync(List<TEntity> entities);
         Task<IDbContextTransaction> BeginTransactionAsync(System.Data.IsolationLevel isolationLevel = System.Data.IsolationLevel.ReadCommitted);
@@ -26,5 +27,6 @@ namespace Provis.Core.Interfaces.Repositories
         Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification);
         Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification, Expression<Func<TEntity, bool>> anyExpression);
         Task<bool> AllBySpecAsync(ISpecification<TEntity> specification, Expression<Func<TEntity, bool>> allExpression);
+        Task SetOriginalRowVersion<T>(T entity, byte[] rowVersion) where T : class, IRowVersion, IBaseEntity;
     }
 }
