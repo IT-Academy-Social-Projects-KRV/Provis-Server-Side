@@ -23,6 +23,7 @@ using App.Metrics;
 using Provis.Core.Metrics;
 using System.Net;
 using Provis.Core.Resources;
+using Microsoft.EntityFrameworkCore;
 
 namespace Provis.Core.Services
 {
@@ -249,15 +250,15 @@ namespace Provis.Core.Services
 
         public async Task<WorkspaceChangeRoleDTO> ChangeUserRoleAsync(string userId, WorkspaceChangeRoleDTO userChangeRole)
         {
-            var modifierSpecification = new UserWorkspaces.WorkspaceMember(userId, userChangeRole.WorkspaceId);
-            var modifier = await _userWorkspaceRepository.GetFirstBySpecAsync(modifierSpecification);
-
-            modifier.User.UserNullChecking();
-
             var targetSpecification = new UserWorkspaces.WorkspaceMember(userChangeRole.UserId, userChangeRole.WorkspaceId);
             var target = await _userWorkspaceRepository.GetFirstBySpecAsync(targetSpecification);
 
             target.User.UserNullChecking();
+
+            var modifierSpecification = new UserWorkspaces.WorkspaceMember(userId, userChangeRole.WorkspaceId);
+            var modifier = await _userWorkspaceRepository.GetFirstBySpecAsync(modifierSpecification);
+
+            modifier.User.UserNullChecking();
 
             var roleId = (WorkSpaceRoles)modifier.RoleId;
 
@@ -268,14 +269,23 @@ namespace Provis.Core.Services
                     .Any(p => p == (WorkSpaceRoles)userChangeRole.RoleId)
                 )
             {
+                try
+                {
+                    target.RoleId = userChangeRole.RoleId;
+                    await _userWorkspaceRepository.SetOriginalRowVersion(target, userChangeRole.RowVersion);
+                    await _userWorkspaceRepository.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
+                }
+
                 _metrics.Measure.Counter.Decrement(WorkspaceMetrics.MembersCountByWorkspaceRole,
                     MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, target.RoleId));
 
                 _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
                     MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, userChangeRole.RoleId));
 
-                target.RoleId = userChangeRole.RoleId;
-                await _userWorkspaceRepository.SaveChangesAsync();
                 return _mapper.Map<WorkspaceChangeRoleDTO>(target);
             }
             else
@@ -334,7 +344,6 @@ namespace Provis.Core.Services
         {
             var userWorkspSpecification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
             var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspSpecification);
-
 
             if (userWorksp.RoleId == (int)WorkSpaceRoles.OwnerId)
             {

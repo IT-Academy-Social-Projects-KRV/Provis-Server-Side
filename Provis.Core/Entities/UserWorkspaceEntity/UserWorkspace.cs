@@ -5,7 +5,7 @@ using Provis.Core.Interfaces;
 
 namespace Provis.Core.Entities.UserWorkspaceEntity
 {
-    public class UserWorkspace : IBaseEntity
+    public class UserWorkspace : IBaseEntity, IRowVersion
     {
         public int WorkspaceId { get; set; }
         public Workspace Workspace { get; set; }
@@ -15,5 +15,7 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
 
         public int RoleId { get; set; }
         public Role Role { get; set; }
+
+        public byte[] RowVersion { get; set; }
     }
 }

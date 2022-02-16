@@ -30,6 +30,7 @@ using Provis.Core.Metrics;
 using Microsoft.AspNetCore.StaticFiles;
 using System.Net;
 using Provis.Core.Resources;
+using Microsoft.EntityFrameworkCore;
 
 namespace Provis.Core.Services
 {
@@ -94,13 +95,28 @@ namespace Provis.Core.Services
             _metrics = metrics;
         }
 
-        public async Task ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
+        public async Task<TaskChangeStatusDTO> ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
         {
             var task = await _taskRepository.GetByKeyAsync(changeTaskStatus.TaskId);
             task.TaskNullChecking();
 
-            if(task.StatusId != changeTaskStatus.StatusId)
-            {
+            var fromStatus = (TaskStatuses)task.StatusId;
+
+            if (task.StatusId != changeTaskStatus.StatusId)
+            { 
+                try
+                {
+                    task.StatusId = changeTaskStatus.StatusId;
+                    await _taskRepository.SetOriginalRowVersion(task, changeTaskStatus.RowVersion);
+
+                    await _taskRepository.UpdateAsync(task);
+                    await _taskRepository.SaveChangesAsync();
+                }
+                catch(DbUpdateConcurrencyException)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
+                }
+
                 var user = await _userRepository.GetByKeyAsync(userId);
 
                 var workspace = await _workspaceRepository.GetByKeyAsync(changeTaskStatus.WorkspaceId);
@@ -108,7 +124,7 @@ namespace Provis.Core.Services
                 var assignedUserEmails = await _userTaskRepository.GetListBySpecAsync(
                     new UserTasks.TaskAssignedUserEmailList(changeTaskStatus.TaskId));
 
-                if(assignedUserEmails.Count() > 1)
+                if (assignedUserEmails.Count() > 1)
                 {
                     await Task.Factory.StartNew(async () =>
                     {
@@ -121,7 +137,7 @@ namespace Provis.Core.Services
                             {
                                 Uri = _clientUrl.Value.ApplicationUrl,
                                 WhoChangedUserName = user.Name,
-                                FromStatus = (TaskStatuses)task.StatusId,
+                                FromStatus = fromStatus,
                                 ToStatus = (TaskStatuses)changeTaskStatus.StatusId,
                                 TaskName = task.Name,
                                 WorkspaceName = workspace.Name
@@ -138,19 +154,17 @@ namespace Provis.Core.Services
                     UserId = userId
                 };
 
-            _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskCountByStatus,
-               MetricTagsConstructor.TaskCountByStatus(changeTaskStatus.WorkspaceId, changeTaskStatus.StatusId));
+                _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskCountByStatus,
+                    MetricTagsConstructor.TaskCountByStatus(changeTaskStatus.WorkspaceId, changeTaskStatus.StatusId));
 
-            _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskCountByStatus,
-                MetricTagsConstructor.TaskCountByStatus(task.WorkspaceId, task.StatusId));
+                _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskCountByStatus,
+                    MetricTagsConstructor.TaskCountByStatus(task.WorkspaceId, task.StatusId));
 
-            await _statusHistoryRepository.AddAsync(statusHistory);
-
-                task.StatusId = changeTaskStatus.StatusId;
-                await _taskRepository.UpdateAsync(task);
-
-                await _taskRepository.SaveChangesAsync();
+                await _statusHistoryRepository.AddAsync(statusHistory);
+                await _statusHistoryRepository.SaveChangesAsync();
             }
+
+            return _mapper.Map<TaskChangeStatusDTO>(await _taskRepository.GetByKeyAsync(task.Id));
         }
 
         public async Task CreateTaskAsync(TaskCreateDTO taskCreateDTO, string userId)
@@ -313,7 +327,7 @@ namespace Provis.Core.Services
             await _userTaskRepository.SaveChangesAsync();
         }
 
-        public async Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
+        public async Task<TaskInfoDTO> ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId)
         {
             var workspaceTask = await _taskRepository.GetByKeyAsync(taskChangeInfoDTO.Id);
             workspaceTask.TaskNullChecking();
@@ -329,11 +343,23 @@ namespace Provis.Core.Services
                     ErrorMessages.NotPermission);
             }
 
-            if (workspaceTask.Name != taskChangeInfoDTO.Name
-                || workspaceTask.Description != taskChangeInfoDTO.Description
-                || workspaceTask.DateOfEnd != taskChangeInfoDTO.Deadline
-                || workspaceTask.StoryPoints != taskChangeInfoDTO.StoryPoints)
+            if (workspaceTask.TaskDataIsUpdated(taskChangeInfoDTO))
             {
+                try
+                {
+                    _mapper.Map(taskChangeInfoDTO, workspaceTask);
+
+                    await _taskRepository.SetOriginalRowVersion(workspaceTask, taskChangeInfoDTO.RowVersion);
+
+                    await _taskRepository.UpdateAsync(workspaceTask);
+
+                    await _taskRepository.SaveChangesAsync();
+                }
+                catch(DbUpdateConcurrencyException)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
+                }
+
                 var user = await _userRepository.GetByKeyAsync(userId);
 
                 var workspace = await _workspaceRepository.GetByKeyAsync(taskChangeInfoDTO.WorkspaceId);
@@ -359,14 +385,10 @@ namespace Provis.Core.Services
                             }
                         });
                     });
-                }
-
-                _mapper.Map(taskChangeInfoDTO, workspaceTask);
-
-                await _taskRepository.UpdateAsync(workspaceTask);
-
-                await _taskRepository.SaveChangesAsync();
+                }             
             }
+
+            return _mapper.Map<TaskInfoDTO>(await _taskRepository.GetByKeyAsync(workspaceTask.Id));
         }
 
         public async Task<List<TaskStatusHistoryDTO>> GetStatusHistories(int taskId)
@@ -498,8 +520,17 @@ namespace Provis.Core.Services
             return file;
         }
 
-        public async Task ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId)
+        public async Task<TaskChangeRoleDTO> ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId)
         {
+            var userTaskSpecification = new UserTasks
+                .AssignedMember(changeRoleDTO.TaskId, changeRoleDTO.UserId);
+
+            var userTaskMember = await _userTaskRepository
+                    .GetFirstBySpecAsync(userTaskSpecification);
+
+            _ = userTaskMember ?? throw new HttpException(HttpStatusCode.NotFound,
+                ErrorMessages.UserNotFound);
+
             var taskSpecification = new WorkspaceTasks
                     .TaskById(changeRoleDTO.TaskId);
             var task = await _taskRepository
@@ -507,14 +538,6 @@ namespace Provis.Core.Services
 
             _ = task ?? throw new HttpException(HttpStatusCode.NotFound,
                 ErrorMessages.TaskNotFound);
-
-            var userTaskSpecification = new UserTasks
-                    .AssignedMember(changeRoleDTO.TaskId, changeRoleDTO.UserId);
-            var userTaskMember = await _userTaskRepository
-                    .GetFirstBySpecAsync(userTaskSpecification);
-
-            _ = userTaskMember ?? throw new HttpException(HttpStatusCode.NotFound,
-                ErrorMessages.UserNotFound);
 
             var userSpecification = new UserWorkspaces
                     .WorkspaceMember(userId, changeRoleDTO.WorkspaceId);
@@ -524,21 +547,32 @@ namespace Provis.Core.Services
             if (task.TaskCreatorId == userId ||
                 (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
             {
+                try
+                {
+                    userTaskMember.UserRoleTagId = changeRoleDTO.RoleId;
+                    await _userTaskRepository.SetOriginalRowVersion(userTaskMember, changeRoleDTO.RowVersion);
+
+                    await _userTaskRepository.SaveChangesAsync();
+                }
+                catch(DbUpdateConcurrencyException)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
+                }
+
                 _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskRolesCountByWorkspace,
                     MetricTagsConstructor.TaskRolesCountByWorkspace(changeRoleDTO.WorkspaceId, userTaskMember.UserRoleTagId));
-
-                userTaskMember.UserRoleTagId = changeRoleDTO.RoleId;
 
                 _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
                     MetricTagsConstructor.TaskRolesCountByWorkspace(changeRoleDTO.WorkspaceId, changeRoleDTO.RoleId));
 
-                await _userTaskRepository.SaveChangesAsync();
             }
             else
             {
                 throw new HttpException(HttpStatusCode.Forbidden,
                     ErrorMessages.NotPermission);
             }
+
+            return _mapper.Map<TaskChangeRoleDTO>(await _userTaskRepository.GetFirstBySpecAsync(userTaskSpecification));
         }
 
         public async Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId)
