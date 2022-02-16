@@ -27,6 +27,7 @@ namespace Provis.Core
             services.AddScoped<ITemplateService, TemplateService>();
             services.AddScoped<ICommentService, CommentService>();
             services.AddScoped<ISprintService, SprintService>();
+            services.AddScoped<ICalendarService, CalendarService>();
         }
 
         public static void AddFileService(this IServiceCollection services, IConfiguration configuration)

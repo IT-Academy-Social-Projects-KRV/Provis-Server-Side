@@ -50,6 +50,10 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                 .HasOne(x => x.Sprint)
                 .WithMany(x => x.Tasks)
                 .HasForeignKey(x => x.SprintId);
+                
+            builder
+                .Property(x => x.RowVersion)
+                .IsRowVersion();
         }
     }
 }

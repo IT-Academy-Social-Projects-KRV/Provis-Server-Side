@@ -36,6 +36,10 @@ namespace Provis.Core.Entities.UserWorkspaceEntity
                 .HasOne(x => x.Role)
                 .WithMany(x => x.UserWorkspaces)
                 .HasForeignKey(x => x.RoleId);
+
+            builder
+                .Property(x => x.RowVersion)
+                .IsRowVersion();
         }
     }
 }

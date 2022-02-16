@@ -8,6 +8,7 @@ using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
+using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Resources;
@@ -73,6 +74,7 @@ namespace Provis.Core.Services
         public async Task EditCommentAsync(EditCommentDTO editComment, string creatorId)
         {
             var comment = await _commentRepository.GetByKeyAsync(editComment.CommentId);
+            comment.CommentNullChecking();
 
             if (comment.UserId != creatorId)
             {
@@ -89,10 +91,11 @@ namespace Provis.Core.Services
 
         public async Task DeleteCommentAsync(int id, string userId, int workspaceId)
         {
+            var comment = await _commentRepository.GetByKeyAsync(id);
+            comment.CommentNullChecking();
+
             var specification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
             var userWorkspace = await _userWorkspaceRepository.GetFirstBySpecAsync(specification);
-
-            var comment = await _commentRepository.GetByKeyAsync(id);
 
             if (!(comment.UserId == userId ||
                 userWorkspace.RoleId == (int)WorkSpaceRoles.OwnerId))

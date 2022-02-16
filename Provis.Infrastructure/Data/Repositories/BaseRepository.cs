@@ -121,5 +121,11 @@ namespace Provis.Infrastructure.Data.Repositories
         {
             return await _dbContext.Database.ExecuteSqlRawAsync(sqlQuery);
         }
+        
+        public async Task SetOriginalRowVersion<TEssence>(TEssence entity, byte[] rowVersion) 
+            where TEssence : class, IRowVersion, IBaseEntity
+        {
+           await Task.Run(() => _dbContext.Entry(entity).Property(x => x.RowVersion).OriginalValue = rowVersion);
+        }
     }
 }

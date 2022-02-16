@@ -27,5 +27,6 @@ namespace Provis.Core.Interfaces.Repositories
         Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification);
         Task<bool> AnyBySpecAsync(ISpecification<TEntity> specification, Expression<Func<TEntity, bool>> anyExpression);
         Task<bool> AllBySpecAsync(ISpecification<TEntity> specification, Expression<Func<TEntity, bool>> allExpression);
+        Task SetOriginalRowVersion<T>(T entity, byte[] rowVersion) where T : class, IRowVersion, IBaseEntity;
     }
 }

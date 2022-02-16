@@ -138,6 +138,9 @@
   <data name="CannotSaveFile" xml:space="preserve">
     <value>Cannot save the file</value>
   </data>
+  <data name="CommentNotFound" xml:space="preserve">
+    <value>Comment not found</value>
+  </data>
   <data name="ConfirmEmailInvalidCode" xml:space="preserve">
     <value>Wrong code or this code is deprecated, try again!</value>
   </data>

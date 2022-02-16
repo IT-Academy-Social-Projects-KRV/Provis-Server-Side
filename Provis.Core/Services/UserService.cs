@@ -170,14 +170,14 @@ namespace Provis.Core.Services
             var user = await _userManager.FindByIdAsync(userId);
 
             var twoFactorToken = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
-            var body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode",
-                    new UserToken() { Token = twoFactorToken, UserName = user.UserName, Uri = _clientUrl.Value.ApplicationUrl });
+
             var message = new MailRequest
             {
                 ToEmail = user.Email,
                 Subject = "Provis 2fa code",
-                Body = body
-            };
+                Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode",
+                    new UserToken() { Token = twoFactorToken, UserName = user.UserName, Uri = _clientUrl.Value.ApplicationUrl })
+        };
 
             await _emailSenderService.SendEmailAsync(message);
 

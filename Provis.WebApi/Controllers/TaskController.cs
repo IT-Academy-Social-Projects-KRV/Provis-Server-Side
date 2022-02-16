@@ -31,9 +31,9 @@ namespace Provis.WebApi.Controllers
             WorkSpaceRoles.MemberId })]
         public async Task<IActionResult> ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus)
         {
-            await _taskService.ChangeTaskStatusAsync(changeTaskStatus, UserId);
+            var taskStatus = await _taskService.ChangeTaskStatusAsync(changeTaskStatus, UserId);
 
-            return Ok();
+            return Ok(taskStatus);
         }
 
         [Authorize]
@@ -102,9 +102,9 @@ namespace Provis.WebApi.Controllers
         [Route("task")]
         public async Task<IActionResult> ChangeTaskAsync([FromBody] TaskChangeInfoDTO taskChangeInfoDTO)
         {
-            await _taskService.ChangeTaskInfoAsync(taskChangeInfoDTO, UserId);
+            var worskaceTask = await _taskService.ChangeTaskInfoAsync(taskChangeInfoDTO, UserId);
 
-            return Ok();
+            return Ok(worskaceTask);
         }
 
         [Authorize]
