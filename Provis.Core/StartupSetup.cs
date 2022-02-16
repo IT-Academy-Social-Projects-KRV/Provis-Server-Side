@@ -75,7 +75,7 @@ namespace Provis.Core
         }
         public static void ConfigureTaskAttachmentSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<TaskAttachmentSettings>(configuration.GetSection("TaskAttachmentSettings"));
+            services.Configure<AttachmentSettings>(configuration.GetSection("AttachmentSettings"));
         }
 
         public static void ConfigureFileSettings(this IServiceCollection services, IConfiguration configuration)
