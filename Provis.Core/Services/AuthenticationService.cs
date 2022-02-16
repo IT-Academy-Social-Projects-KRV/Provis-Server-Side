@@ -146,8 +146,9 @@ namespace Provis.Core.Services
                 StringBuilder errorMessage = new StringBuilder();
                 foreach (var error in result.Errors)
                 {
-                    errorMessage.Append(error.ToString() + " ");
+                    errorMessage.Append(error.Description.ToString() + " ");
                 }
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, errorMessage.ToString());
             }
 
             var findRole = await _roleManager.FindByNameAsync(roleName);
@@ -229,7 +230,7 @@ namespace Provis.Core.Services
 
             if (!result.Succeeded)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Wrong code or this code is deprecated, try again!");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, ErrorMessages.WrongResetPasswordCode);
             }
         }
     }

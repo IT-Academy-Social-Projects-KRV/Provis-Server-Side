@@ -87,7 +87,7 @@ namespace Provis.UnitTests.Core.Services
         {
             var userMock = UserTestData.GetTestUser();
             string userPassword = "Password_1";
-            IList<string> list = new List<string>() {"ssss"};
+            IList<string> list = new List<string>() { "ssss" };
 
             SetupFindByEmailAsync(email, userMock);
             SetupCheckPasswordAsync(userMock, userPassword);
@@ -123,7 +123,7 @@ namespace Provis.UnitTests.Core.Services
                 Is2StepVerificationRequired = true,
                 Provider = "Email"
             };
-            
+
 
             SetupFindByEmailAsync(email, userMock);
             SetupCheckPasswordAsync(userMock, userPassword);
@@ -145,7 +145,7 @@ namespace Provis.UnitTests.Core.Services
         [TestCase("test1@gmail.com")]
         public async Task LoginAsync_2FaDisabled_ReturnUserAutorizationDTO(string email)
         {
-            var claims = AuthentificationTestData.GetClaimList();
+            var claims = GetClaimList();
             var userMock = UserTestData.GetTestUser();
             string userPassword = "Password_1";
             var expectedUserAutorizationDTO = GetUserAutorizationDTO();
@@ -167,15 +167,15 @@ namespace Provis.UnitTests.Core.Services
         public async Task LoginTwoStepAsync_InvalidVerifiction_ThrowException()
         {
             var userMock = UserTestData.GetTestUser();
-            var userTwoFactorDTOMock = AuthentificationTestData.GetUserTwoFactorDTO();
+            var userTwoFactorDTOMock = GetUserTwoFactorDTO();
 
             SetupFindByEmailAsync(userMock.Email, userMock);
-            SetupVerifyTwoFactorTokenAsync(userMock, 
-                                           userTwoFactorDTOMock.Provider, 
-                                           userTwoFactorDTOMock.Token, 
+            SetupVerifyTwoFactorTokenAsync(userMock,
+                                           userTwoFactorDTOMock.Provider,
+                                           userTwoFactorDTOMock.Token,
                                            false);
 
-            Func<Task<UserAutorizationDTO>> act = () => 
+            Func<Task<UserAutorizationDTO>> act = () =>
                 _authentificationService.LoginTwoStepAsync(userTwoFactorDTOMock);
 
             await act.Should()
@@ -188,8 +188,8 @@ namespace Provis.UnitTests.Core.Services
         public async Task LoginTwoStepAsync_ValidVerifiction_ReturnUserAutorizationDTO()
         {
             var userMock = UserTestData.GetTestUser();
-            var userTwoFactorDTOMock = AuthentificationTestData.GetUserTwoFactorDTO();
-            var claims = AuthentificationTestData.GetClaimList();
+            var userTwoFactorDTOMock = GetUserTwoFactorDTO();
+            var claims = GetClaimList();
             var expectedUserAutorizationDTO = GetUserAutorizationDTO();
 
             SetupFindByEmailAsync(userMock.Email, userMock);
@@ -207,9 +207,51 @@ namespace Provis.UnitTests.Core.Services
             result.Should().BeEquivalentTo(expectedUserAutorizationDTO);
         }
 
-        //[Test]
-        //public async Task RegistrationAsync_CreateResultFalse_
+        [Test]
+        public async Task RegistrationAsync_CreateResultFalse_ThrowException()
+        {
+            var userMock = UserTestData.GetTestUser();
+            string password = "password";
+            string roleName = "role";
 
+            SetupCreateAsync(userMock, 
+                password, 
+                IdentityResult.Failed(new IdentityError 
+                    { Description = "An unknown failure has occurred." }));
+
+            Func<Task> act = () =>
+                _authentificationService.RegistrationAsync(userMock,
+                password,
+                roleName);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage("An unknown failure has occurred. ");
+        }
+
+        [Test]
+        public async Task RegistrationAsync_RoleNull_ReturnTaskCompleted()
+        {
+            var userMock = UserTestData.GetTestUser();
+            IdentityRole role = new IdentityRole();
+            string password = "password";
+            string roleName = "role";
+
+            SetupCreateAsync(userMock,
+                password,
+                IdentityResult.Success);
+            SetupFindByNameAsync(roleName, null);
+            SetupCreateAsync(It.IsAny<IdentityRole>(), IdentityResult.Success);
+            SetupAddToRoleAsync(userMock, roleName, IdentityResult.Success);
+
+            var result = _authentificationService.RegistrationAsync(userMock, password, roleName);
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
 
         [Test]
         public async Task RefreshTokenAsync_RefreshTokenNull_ThrowException()
@@ -233,7 +275,7 @@ namespace Provis.UnitTests.Core.Services
         {
             var userMock = UserTestData.GetTestUser();
             var userAutorizationDTO = GetUserAutorizationDTO();
-            var claims = AuthentificationTestData.GetClaimList();
+            var claims = GetClaimList();
             string token = "token";
             var expiredRefreshToken = new RefreshToken();
             RefreshToken refreshToken = new RefreshToken()
@@ -296,8 +338,6 @@ namespace Provis.UnitTests.Core.Services
             var userMock = UserTestData.GetTestUser();
 
             SetupFindByEmailAsync(userMock.Email, null);
-            //SetupUserNullChecking(true);
-            // Is it OK?
             Func<Task> act = () =>
                 _authentificationService.SentResetPasswordTokenAsync(userMock.Email);
 
@@ -308,27 +348,49 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        public async Task SentResetPasswordTokenAsync_ValidUser_SendToken()
+        public async Task ResetPasswordAsync_IdentityResultFalse_ReturnTaskCompleted()
         {
+            UserChangePasswordDTO userChangePasswordDTO = GetUserChangePasswordDTO();
             var userMock = UserTestData.GetTestUser();
-            var uriStringMock = "http://localhost:4200/";
-            UserToken userToken = new UserToken();
-            Uri uriMock = new Uri(uriStringMock);
-            string viewName = "Mails/ResetPassword";
-            string template = "template";
+            string decodedCode = "decodedCode";
 
-            SetupFindByEmailAsync(userMock.Email, userMock);
-            SetupGeneratePasswordResetTokenAsync(userMock, "token");
-            SetupSendEmail();
-            SetupGetTemplateHtmlAsStringAsync(viewName, template);
-            SetupApplicationUrl(new() { ApplicationUrl = uriMock });
+            SetupFindByEmailAsync(userMock.Email, 
+                userMock);
+            SetupDecodeUnicodeBase64(userChangePasswordDTO.Code, 
+                decodedCode);
+            SetupResetPasswordAsync(userMock, decodedCode, 
+                userChangePasswordDTO.NewPassword, 
+                IdentityResult.Success);
 
-
-            var result = _authentificationService
-                .SentResetPasswordTokenAsync(userMock.Email);
-            
+            var result = _authentificationService.ResetPasswordAsync(userChangePasswordDTO);
             result.IsCompleted.Should().BeTrue();
             result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
+        [Test]
+        public async Task ResetPasswordAsync_IdentityResultFalse_ThrowException()
+        {
+            UserChangePasswordDTO userChangePasswordDTO = GetUserChangePasswordDTO();
+            var userMock = UserTestData.GetTestUser();
+            string decodedCode = "decodedCode";
+
+            SetupFindByEmailAsync(userMock.Email,
+                userMock);
+            SetupDecodeUnicodeBase64(userChangePasswordDTO.Code,
+                decodedCode);
+            SetupResetPasswordAsync(userMock, decodedCode,
+                userChangePasswordDTO.NewPassword,
+                IdentityResult.Failed());
+
+            Func<Task> act = () =>
+                _authentificationService.ResetPasswordAsync(userChangePasswordDTO);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.WrongResetPasswordCode);
 
             await Task.CompletedTask;
         }
@@ -354,6 +416,34 @@ namespace Provis.UnitTests.Core.Services
                 UserId = "1",
                 User = new User(),
                 Token = "refreshToken"
+            };
+        }
+
+        private UserChangePasswordDTO GetUserChangePasswordDTO()
+        {
+            return new UserChangePasswordDTO()
+            {
+                Email = "test1@gmail.com",
+                Code = "Code",
+                NewPassword = "password"
+            };
+        }
+
+        public static List<Claim> GetClaimList()
+        {
+            return new List<Claim>()
+            {
+                new Claim("type", "value") {}
+            };
+        }
+
+        public static UserTwoFactorDTO GetUserTwoFactorDTO()
+        {
+            return new UserTwoFactorDTO()
+            {
+                Email = "test1@gmail.com",
+                Provider = "Email",
+                Token = "token"
             };
         }
 
@@ -446,8 +536,8 @@ namespace Provis.UnitTests.Core.Services
                .Verifiable();
         }
 
-        protected void SetupVerifyTwoFactorTokenAsync(User user, 
-            string tokenProvider, 
+        protected void SetupVerifyTwoFactorTokenAsync(User user,
+            string tokenProvider,
             string token,
             bool result)
         {
@@ -513,6 +603,57 @@ namespace Provis.UnitTests.Core.Services
             _userManagerMock
                 .Setup(x => x.GeneratePasswordResetTokenAsync(user ?? It.IsAny<User>()))
                 .ReturnsAsync(token)
+                .Verifiable();
+        }
+
+        protected void SetupDecodeUnicodeBase64(string code, string result)
+        {
+            _confirmEmailServiceMock
+                .Setup(x => x.DecodeUnicodeBase64(code ?? It.IsAny<string>()))
+                .Returns(result)
+                .Verifiable();
+        }
+
+        protected void SetupResetPasswordAsync(User user,
+            string decodedCode,
+            string newPassword,
+            IdentityResult result)
+        {
+            _userManagerMock
+                .Setup(x => x.ResetPasswordAsync(user, decodedCode, newPassword))
+                .ReturnsAsync(result)
+                .Verifiable();
+        }
+
+        protected void SetupCreateAsync(User user, string password, IdentityResult result)
+        {
+            _userManagerMock
+                .Setup(x => x.CreateAsync(user, password))
+                .ReturnsAsync(result)
+                .Verifiable();
+        }
+
+        protected void SetupFindByNameAsync(string roleName, IdentityRole role)
+        {
+            _roleManagerMock
+                .Setup(x => x.FindByNameAsync(roleName))
+                .ReturnsAsync(role)
+                .Verifiable();
+        }
+
+        protected void SetupCreateAsync(IdentityRole role, IdentityResult result)
+        {
+            _roleManagerMock
+                .Setup(x => x.CreateAsync(It.IsAny<IdentityRole>()))
+                .ReturnsAsync(result)
+                .Verifiable();
+        }
+
+        protected void SetupAddToRoleAsync(User user, string role, IdentityResult result)
+        {
+            _userManagerMock
+                .Setup(x => x.AddToRoleAsync(user, role))
+                .ReturnsAsync(result)
                 .Verifiable();
         }
     }
