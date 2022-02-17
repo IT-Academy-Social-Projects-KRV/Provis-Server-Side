@@ -5,5 +5,6 @@
         public int WorkspaceId { get; set; }
         public int StatusId { get; set; }
         public int TaskId { get; set; }
+        public byte[] RowVersion { get; set; }
     }
 }

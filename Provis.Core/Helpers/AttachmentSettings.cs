@@ -1,6 +1,6 @@
 ﻿namespace Provis.Core.Helpers
 {
-    public class TaskAttachmentSettings
+    public class AttachmentSettings
     {
         public int MaxSize { get; set; }
         public string Type { get; set; }

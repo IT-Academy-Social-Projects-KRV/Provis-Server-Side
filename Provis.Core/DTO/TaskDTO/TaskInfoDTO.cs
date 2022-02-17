@@ -12,5 +12,6 @@ namespace Provis.Core.DTO.TaskDTO
         public int StatusId { get; set; }
         public int? StoryPoints { get; set; }
         public List<TaskAssignedUsersDTO> AssignedUsers { get; set; }
+        public byte[] RowVersion { get; set; }
     }
 }

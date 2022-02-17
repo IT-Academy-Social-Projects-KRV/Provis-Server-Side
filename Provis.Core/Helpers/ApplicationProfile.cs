@@ -15,11 +15,13 @@ using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
+using Provis.Core.Entities.CommentAttachmentEntity;
 using System.IO;
 using Provis.Core.Entities.CommentEntity;
-using Provis.Core.DTO.CommentDTO;
 using Provis.Core.DTO.CommentsDTO;
 using System;
+using Provis.Core.Entities.SprintEntity;
+using Provis.Core.DTO.SprintDTO;
 using Provis.Core.Entities.EventEntity;
 using Provis.Core.DTO.CalendarDTO;
 
@@ -45,7 +47,8 @@ namespace Provis.Core.Helpers
             CreateMap<UserWorkspace, WorkspaceInfoDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.WorkspaceId))
                 .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Workspace.Name))
-                .ForMember(x => x.Role, act => act.MapFrom(srs => srs.RoleId));
+                .ForMember(x => x.Role, act => act.MapFrom(srs => srs.RoleId))
+                .ForMember(x=>x.isUseSprints, act=>act.MapFrom(srs=>srs.Workspace.isUseSprints));
 
             CreateMap<Workspace, WorkspaceDescriptionDTO>();
 
@@ -60,12 +63,14 @@ namespace Provis.Core.Helpers
             CreateMap<UserWorkspace, WorkspaceChangeRoleDTO>()
                 .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
-                .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.RoleId));
+                .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.RoleId))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
 
             CreateMap<UserWorkspace, WorkspaceMemberDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.UserId))
                 .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
-                .ForMember(x => x.Role, act => act.MapFrom(srs => srs.RoleId));
+                .ForMember(x => x.Role, act => act.MapFrom(srs => srs.RoleId))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
 
             CreateMap<InviteUser, WorkspaceInviteInfoDTO>()
                 .ForMember(x => x.Date, act => act.MapFrom(srs => srs.Date))
@@ -80,7 +85,8 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
                 .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
                 .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
-                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints));
+                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints))
+                .ForMember(x => x.SprintId, act => act.MapFrom(srs => srs.SprintId));
 
             CreateMap<UserTask, TaskDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.TaskId))
@@ -97,7 +103,8 @@ namespace Provis.Core.Helpers
                .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.Item2.Task.StoryPoints))
                .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Item3))
                .ForMember(x => x.MemberCount, act => act.MapFrom(src => src.Item4))
-               .ForMember(x => x.CreatorUsername, act => act.MapFrom(src => src.Item5));
+               .ForMember(x => x.CreatorUsername, act => act.MapFrom(src => src.Item5))
+               .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.Item2.Task.RowVersion));
 
             CreateMap<WorkspaceTask, TaskDTO>()
                .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
@@ -138,7 +145,7 @@ namespace Provis.Core.Helpers
               .ForMember(x => x.Name, act => act.MapFrom(srs => srs.Name))
               .ForMember(x => x.Description, act => act.MapFrom(srs => srs.Description))
               .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.Deadline))
-              .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints));
+              .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints)); 
 
             CreateMap<StatusHistory, TaskStatusHistoryDTO>()
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
@@ -162,15 +169,20 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.Deadline, act => act.MapFrom(srs => srs.DateOfEnd))
                 .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
                 .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.StoryPoints))
-                .ForMember(x => x.AssignedUsers, act => act.MapFrom(srs => srs.UserTasks));
+                .ForMember(x => x.AssignedUsers, act => act.MapFrom(srs => srs.UserTasks))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
 
             CreateMap<WorkspaceTaskAttachment, TaskAttachmentInfoDTO>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs=> Path.GetFileName(srs.AttachmentPath)));
 
+            CreateMap<CommentAttachment, CommentAttachmentInfoDTO>()
+                .ForMember(x => x.Name, act => act.MapFrom(srs => Path.GetFileName(srs.AttachmentPath)));
+
             CreateMap<UserTask, TaskAssignedUsersDTO>()
                 .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
-                .ForMember(x => x.RoleTagId, act => act.MapFrom(srs => srs.UserRoleTagId));
+                .ForMember(x => x.RoleTagId, act => act.MapFrom(srs => srs.UserRoleTagId))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
 
             CreateMap<Comment, CommentListDTO>()
                 .ForMember(x => x.Id, act => act.MapFrom(srs => srs.Id))
@@ -189,10 +201,24 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.AssignedUser.UserId))
                 .ForMember(x => x.UserRoleTagId, act => act.MapFrom(srs => srs.AssignedUser.RoleTagId));
 
+            CreateMap<ChangeSprintInfoDTO, Sprint>();
+            CreateMap<Sprint, SprintInfoDTO>();
+            CreateMap<Sprint, SprintDetailInfoDTO>();
+
+            CreateMap<WorkspaceTask, TaskChangeStatusDTO>()
+                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId))
+                .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.Id))
+                .ForMember(x => x.StatusId, act => act.MapFrom(srs => srs.StatusId))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
+
+            CreateMap<UserTask, TaskChangeRoleDTO>()
+                .ForMember(x => x.TaskId, act => act.MapFrom(srs => srs.TaskId))
+                .ForMember(x => x.RoleId, act => act.MapFrom(srs => srs.UserRoleTagId))
+                .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
+                
             CreateMap<EventCreateDTO, Event>();
-
             CreateMap<Event, EventGetInfoDTO>();
-
             CreateMap<EventEditDTO, Event>();
         }
     }

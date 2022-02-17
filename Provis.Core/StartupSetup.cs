@@ -26,6 +26,7 @@ namespace Provis.Core
             services.AddScoped<IConfirmEmailService, ConfirmEmailService>();
             services.AddScoped<ITemplateService, TemplateService>();
             services.AddScoped<ICommentService, CommentService>();
+            services.AddScoped<ISprintService, SprintService>();
             services.AddScoped<ICalendarService, CalendarService>();
         }
 
@@ -74,7 +75,7 @@ namespace Provis.Core
         }
         public static void ConfigureTaskAttachmentSettings(this IServiceCollection services, IConfiguration configuration)
         {
-            services.Configure<TaskAttachmentSettings>(configuration.GetSection("TaskAttachmentSettings"));
+            services.Configure<AttachmentSettings>(configuration.GetSection("AttachmentSettings"));
         }
 
         public static void ConfigureFileSettings(this IServiceCollection services, IConfiguration configuration)
