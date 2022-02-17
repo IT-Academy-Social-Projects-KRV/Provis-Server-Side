@@ -30,6 +30,8 @@ using App.Metrics.Counter;
 using System.Linq.Expressions;
 using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Roles;
+using Provis.Core.DTO.UserDTO;
+using Provis.Core.DTO.WorkspaceDTO;
 
 namespace Provis.UnitTests.Core.Services
 {
@@ -106,23 +108,24 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("1")]
-        public async Task CreateWorkspaceAsync_UserIsValidAndDTOIsValid_ReturnCompletedTask(string userid)
+        public async Task CreateWorkspaceAsync_UserIsValidAndDTOIsValid_ReturnCompletedTask()
         {
-            var workspaceCreateDTOMock = WorkspaceTestData.GetWorkspaceCreateDTO();
-            var workspaceMock = WorkspaceTestData.GetTestWorkspace();
+            string userId = "1";
+
+            var workspaceCreateDTOMock = GetWorkspaceCreateDTO();
+            var workspaceMock = GetTestWorkspace();
 
             SetupAddWorkspaceAsync(workspaceMock);
             SetupWorkspaceSaveChangesAsync();
 
-            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
+            var userWorkspaceMock = GetTestUserWorkspaceList()[0];
 
             SetupMetricsIncrement();
 
             SetupAddUserWorkspaceAsync(userWorkspaceMock);
             SetupUserWorkspaceSaveChangesAsync();
 
-            var result = _workspaceService.CreateWorkspaceAsync(workspaceCreateDTOMock, userid);
+            var result = _workspaceService.CreateWorkspaceAsync(workspaceCreateDTOMock, userId);
 
             result.IsCompleted.Should().BeTrue();
             result.IsCompletedSuccessfully.Should().BeTrue();
@@ -133,8 +136,8 @@ namespace Provis.UnitTests.Core.Services
         [Test]
         public async Task UpdateWorkspaceAsync_DTOIsValid_ReturnCompletedTask()
         {
-            var workspaceCreateDTOMock = WorkspaceTestData.GetTestUpdateWorkspaceDTO();
-            var workspaceMock = WorkspaceTestData.GetTestWorkspace();
+            var workspaceCreateDTOMock = GetTestUpdateWorkspaceDTO();
+            var workspaceMock = GetTestWorkspace();
 
             SetupGetWorkspaceByKeyAsync(workspaceCreateDTOMock.WorkspaceId, workspaceMock);
             SetupMap(workspaceCreateDTOMock, workspaceMock);
@@ -151,11 +154,12 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("1")]
-        public async Task SendInviteAsync_SendInviteYourself_ThrowHTTPException(string ownerId)
+        public async Task SendInviteAsync_SendInviteYourself_ThrowHTTPException()
         {
-            var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
-            var userMock = UserTestData.GetTestUser();
+            string ownerId = "1";
+
+            var workspaceInviteDTOMock = GetTestWorkspaceInviteDTO();
+            var userMock = GetTestUserList()[0];
 
             SetupGetUserByIdAsync(ownerId, userMock);
 
@@ -169,23 +173,24 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("2")]
-        public async Task SendInviteAsync_UserAcceptedInvite_ThrowHTTPException(string ownerId)
+        public async Task SendInviteAsync_UserAcceptedInvite_ThrowHTTPException()
         {
-            var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
-            var userOwnerMock = UserTestData.GetTestUserList()[1];
+            string ownerId = "2";
+
+            var workspaceInviteDTOMock = GetTestWorkspaceInviteDTO();
+            var userOwnerMock = GetTestUserList()[1];
             SetupGetUserByIdAsync(ownerId, userOwnerMock);
 
-            var userInviteMock = UserTestData.GetTestUser();
+            var userInviteMock = GetTestUserList()[0];
             SetupGetUserByEmailAsync(workspaceInviteDTOMock.UserEmail, userInviteMock);
 
-            var workspaceMock = WorkspaceTestData.GetTestWorkspace();
+            var workspaceMock = GetTestWorkspace();
             SetupGetWorkspaceByKeyAsync(workspaceInviteDTOMock.WorkspaceId, workspaceMock);
 
             bool isConfirm = true;
             SetupAnyBySpecAsync(isConfirm);
 
-            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
+            var userWorkspaceMock = GetTestUserWorkspaceList()[0];
             SetupGetFirstBySpecAsync(userWorkspaceMock);
 
             Func<Task> act = () => _workspaceService
@@ -198,17 +203,18 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("1")]
-        public async Task SendInviteAsync_UserAlredyHasInvite_ThrowHTTPException(string ownerId)
+        public async Task SendInviteAsync_UserAlredyHasInvite_ThrowHTTPException()
         {
-            var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
-            var userOwnerMock = UserTestData.GetTestUserList()[1];
+            string ownerId = "1";
+
+            var workspaceInviteDTOMock = GetTestWorkspaceInviteDTO();
+            var userOwnerMock = GetTestUserList()[1];
             SetupGetUserByIdAsync(ownerId, userOwnerMock);
 
-            var userInviteMock = UserTestData.GetTestUser();
+            var userInviteMock = GetTestUserList()[0];
             SetupGetUserByEmailAsync(workspaceInviteDTOMock.UserEmail, userInviteMock);
 
-            var workspaceMock = WorkspaceTestData.GetTestWorkspace();
+            var workspaceMock = GetTestWorkspace();
             SetupGetWorkspaceByKeyAsync(workspaceInviteDTOMock.WorkspaceId, workspaceMock);
 
             bool isConfirm = true;
@@ -227,23 +233,24 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("2")]
-        public async Task SendInviteAsync_InviteIsValid_ReturnCompletedTask(string ownerId)
+        public async Task SendInviteAsync_InviteIsValid_ReturnCompletedTask()
         {
-            var workspaceInviteDTOMock = WorkspaceTestData.GetTestWorkspaceInviteDTO();
-            var userOwnerMock = UserTestData.GetTestUserList()[1];
+            string ownerId = "2";
+
+            var workspaceInviteDTOMock = GetTestWorkspaceInviteDTO();
+            var userOwnerMock = GetTestUserList()[1];
             SetupGetUserByIdAsync(ownerId, userOwnerMock);
 
-            var userInviteMock = UserTestData.GetTestUser();
+            var userInviteMock = GetTestUserList()[0];
             SetupGetUserByEmailAsync(workspaceInviteDTOMock.UserEmail, userInviteMock);
 
-            var workspaceMock = WorkspaceTestData.GetTestWorkspace();
+            var workspaceMock = GetTestWorkspace();
             SetupGetWorkspaceByKeyAsync(workspaceInviteDTOMock.WorkspaceId, workspaceMock);
 
             bool isConfirm = false;
             SetupAnyBySpecAsync(isConfirm);
 
-            var inviteUserMock = InviteUserTestData.GetInviteUserList()[0];
+            var inviteUserMock = GetInviteUserList()[0];
             SetupAddInviteUserAsync(inviteUserMock);
             SetupInviteUserSaveChangesAsync();
 
@@ -265,10 +272,12 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(1,"2")]
-        public async Task DenyInviteAsync_NotYoursInvite_ThrowHTTPException(int inviteId, string ownerId)
+        public async Task DenyInviteAsync_NotYoursInvite_ThrowHTTPException()
         {
-            var inviteUserMock = InviteUserTestData.GetInviteUserList()[0];
+            int inviteId = 1;
+            string ownerId = "2";
+
+            var inviteUserMock = GetInviteUserList()[0];
             SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
 
             Func<Task> act = () => _workspaceService
@@ -281,10 +290,12 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(1, "1")]
-        public async Task DenyInviteAsync_InviteIsValid_ReturnCompletedTask(int inviteId, string ownerId)
+        public async Task DenyInviteAsync_InviteIsValid_ReturnCompletedTask()
         {
-            var inviteUserMock = InviteUserTestData.GetInviteUserList()[0];
+            int inviteId = 1;
+            string ownerId = "1";
+
+            var inviteUserMock = GetInviteUserList()[0];
             SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
 
             var result = _workspaceService.DenyInviteAsync(inviteId, ownerId);
@@ -296,11 +307,12 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("1")]
-        public async Task GetWorkspaceListAsync_UserIsValid_ReturnWorkspaceList(string userId)
+        public async Task GetWorkspaceListAsync_UserIsValid_ReturnWorkspaceList()
         {
-            var expectedWorkspaceListMock = WorkspaceTestData.GetTestWorkspaceListInfoDTO();
-            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList();
+            string userId = "1";
+
+            var expectedWorkspaceListMock = GetTestWorkspaceListInfoDTO();
+            var userWorkspaceMock = GetTestUserWorkspaceList();
 
             SetupGetWorkspaceListBySpecAsync(userWorkspaceMock);
             _mapperMock.SetupMap(userWorkspaceMock, expectedWorkspaceListMock);
@@ -312,10 +324,12 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(1, "2")]
-        public async Task AcceptInviteAsync_CannotAcceptInvite_ThrowHTTPException(int inviteId, string userId)
+        public async Task AcceptInviteAsync_NotYoursInvite_ThrowHTTPException()
         {
-            var inviteUserMock = InviteUserTestData.GetInviteUserList()[0];
+            int inviteId = 1;
+            string userId = "2";
+
+            var inviteUserMock = GetInviteUserList()[0];
             SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
 
             Func<Task> act = () => _workspaceService
@@ -328,10 +342,12 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(1, "1")]
-        public async Task AcceptInviteAsync_InviteAlredyAccepted_ThrowHTTPException(int inviteId, string userId)
+        public async Task AcceptInviteAsync_InviteAlredyAccepted_ThrowHTTPException()
         {
-            var inviteUserMock = InviteUserTestData.GetInviteUserList()[0];
+            int inviteId = 1;
+            string userId = "1";
+
+            var inviteUserMock = GetInviteUserList()[0];
             SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
 
             Func<Task> act = () => _workspaceService
@@ -344,16 +360,18 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(2, "1")]
-        public async Task AcceptInviteAsync_InviteIsValid_ReturnCompletedTask(int inviteId, string ownerId)
+        public async Task AcceptInviteAsync_InviteIsValid_ReturnCompletedTask()
         {
-            var inviteUserMock = InviteUserTestData.GetInviteUserList()[1];
+            int inviteId = 2;
+            string ownerId = "1";
+
+            var inviteUserMock = GetInviteUserList()[1];
             SetupGetInviteUserByKeyAsync(inviteId, inviteUserMock);
 
-            var userTasksMock = UserTaskTestData.GetWorkspaceUserTasks();
+            var userTasksMock = GetWorkspaceUserTasks();
             SetupGetUserTaskListBySpecAsync(userTasksMock);
 
-            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
+            var userWorkspaceMock = GetTestUserWorkspaceList()[0];
             SetupMetricsIncrement();
             SetupAddUserWorkspaceAsync(userWorkspaceMock);
             SetupInviteUserSaveChangesAsync();
@@ -367,11 +385,13 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(1, "1")]
-        public async Task GetWorkspaceInfoAsync_UserIsValid_ReturnWorkspaceInfo(int workspaceId, string userId)
+        public async Task GetWorkspaceInfoAsync_UserIsValid_ReturnWorkspaceInfo()
         {
-            var expectedWorkspaceMock = WorkspaceTestData.GetTestWorkspaceListInfoDTO()[0];
-            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[0];
+            int workspaceId = 1;
+            string userId = "1";
+
+            var expectedWorkspaceMock = GetTestWorkspaceListInfoDTO()[0];
+            var userWorkspaceMock = GetTestUserWorkspaceList()[0];
 
             SetupGetFirstBySpecAsync(userWorkspaceMock);
             _mapperMock.SetupMap(userWorkspaceMock, expectedWorkspaceMock);
@@ -383,13 +403,14 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("2")]
-        public async Task ChangeUserRoleAsync_HasNotPermissions_ThrowHTTPException(string userId)
+        public async Task ChangeUserRoleAsync_HasNotPermissions_ThrowHTTPException()
         {
-            var workspaceChangeRoleDTOMock = WorkspaceTestData.GetTestWorkspaceChangeRoleDTO();
-            var userWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[1];
+            string userId = "2";
 
-            var targetWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[2];
+            var workspaceChangeRoleDTOMock = GetTestWorkspaceChangeRoleDTO();
+            var userWorkspaceMock = GetTestUserWorkspaceList()[1];
+
+            var targetWorkspaceMock = GetTestUserWorkspaceList()[2];
             SetupGetFirstBySpecAsync(targetWorkspaceMock);
 
             var roleAccess = GetTestRoleAccess();
@@ -407,11 +428,12 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("3")]
-        public async Task ChangeUserRoleAsync_UsersIsValid_ReturnChangeRoleDTO(string userId)
+        public async Task ChangeUserRoleAsync_UsersIsValid_ReturnChangeRoleDTO()
         {
-            var workspaceChangeRoleDTOMock = WorkspaceTestData.GetTestWorkspaceChangeRoleDTO2();
-            var targetUserWorkspaceMock = UserWorkspaceTestData.GetTestUserWorkspaceList()[2];
+            string userId = "3";
+
+            var workspaceChangeRoleDTOMock = GetTestWorkspaceChangeRoleDTO2();
+            var targetUserWorkspaceMock = GetTestUserWorkspaceList()[2];
             SetupGetFirstBySpecAsync(targetUserWorkspaceMock);
 
             var roleAccess = GetTestRoleAccess();
@@ -452,7 +474,6 @@ namespace Provis.UnitTests.Core.Services
         {
             _emailSendServiceMock
                 .Setup(x => x.SendEmailAsync(It.IsAny<MailRequest>()))
-                .Returns(Task.CompletedTask)
                 .Verifiable();
         }
 
@@ -499,7 +520,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _userWorkspaceRepositoryMock
                 .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<UserWorkspace>>()))
-                .Returns(Task.FromResult(userWorkspaceInstance))
+                .ReturnsAsync(userWorkspaceInstance)
                 .Verifiable();
         }
 
@@ -515,7 +536,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _workspaceRepositoryMock
                 .Setup(x => x.GetByKeyAsync(workspaceId))
-                .Returns(Task.FromResult(workspaceInstance))
+                .ReturnsAsync(workspaceInstance)
                 .Verifiable();
         }
 
@@ -523,7 +544,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _inviteUserRepositoryMock
                 .Setup(x => x.GetByKeyAsync(inviteId))
-                .Returns(Task.FromResult(inviteUserInstance))
+                .ReturnsAsync(inviteUserInstance)
                 .Verifiable();
         }
 
@@ -547,7 +568,6 @@ namespace Provis.UnitTests.Core.Services
         {
             _workspaceRepositoryMock
                 .Setup(x => x.UpdateAsync(It.IsAny<Workspace>()))
-                .Returns(Task.CompletedTask)
                 .Verifiable();
         }
 
@@ -579,7 +599,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _workspaceRepositoryMock
                 .Setup(x => x.SaveChangesAsync())
-                .Returns(Task.FromResult(1))
+                .ReturnsAsync(1)
                 .Verifiable();
         }
 
@@ -587,7 +607,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _inviteUserRepositoryMock
                 .Setup(x => x.SaveChangesAsync())
-                .Returns(Task.FromResult(1))
+                .ReturnsAsync(1)
                 .Verifiable();
         }
 
@@ -595,11 +615,11 @@ namespace Provis.UnitTests.Core.Services
         {
             _userWorkspaceRepositoryMock
                 .Setup(x => x.SaveChangesAsync())
-                .Returns(Task.FromResult(1))
+                .ReturnsAsync(1)
                 .Verifiable();
         }
 
-        public static RoleAccess GetTestRoleAccess()
+        public RoleAccess GetTestRoleAccess()
         {
             return new RoleAccess()
             {
@@ -619,6 +639,211 @@ namespace Provis.UnitTests.Core.Services
                         } 
                     }
                 }
+            };
+        }
+
+        public List<User> GetTestUserList()
+        {
+            return new List<User>()
+            {
+                new User()
+                {
+                    Id = "1",
+                    Email = "test1@gmail.com",
+                    Name = "Name1",
+                    Surname = "Surname1",
+                    UserName = "Username1",
+                    ImageAvatarUrl = "Path1"
+                },
+
+                new User()
+                {
+                    Id = "2",
+                    Email = "test2@gmail.com",
+                    Name = "Name2",
+                    Surname = "Surname2",
+                    UserName = "Username2",
+                    ImageAvatarUrl = "Path2"
+                }
+            };
+        }
+
+        public List<InviteUser> GetInviteUserList()
+        {
+            return new List<InviteUser>()
+            {
+                new InviteUser()
+                {
+                    Id = 1,
+                    FromUserId = "2",
+                    ToUserId = "1",
+                    IsConfirm = true,
+                    WorkspaceId = 1
+                },
+                new InviteUser()
+                {
+                    Id = 2,
+                    FromUserId = "2",
+                    ToUserId = "1",
+                    IsConfirm = false,
+                    WorkspaceId = 2
+                },
+                new InviteUser()
+                {
+                    Id = 3,
+                    FromUserId = "2",
+                    ToUserId = "1",
+                    IsConfirm = null,
+                    WorkspaceId = 3
+                }
+            };
+        }
+
+        public List<Tuple<int, UserTask, int, int, string>> GetWorkspaceUserTasks()
+        {
+            return new List<Tuple<int, UserTask, int, int, string>>()
+            {
+                new Tuple<int, UserTask, int, int, string>(
+                    1,
+                    new UserTask()
+                    {
+                        TaskId = 1,
+                        UserId = "1",
+                        UserRoleTagId = 1,
+                        IsUserDeleted = false
+                    },
+                    3,4,"Test1")
+            };
+        }
+
+        public List<UserWorkspace> GetTestUserWorkspaceList()
+        {
+            return new List<UserWorkspace>()
+            {
+                new UserWorkspace
+                {
+                    UserId = "1",
+                    RoleId = 1,
+                    WorkspaceId = 1
+                },
+
+                new UserWorkspace
+                {
+                    UserId = "2",
+                    RoleId = 2,
+                    WorkspaceId = 1
+                },
+
+                new UserWorkspace
+                {
+                    UserId = "3",
+                    RoleId = 2,
+                    WorkspaceId = 1,
+                    User = new User
+                    {
+                        Id = "3",
+                        Email = "test3@gmail.com",
+                        Name = "Name3",
+                        Surname = "Surname3",
+                        UserName = "Username3",
+                        ImageAvatarUrl = "Path3"
+                    }
+                },
+
+                new UserWorkspace
+                {
+                    UserId = "4",
+                    RoleId = 3,
+                    WorkspaceId = 1,
+                    User = new User
+                    {
+                        Id = "4",
+                        Email = "test4@gmail.com",
+                        Name = "Name4",
+                        Surname = "Surname4",
+                        UserName = "Username4",
+                        ImageAvatarUrl = "Path4"
+                    }
+                }
+            };
+        }
+
+        public List<WorkspaceInfoDTO> GetTestWorkspaceListInfoDTO()
+        {
+            return new List<WorkspaceInfoDTO>()
+            {
+                new WorkspaceInfoDTO()
+                {
+                    Id = 1,
+                    Name = "Name1",
+                    Role = 1
+                },
+
+                new WorkspaceInfoDTO()
+                {
+                    Id = 2,
+                    Name = "Name2",
+                    Role = 2
+                }
+            };
+        }
+
+        public Workspace GetTestWorkspace()
+        {
+            return new Workspace()
+            {
+                Id = 1,
+                Name = "Name1",
+                Description = "Description1",
+                DateOfCreate = DateTime.Now
+            };
+        }
+
+        public WorkspaceCreateDTO GetWorkspaceCreateDTO()
+        {
+            return new WorkspaceCreateDTO()
+            {
+                Name = "Name1",
+                Description = "Description1"
+            };
+        }
+
+        public WorkspaceUpdateDTO GetTestUpdateWorkspaceDTO()
+        {
+            return new WorkspaceUpdateDTO()
+            {
+                WorkspaceId = 1,
+                Name = "Name1",
+                Description = "Description1"
+            };
+        }
+
+        public WorkspaceInviteUserDTO GetTestWorkspaceInviteDTO()
+        {
+            return new WorkspaceInviteUserDTO()
+            {
+                WorkspaceId = 1,
+                UserEmail = "test1@gmail.com"
+            };
+        }
+
+        public WorkspaceChangeRoleDTO GetTestWorkspaceChangeRoleDTO()
+        {
+            return new WorkspaceChangeRoleDTO()
+            {
+                UserId = "1",
+                RoleId = 1,
+                WorkspaceId = 1
+            };
+        }
+
+        public WorkspaceChangeRoleDTO GetTestWorkspaceChangeRoleDTO2()
+        {
+            return new WorkspaceChangeRoleDTO()
+            {
+                UserId = "4",
+                RoleId = 3,
+                WorkspaceId = 1
             };
         }
     }
