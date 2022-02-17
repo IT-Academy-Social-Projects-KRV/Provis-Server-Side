@@ -22,8 +22,6 @@ using Provis.Core.DTO.CommentsDTO;
 using System;
 using Provis.Core.Entities.EventEntity;
 using Provis.Core.DTO.CalendarDTO;
-using Provis.Core.Entities.UserEventsEntity;
-using System.Collections.Generic;
 
 namespace Provis.Core.Helpers
 {
@@ -191,27 +189,11 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.AssignedUser.UserId))
                 .ForMember(x => x.UserRoleTagId, act => act.MapFrom(srs => srs.AssignedUser.RoleTagId));
 
-            CreateMap<EventCreateDTO, Event>()
-                .ForMember(x => x.EventName, act => act.MapFrom(srs => srs.EventName))
-                .ForMember(x => x.EventMessage, act => act.MapFrom(srs => srs.EventMessage))
-                .ForMember(x => x.DateOfStart, act => act.MapFrom(srs => srs.DateOfStart))
-                .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
-                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId));
-
-            CreateMap<Event, EventCreateDTO>()
-                .ForMember(x => x.EventName, act => act.MapFrom(srs => srs.EventName))
-                .ForMember(x => x.EventMessage, act => act.MapFrom(srs => srs.EventMessage))
-                .ForMember(x => x.DateOfStart, act => act.MapFrom(srs => srs.DateOfStart))
-                .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
-                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId));
+            CreateMap<EventCreateDTO, Event>();
 
             CreateMap<Event, EventGetInfoDTO>();
 
-            CreateMap<EventEditDTO, Event>()
-                .ForMember(x => x.EventName, act => act.MapFrom(src => src.EventName))
-                .ForMember(x => x.EventMessage, act => act.MapFrom(src => src.EventMessage))
-                .ForMember(x => x.DateOfStart, act => act.MapFrom(src => src.DateOfStart))
-                .ForMember(x => x.DateOfEnd, act => act.MapFrom(src => src.DateOfEnd));
+            CreateMap<EventEditDTO, Event>();
         }
     }
 }
