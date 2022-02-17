@@ -58,9 +58,9 @@ namespace Provis.Core.Helpers.Mails
             }
         }
 
-        public static void EventNullChecking(this Event @event)
+        public static void EventNullChecking(this Event events)
         {
-            if (@event == null)
+            if (events == null)
             {
                 throw new HttpException(HttpStatusCode.NotFound,
                     ErrorMessages.EventNotFound);

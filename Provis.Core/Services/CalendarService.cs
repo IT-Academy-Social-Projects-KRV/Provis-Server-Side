@@ -38,7 +38,7 @@ namespace Provis.Core.Services
 
         public CalendarService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
-            IRepository<Event> @event,
+            IRepository<Event> eventService,
             IRepository<UserWorkspace> userWorkspace,
             IRepository<Workspace> workspace,
             UserManager<User> userManager,
@@ -51,7 +51,7 @@ namespace Provis.Core.Services
             _userWorkspaceRepository = userWorkspace;
             _userRepository = user;
             _taskRepository = task;
-            _eventRepository = @event;
+            _eventRepository = eventService;
             _mapper = mapper;
             _userTaskRepository = userTask;
             _userEventRepository = userEvent;
