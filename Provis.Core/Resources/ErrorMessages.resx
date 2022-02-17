@@ -123,6 +123,9 @@
   <data name="AttachmentNotFound" xml:space="preserve">
     <value>Attachment not found</value>
   </data>
+  <data name="BadSprintValue" xml:space="preserve">
+    <value>Bad sprint value</value>
+  </data>
   <data name="CannotAcceptInvite" xml:space="preserve">
     <value>You cannot accept this invite</value>
   </data>
@@ -134,6 +137,12 @@
   </data>
   <data name="CannotSaveFile" xml:space="preserve">
     <value>Cannot save the file</value>
+  </data>
+  <data name="CommentNotFound" xml:space="preserve">
+    <value>Comment not found</value>
+  </data>
+  <data name="ConcurrencyCheck" xml:space="preserve">
+    <value>Data has been modified by another user</value>
   </data>
   <data name="ConfirmEmailInvalidCode" xml:space="preserve">
     <value>Wrong code or this code is deprecated, try again!</value>
@@ -206,6 +215,18 @@
   </data>
   <data name="SendInviteYourself" xml:space="preserve">
     <value>You cannot send invite to your account</value>
+  </data>
+  <data name="SprintNotFound" xml:space="preserve">
+    <value>Sprint not found</value>
+  </data>
+  <data name="SprintsAlreadyOff" xml:space="preserve">
+    <value>Sprints already off</value>
+  </data>
+  <data name="SprintsAlreadyOn" xml:space="preserve">
+    <value>Sprints already on</value>
+  </data>
+  <data name="SprintsNotOn" xml:space="preserve">
+    <value>You don't add sprint, because it isn't used in this workspace</value>
   </data>
   <data name="TaskNotFound" xml:space="preserve">
     <value>Task not found</value>

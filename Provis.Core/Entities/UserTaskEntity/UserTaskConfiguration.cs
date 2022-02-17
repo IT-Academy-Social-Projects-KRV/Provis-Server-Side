@@ -39,6 +39,10 @@ namespace Provis.Core.Entities.UserTaskEntity
                  .WithMany(x => x.UserTasks)
                  .HasForeignKey(x => x.UserRoleTagId)
                  .OnDelete(DeleteBehavior.Restrict);
+
+            builder
+                .Property(x => x.RowVersion)
+                .IsRowVersion();
         }
     }
 }

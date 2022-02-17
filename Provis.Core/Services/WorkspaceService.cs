@@ -23,6 +23,7 @@ using App.Metrics;
 using Provis.Core.Metrics;
 using System.Net;
 using Provis.Core.Resources;
+using Microsoft.EntityFrameworkCore;
 
 namespace Provis.Core.Services
 {
@@ -41,6 +42,7 @@ namespace Provis.Core.Services
         protected readonly ITemplateService _templateService;
         protected readonly IOptions<ClientUrl> _clientUrl;
         private readonly IMetrics _metrics;
+        private readonly ISprintService _sprintService;
 
         public WorkspaceService(IRepository<User> user,
             UserManager<User> userManager,
@@ -54,7 +56,8 @@ namespace Provis.Core.Services
             RoleAccess roleAccess,
             ITemplateService templateService,
             IOptions<ClientUrl> options,
-            IMetrics metrics)
+            IMetrics metrics,
+            ISprintService sprintService)
         {
             _userRepository = user;
             _userManager = userManager;
@@ -69,6 +72,7 @@ namespace Provis.Core.Services
             _userTaskRepository = userTasksRepository;
             _clientUrl = options;
             _metrics = metrics;
+            _sprintService = sprintService;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
@@ -219,7 +223,7 @@ namespace Provis.Core.Services
 
             inviteUserRec.IsConfirm = true;
 
-            var userTaskSpecification = new UserTasks.UserTaskList(userid, inviteUserRec.WorkspaceId);
+            var userTaskSpecification = new UserTasks.UserTaskList(userid, inviteUserRec.WorkspaceId, null);
             var userTasks = await _userTaskRepository.GetListBySpecAsync(userTaskSpecification);
 
             if (userTasks != null)
@@ -265,14 +269,23 @@ namespace Provis.Core.Services
                     .Any(p => p == (WorkSpaceRoles)userChangeRole.RoleId)
                 )
             {
+                try
+                {
+                    target.RoleId = userChangeRole.RoleId;
+                    await _userWorkspaceRepository.SetOriginalRowVersion(target, userChangeRole.RowVersion);
+                    await _userWorkspaceRepository.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
+                }
+
                 _metrics.Measure.Counter.Decrement(WorkspaceMetrics.MembersCountByWorkspaceRole,
                     MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, target.RoleId));
 
                 _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
                     MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, userChangeRole.RoleId));
 
-                target.RoleId = userChangeRole.RoleId;
-                await _userWorkspaceRepository.SaveChangesAsync();
                 return _mapper.Map<WorkspaceChangeRoleDTO>(target);
             }
             else
@@ -332,14 +345,13 @@ namespace Provis.Core.Services
             var userWorkspSpecification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
             var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspSpecification);
 
-
             if (userWorksp.RoleId == (int)WorkSpaceRoles.OwnerId)
             {
                 throw new HttpException(HttpStatusCode.NotFound,
                     ErrorMessages.OwnerCannotLeaveWorkspace);
             }
 
-            var userTaskSpecification = new UserTasks.UserTaskList(userId, workspaceId);
+            var userTaskSpecification = new UserTasks.UserTaskList(userId, workspaceId, null);
             var userTasks = await _userTaskRepository.GetListBySpecAsync(userTaskSpecification);
 
             if (userTasks != null)
@@ -401,6 +413,15 @@ namespace Provis.Core.Services
             var memberListToReturn = _mapper.Map<List<WorkspaceDetailMemberDTO>>(memberList);
 
             return memberListToReturn;
+        }
+
+        public async Task SetUsingSprintsAsync(int workspaceId, bool isUseSptints)
+        {
+            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
+            workspace.isUseSprints = isUseSptints;
+
+            await _workspaceRepository.UpdateAsync(workspace);
+            await _workspaceRepository.SaveChangesAsync();
         }
     }
 }

@@ -200,5 +200,16 @@ namespace Provis.WebApi.Controllers
             var res = await _workspaceService.GetDetailMemberAsyns(workspaceId);
             return Ok(res);
         }
+
+        [Authorize]
+        [HttpPut]
+        [Route("{workspaceId}/using-sprints")]
+        [WorkspaceRoles(new[] { WorkSpaceRoles.OwnerId})]
+        public async Task<IActionResult> SetUsingSprintsAsync([FromRoute] int workspaceId,
+            [FromBody] SprintSettingsDTO sprintSettings)
+        {
+            await _workspaceService.SetUsingSprintsAsync(workspaceId, sprintSettings.IsUseSprints);
+            return Ok();
+        }
     }
 }
