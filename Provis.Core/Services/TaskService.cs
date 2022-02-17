@@ -102,6 +102,7 @@ namespace Provis.Core.Services
             task.TaskNullChecking();
 
             var fromStatus = (TaskStatuses)task.StatusId;
+            var currentStatusId = task.StatusId;
 
             if (task.StatusId != changeTaskStatus.StatusId)
             { 
@@ -115,7 +116,7 @@ namespace Provis.Core.Services
                 }
                 catch(DbUpdateConcurrencyException)
                 {
-                    throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
+                    throw new TaskStatusRowVersionException(currentStatusId, task.RowVersion);
                 }
 
                 var user = await _userRepository.GetByKeyAsync(userId);
