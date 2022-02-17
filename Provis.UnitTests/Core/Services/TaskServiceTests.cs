@@ -109,53 +109,55 @@ namespace Provis.UnitTests.Core.Services
                 _imageSettingsOptionsMock.Object,
                 _metricsMock.Object);
         }
-        [Test]
-        public async Task GetTaskStatuses_StatusesExists_ReturnTaskStatuses()
-        {
-            var statusListMock = TaskTestData.GetTaskStatusesList();
-            var expectedStatusList = new List<TaskStatusDTO>();
 
-            expectedStatusList = statusListMock
+        [Test]
+        [TestCaseSource("TaskStatuses")]
+        public async Task GetTaskStatuses_StatusesExists_ReturnTaskStatuses(List<Status> statuses)
+        {
+            var expectedStatusList = statuses
                 .Select(x => new TaskStatusDTO()
                 {
                     Id = x.Id,
                     Name = x.Name
                 }).ToList();
 
-            SetupStatusesGetAllAsync(statusListMock);
-            _mapperMock.SetupMap(statusListMock[0], expectedStatusList[0]);
+            SetupStatusesGetAllAsync(statuses);
+            for (int i = 0; i < statuses.Count; i++)
+                _mapperMock.SetupMap(statuses[i], expectedStatusList[i]);
 
             var result = await _taskService.GetTaskStatuses();
 
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(expectedStatusList);
         }
-        [Test]
-        public async Task GetWorkerRoles_RolesExists_ReturnWorkerRoles()
-        {
-            var workerRolesMock = TaskTestData.GetWorkerRolesList();
-            var expectedRolesList = new List<TaskRoleDTO>();
 
-            expectedRolesList = workerRolesMock
+        [Test]
+        [TestCaseSource("WorkerRoles")]
+        public async Task GetWorkerRoles_RolesExists_ReturnWorkerRoles(List<UserRoleTag> workerRoles)
+        {
+            var expectedRolesList = workerRoles
                 .Select(x => new TaskRoleDTO()
                 {
                     Id = x.Id,
                     Name = x.Name
                 }).ToList();
-            SetupRolesGetAllAsync(workerRolesMock);
-            _mapperMock.SetupMap(workerRolesMock[0], expectedRolesList[0]);
+
+            SetupRolesGetAllAsync(workerRoles);
+            for (int i = 0; i < workerRoles.Count; i++)
+                _mapperMock.SetupMap(workerRoles[i], expectedRolesList[i]);
 
             var result = await _taskService.GetWorkerRoles();
 
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(expectedRolesList);
         }
+
         [Test]
         [TestCase("1")]
         public async Task GetStatusHistories_ValidTaskId_ReturnHistories(int id)
         {
-            var historyMock = TaskTestData.GetStatusHistoriesList();
-            var expectedHistoryList = TaskTestData.GetTaskStatusHistoryDTOs();
+            var historyMock = StatusHistories;
+            var expectedHistoryList = StatusHistoryDTOs;
 
             SetupHistoryGetBySpecAsync(historyMock);
             _mapperMock.SetupMap(historyMock, expectedHistoryList);
@@ -165,11 +167,12 @@ namespace Provis.UnitTests.Core.Services
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(expectedHistoryList);
         }
+
         [Test]
         [TestCase("1")]
         public async Task GetTaskInfo_TaskFound_ReturnTaskInfo(int taskId)
         {
-            var taskMock = TaskTestData.GetWorkspaceTask();
+            var taskMock = GetWorkspaceTask;
             var expectedTask = new TaskInfoDTO()
             {
                 Name = taskMock.Name,
@@ -187,13 +190,14 @@ namespace Provis.UnitTests.Core.Services
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(expectedTask);
         }
+
         [Test]
-        public async Task GetTaskInfo_TaskNotFound_ThrowHttpException()
+        [TestCase("2")]
+        public async Task GetTaskInfo_TaskNotFound_ThrowHttpException(int taskId)
         {
             WorkspaceTask task = null;
-            var taskId = 2;
-
             SetupTaskGetFirstBySpecAsync(task);
+
             Func<Task<TaskInfoDTO>> act = () => _taskService.GetTaskInfoAsync(taskId);
 
             await act.Should()
@@ -201,12 +205,13 @@ namespace Provis.UnitTests.Core.Services
                 .Where(x => x.StatusCode == HttpStatusCode.NotFound)
                 .WithMessage(ErrorMessages.TaskNotFound);
         }
+
         [Test]
-        public async Task JoinTask_TaskNotFound_ThrowHttpException()
+        [TestCase("2")]
+        public async Task JoinTask_TaskNotFound_ThrowHttpException(string userId)
         {
             WorkspaceTask taskMock = null;
-            var taskAssign = TaskTestData.GetTaskAssignDTO();
-            var userId = "2";
+            var taskAssign = AssignOnTaskDTO;
 
             SetupTaskGetByKeyAsync(taskMock);
             Func<Task> act = () => _taskService.JoinTaskAsync(taskAssign, userId);
@@ -216,12 +221,13 @@ namespace Provis.UnitTests.Core.Services
                 .Where(x => x.StatusCode == HttpStatusCode.NotFound)
                 .WithMessage(ErrorMessages.TaskNotFound);
         }
+
         [Test]
-        public async Task JoinTask_NoPermission_ThrowHttpException()
+        [TestCase("1")]
+        public async Task JoinTask_NoPermission_ThrowHttpException(string userId)
         {
-            var taskMock = TaskTestData.GetWorkspaceTask();
-            var taskAssign = TaskTestData.GetTaskAssignDTO();
-            var userId = "1";
+            var taskMock = GetWorkspaceTask;
+            var taskAssign = AssignOnTaskDTO;
 
             SetupTaskGetByKeyAsync(taskMock);
             Func<Task> act = () => _taskService.JoinTaskAsync(taskAssign, userId);
@@ -231,13 +237,13 @@ namespace Provis.UnitTests.Core.Services
                 .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
                 .WithMessage(ErrorMessages.NotPermissionAssignUser);
         }
+
         [Test]
-        public async Task JoinTask_UserNotMember_ThrowHttpException()
+        [TestCase("2", false)]
+        public async Task JoinTask_UserNotMember_ThrowHttpException(string userId, bool isMember)
         {
-            var taskMock = TaskTestData.GetWorkspaceTask();
-            var taskAssign = TaskTestData.GetTaskAssignDTO();
-            var userId = "2";
-            var isMember = false;
+            var taskMock = GetWorkspaceTask;
+            var taskAssign = AssignOnTaskDTO;
 
             SetupTaskGetByKeyAsync(taskMock);
             SetupUserWorkspaceAnyBySpecAsync(isMember);
@@ -248,18 +254,15 @@ namespace Provis.UnitTests.Core.Services
                 .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
                 .WithMessage(ErrorMessages.UserNotMember);
         }
-        [Test]
-        public async Task JoinTask_AlreadyAssigned_ThrowHttpException()
-        {
-            var taskMock = TaskTestData.GetWorkspaceTask();
-            var taskAssign = TaskTestData.GetTaskAssignDTO();
-            var userId = "2";
-            var isMember = true;
-            var alreadyAssigned = true;
 
-            SetupTaskGetByKeyAsync(taskMock);
-            SetupUserWorkspaceAnyBySpecAsync(isMember);
-            SetupUserTaskAnyBySpecAsync(alreadyAssigned);
+        [Test]
+        [TestCase("2", true, true)]
+        public async Task JoinTask_AlreadyAssigned_ThrowHttpException(string userId, bool isMember, bool assigned)
+        {
+            var taskMock = GetWorkspaceTask;
+            var taskAssign = AssignOnTaskDTO;
+
+            SetupJoinTask(taskMock, isMember, assigned);
 
             Func<Task> act = () => _taskService.JoinTaskAsync(taskAssign, userId);
 
@@ -268,11 +271,13 @@ namespace Provis.UnitTests.Core.Services
                 .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
                 .WithMessage(ErrorMessages.UserAlreadyAssigned);
         }
+
         [Test]
-        public async Task JoinTask_AssignUser_ReturnTaskComplete()
+        [TestCase("2", true, false)]
+        public async Task JoinTask_AssignUser_ReturnTaskComplete(string userId, bool isMember, bool assigned)
         {
-            var taskMock = TaskTestData.GetWorkspaceTask();
-            var taskAssignDTO = TaskTestData.GetTaskAssignDTO();
+            var taskMock = GetWorkspaceTask;
+            var taskAssignDTO = AssignOnTaskDTO;
             var taskAssign = new UserTask()
             {
                 TaskId = taskAssignDTO.Id,
@@ -282,17 +287,12 @@ namespace Provis.UnitTests.Core.Services
                 UserRoleTagId = taskAssignDTO.AssignedUser.RoleTagId
             };
 
-            var userId = "2";
-            var isMember = true;
-            var alreadyAssigned = false;
-
-            SetupTaskGetByKeyAsync(taskMock);
-            SetupUserWorkspaceAnyBySpecAsync(isMember);
-            SetupUserTaskAnyBySpecAsync(alreadyAssigned);
-            _mapperMock.SetupMap(taskAssignDTO, taskAssign);
+            SetupJoinTask(taskMock, isMember, assigned);
             SetupUserTaskSaveChangesAsync();
             SetupUserTaskAddAsync(taskAssign);
             SetupMetricsIncrement();
+            _mapperMock.SetupMap(taskAssignDTO, taskAssign);
+
             var result = _taskService.JoinTaskAsync(taskAssignDTO, userId);
 
             result.IsCompleted.Should().BeTrue();
@@ -300,49 +300,40 @@ namespace Provis.UnitTests.Core.Services
 
             await Task.CompletedTask;
         }
+
         [Test]
-        public async Task ChangeStatus_TaskNotFound_ThrowHttpException()
+        [TestCaseSource("ChangeStatus")]
+        public async Task ChangeStatus_TaskNotFound_ThrowHttpException(string userId, TaskChangeStatusDTO changeDTO)
         {
             WorkspaceTask taskMock = null;
-            var taskAssign = TaskTestData.GetTaskAssignDTO();
-            var changeStatus = TaskTestData.GetChangeStatusDTO();
-            var userId = "2";
+            var taskAssign = AssignOnTaskDTO;
 
             SetupTaskGetByKeyAsync(taskMock);
-            Func<Task> act = () => _taskService.ChangeTaskStatusAsync(changeStatus, userId);
+            Func<Task> act = () => _taskService.ChangeTaskStatusAsync(changeDTO, userId);
 
             await act.Should()
                 .ThrowAsync<HttpException>()
                 .Where(x => x.StatusCode == HttpStatusCode.NotFound)
                 .WithMessage(ErrorMessages.TaskNotFound);
         }
-        [Test]
-        [TestCase("2")]
-        public async Task ChangeStatus_WithMailing_ReturnTaskComplete(string userId)
-        {
-            var taskMock = TaskTestData.GetWorkspaceTask();
-            var userMock = TaskTestData.GetUser();
-            var workspaceMock = TaskTestData.GetWorkspace();
-            var taskchangeMock = TaskTestData.GetChangeStatusDTO();
-            var assignEmailsMock = TaskTestData.GetAssignedEmails();
-            var statusHistoryMock = TaskTestData.GetStatusHistory();
-            var urlMock = TaskTestData.GetClientUrl();
 
-            SetupUserGetByKeyAsync(userId, userMock);
-            SetupTaskGetByKeyAsync(taskMock);
-            SetupWorkspaceGetByKeyASync(workspaceMock);
-            SetupUserTaskGetListBySpecAsync(assignEmailsMock);
+        [Test]
+        [TestCaseSource("ChangeStatus")]
+        public async Task ChangeStatus_WithMailing_ReturnTaskComplete(string userId, TaskChangeStatusDTO changeDTO)
+        {
+            var taskMock = GetWorkspaceTask;
+            var userMock = GetUser;
+            var workspaceMock = GetWorkspace;
+            var statusHistoryMock = StatusHistories[1];
+
+            SetupChangeInfo(userId, userMock, taskMock, Emails, workspaceMock, GetClientUrl);
             SetupChangeStatusSendManyMailsASync();
-            SetupClientUrlOptions(urlMock);
             SetupMetricsIncrement();
             SetupMetricsDecrement();
             SetupHistoryAddAsync(statusHistoryMock);
-            SetupTaskUpdateAsync();
-            SetupTaskSaveChangesAsync();
 
             var result = Task.Run(() =>
-                _taskService.ChangeTaskStatusAsync(taskchangeMock, userId)
-            );
+                _taskService.ChangeTaskStatusAsync(changeDTO, userId));
             result.Wait();
 
             result.IsCompleted.Should().BeTrue();
@@ -350,76 +341,67 @@ namespace Provis.UnitTests.Core.Services
 
             await Task.CompletedTask;
         }
+
         [Test]
-        public async Task ChangeTaskInfo_TaskNotFound_ThrowHttpException()
+        [TestCaseSource("ChangeTaskInfo")]
+        public async Task ChangeTaskInfo_TaskNotFound_ThrowHttpException(string userId, TaskChangeInfoDTO changeInfoDTO)
         {
             WorkspaceTask taskMock = null;
-            var taskChangeInfo = TaskTestData.GetTaskChangeInfo();
-            var userId = "2";
 
             SetupTaskGetByKeyAsync(taskMock);
-            Func<Task> act = () => _taskService.ChangeTaskInfoAsync(taskChangeInfo, userId);
+            Func<Task> act = () => _taskService.ChangeTaskInfoAsync(changeInfoDTO, userId);
 
             await act.Should()
                 .ThrowAsync<HttpException>()
                 .Where(x => x.StatusCode == HttpStatusCode.NotFound)
                 .WithMessage(ErrorMessages.TaskNotFound);
         }
+
         [Test]
-        public async Task ChangeTaskInfo_NoPermission_ThrowHttpException()
+        [TestCaseSource("ChangeTaskInfo")]
+        public async Task ChangeTaskInfo_NoPermission_ThrowHttpException(string userId, TaskChangeInfoDTO changeInfoDTO)
         {
-            var taskMock = TaskTestData.GetWorkspaceTask();
-            var taskChangeInfo = TaskTestData.GetTaskChangeInfo();
-            var userId = "3";
+            var taskMock = GetWorkspaceTask;
             var havePermission = false;
 
             SetupTaskGetByKeyAsync(taskMock);
             SetupUserWorkspaceAllBySpecAsync(havePermission);
 
-            Func<Task> act = () => _taskService.ChangeTaskInfoAsync(taskChangeInfo, userId);
+            Func<Task> act = () => _taskService.ChangeTaskInfoAsync(changeInfoDTO, userId);
 
             await act.Should()
                 .ThrowAsync<HttpException>()
                 .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
                 .WithMessage(ErrorMessages.NotPermission);
         }
+
         [Test]
-        [TestCase("3")]
-        public async Task ChangeTaskInfo_WithMailing_ReturnTaskComplete(string userId)
+        [TestCaseSource("ChangeTaskInfo")]
+        public async Task ChangeTaskInfo_WithMailing_ReturnTaskComplete(string userId, TaskChangeInfoDTO changeInfoDTO)
         {
-            var taskMock = TaskTestData.GetWorkspaceTask();
-            var taskChangeInfo = TaskTestData.GetTaskChangeInfo();
-            var userMock = TaskTestData.GetUser();
-            var workspaceMock = TaskTestData.GetWorkspace();
-            var assignEmailsMock = TaskTestData.GetAssignedEmails();
-            var uriMock = TaskTestData.GetClientUrl();
+            var taskMock = GetWorkspaceTask;
+            var userMock = GetUser;
+            var workspaceMock = GetWorkspace;
             var havePermission = true;
             var expectedTask = new WorkspaceTask()
             {
-                Id = taskChangeInfo.Id,
-                Name = taskChangeInfo.Name,
-                DateOfEnd = taskChangeInfo.Deadline,
-                Description = taskChangeInfo.Description,
-                StoryPoints = taskChangeInfo.StoryPoints,
-                WorkspaceId = taskChangeInfo.WorkspaceId
+                Id = changeInfoDTO.Id,
+                Name = changeInfoDTO.Name,
+                DateOfEnd = changeInfoDTO.Deadline,
+                Description = changeInfoDTO.Description,
+                StoryPoints = changeInfoDTO.StoryPoints,
+                WorkspaceId = changeInfoDTO.WorkspaceId
             };
 
-            SetupTaskGetByKeyAsync(taskMock);
+            SetupChangeInfo(userId, userMock, taskMock, Emails, workspaceMock, GetClientUrl);
             SetupUserWorkspaceAllBySpecAsync(havePermission);
-            SetupUserGetByKeyAsync(userId, userMock);
-            SetupWorkspaceGetByKeyASync(workspaceMock);
-            SetupUserTaskGetListBySpecAsync(assignEmailsMock);
             SetupChangeTaskSendManyMailsASync();
-            SetupClientUrlOptions(uriMock);
             _mapperMock.Setup(m =>
-                m.Map<TaskChangeInfoDTO, WorkspaceTask>
-                    (taskChangeInfo))
-                    .Returns(taskMock);
-            SetupTaskUpdateAsync();
-            SetupTaskSaveChangesAsync();
+                m.Map<TaskChangeInfoDTO, WorkspaceTask>(changeInfoDTO)
+                ).Returns(taskMock);
 
             var result = Task.Run(() =>
-                _taskService.ChangeTaskInfoAsync(taskChangeInfo, userId)
+                _taskService.ChangeTaskInfoAsync(changeInfoDTO, userId)
             );
             result.Wait();
 
@@ -428,99 +410,86 @@ namespace Provis.UnitTests.Core.Services
 
             await Task.CompletedTask;
         }
+
         [Test]
-        public async Task CreateTask_WorkspaceNotFound_ThrowHttpException()
+        [TestCaseSource("CreateTask")]
+        public async Task CreateTask_WorkspaceNotFound_ThrowHttpException(string userId, TaskCreateDTO taskCreate)
         {
             Workspace workspaceMock = null;
-            var workspaceCreateDTO = TaskTestData.GetTaskCreateDTO();
-            var userId = "3";
 
             SetupWorkspaceGetByKeyASync(workspaceMock);
 
-            Func<Task> act = () => _taskService.CreateTaskAsync(workspaceCreateDTO, userId);
+            Func<Task> act = () => _taskService.CreateTaskAsync(taskCreate, userId);
 
             await act.Should()
                 .ThrowAsync<HttpException>()
                 .Where(x => x.StatusCode == HttpStatusCode.NotFound)
                 .WithMessage(ErrorMessages.WorkspaceNotFound);
         }
+
         [Test]
-        public async Task CreateTask_UserNotMember_ThrowHttpException()
+        [TestCaseSource("CreateTask")]
+        public async Task CreateTask_UserNotMember_ThrowHttpException(string userId, TaskCreateDTO taskCreate)
         {
-            var workspaceMock = TaskTestData.GetWorkspace();
-            var taskCreateDTO = TaskTestData.GetTaskCreateDTO();
+            var workspaceMock = GetWorkspace;
             UserWorkspace userWorkspaceMock = null;
-            var userId = "3";
 
             SetupWorkspaceGetByKeyASync(workspaceMock);
             SetupUserWorkspaceGetFirstBySpecAsync(userWorkspaceMock);
 
-            Func<Task> act = () => _taskService.CreateTaskAsync(taskCreateDTO, userId);
+            Func<Task> act = () => _taskService.CreateTaskAsync(taskCreate, userId);
 
             await act.Should()
                 .ThrowAsync<HttpException>()
                 .Where(x => x.StatusCode == HttpStatusCode.NotFound)
                 .WithMessage(ErrorMessages.UserNotMember);
         }
+
         [Test]
-        public async Task CreateTask_TransactionFailed_ThrowHttpException()
+        [TestCaseSource("CreateTask")]
+        public async Task CreateTask_TransactionFailed_ThrowHttpException(string userId, TaskCreateDTO taskCreate)
         {
-            var workspaceMock = TaskTestData.GetWorkspace();
-            var taskCreateDTO = TaskTestData.GetTaskCreateDTO();
-            taskCreateDTO.AssignedUsers.Add(
+            var workspaceMock = GetWorkspace;
+            var userWorkspaceMock = GetUserWorkspace;
+            var taskMock = GetWorkspaceTask;
+            taskCreate.AssignedUsers.Add(
                 new UserAssignedOnTaskDTO()
                 {
                     UserId = "1",
                     RoleTagId = 1
                 });
-            var userWorkspaceMock = TaskTestData.GetUserWorkspace();
-            var statusHistoryMock = TaskTestData.GetStatusHistory();
-            var taskMock = TaskTestData.GetWorkspaceTask();
-            var userId = "3";
 
-            SetupWorkspaceGetByKeyASync(workspaceMock);
-            SetupUserWorkspaceGetFirstBySpecAsync(userWorkspaceMock);
-            SetupMetricsIncrement();
+            SetupCreateTask(workspaceMock, userWorkspaceMock, taskMock);
+            SetupTransactionRollback();
             _mapperMock.Setup(m =>
-                m.Map<TaskCreateDTO, WorkspaceTask>
-                    (taskCreateDTO))
-                    .Returns(taskMock);
-            SetupTaskAddAsync(taskMock);
-            SetupTaskSaveChangesAsync();
-            SetupMetricsIncrement();
+                m.Map<TaskCreateDTO, WorkspaceTask>(taskCreate)
+                ).Returns(taskMock);
 
-            Func<Task> act = () => _taskService.CreateTaskAsync(taskCreateDTO, userId);
+            Func<Task> act = () => _taskService.CreateTaskAsync(taskCreate, userId);
 
             await act.Should()
                 .ThrowAsync<HttpException>()
                 .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
                 .WithMessage(ErrorMessages.TransactionFailed);
         }
-        //[Test]
-        /*public async Task CreateTask_TransactionCompleted_ReturnCompletedTask()
-        {
-            var workspaceMock = TaskTestData.GetWorkspace();
-            var taskCreateDTO = TaskTestData.GetTaskCreateDTO();
-            var userWorkspaceMock = TaskTestData.GetUserWorkspace();
-            var statusHistoryMock = TaskTestData.GetStatusHistory();
-            var taskMock = TaskTestData.GetWorkspaceTask();
-            var userId = "3";
 
-            SetupWorkspaceGetByKeyASync(workspaceMock);
-            SetupUserWorkspaceGetFirstBySpecAsync(userWorkspaceMock);
-            SetupMetricsIncrement();
-            _mapperMock.Setup(m =>
-                m.Map<TaskCreateDTO, WorkspaceTask>(taskCreateDTO))
-                    .Returns(taskMock);
-            SetupTaskAddAsync(taskMock);
-            SetupTaskSaveChangesAsync();
-            SetupMetricsIncrement();
+        [Test]
+        [TestCaseSource("CreateTask")]
+        public async Task CreateTask_TransactionCompleted_ReturnCompletedTask(string userId, TaskCreateDTO taskCreate)
+        {
+            var workspaceMock = GetWorkspace;
+            var userWorkspaceMock = GetUserWorkspace;
+            var taskMock = GetWorkspaceTask;
+
+            SetupCreateTask(workspaceMock, userWorkspaceMock, taskMock);
             SetupUserTaskAddRangeAsync();
             SetupUserTaskSaveChangesAsync();
-            SetupTransaction();
-            SetupTransactionRollback();
             SetupTransactionCommitAsync();
-            var result = _taskService.CreateTaskAsync(taskCreateDTO, userId);
+            _mapperMock.Setup(m =>
+                m.Map<TaskCreateDTO, WorkspaceTask>(taskCreate)
+                ).Returns(taskMock);
+
+            var result = _taskService.CreateTaskAsync(taskCreate, userId);
 
             result.IsCompleted.Should().BeTrue();
             result.IsCompletedSuccessfully.Should().BeTrue();
@@ -967,6 +936,7 @@ namespace Provis.UnitTests.Core.Services
             _imageSettingsOptionsMock.Verify();
             _metricsMock.Verify();
         }
+
         protected void SetupStatusesGetAllAsync(IEnumerable<Status> statuses)
         {
             _taskStatusRepositoryMock
@@ -974,6 +944,7 @@ namespace Provis.UnitTests.Core.Services
                 .Returns(Task.FromResult(statuses))
                 .Verifiable();
         }
+
         protected void SetupRolesGetAllAsync(IEnumerable<UserRoleTag> roles)
         {
             _userRoleTagRepositoryMock
@@ -981,12 +952,14 @@ namespace Provis.UnitTests.Core.Services
                 .Returns(Task.FromResult(roles))
                 .Verifiable();
         }
+
         protected void SetupHistoryGetBySpecAsync(IEnumerable<StatusHistory> histories)
         {
             _statusHistoryRepositoryMock
                 .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<StatusHistory>>()))
                 .ReturnsAsync(histories);
         }
+
         protected void SetupTaskGetFirstBySpecAsync(WorkspaceTask task)
         {
             _workspaceTaskRepositoryMock
@@ -994,6 +967,7 @@ namespace Provis.UnitTests.Core.Services
                 .ReturnsAsync(task)
                 .Verifiable();
         }
+
         protected void SetupTaskGetByKeyAsync(WorkspaceTask task)
         {
             _workspaceTaskRepositoryMock
@@ -1001,6 +975,7 @@ namespace Provis.UnitTests.Core.Services
                 .Returns(Task.FromResult(task))
                 .Verifiable();
         }
+
         protected void SetupUserWorkspaceAnyBySpecAsync(bool state)
         {
             _userWorkspaceRepositoryMock
@@ -1008,6 +983,7 @@ namespace Provis.UnitTests.Core.Services
                 .ReturnsAsync(state)
                 .Verifiable();
         }
+
         protected void SetupUserTaskAnyBySpecAsync(bool state)
         {
             _userTaskRepositoryMock
@@ -1015,6 +991,7 @@ namespace Provis.UnitTests.Core.Services
                 .ReturnsAsync(state)
                 .Verifiable();
         }
+
         protected void SetupUserTaskSaveChangesAsync()
         {
             _userTaskRepositoryMock
@@ -1022,32 +999,37 @@ namespace Provis.UnitTests.Core.Services
                 .Returns(Task.FromResult(1))
                 .Verifiable();
         }
+
         protected void SetupUserTaskAddAsync(UserTask userTask)
         {
             _userTaskRepositoryMock
-                .Setup(x => x.AddAsync(userTask ?? It.IsAny<UserTask>()))
+                .Setup(x => x.AddAsync(userTask))
                 .ReturnsAsync(userTask)
                 .Verifiable();
         }
+
         protected void SetupMetricsIncrement()
         {
             _metricsMock
                 .Setup(x => x.Measure.Counter.Increment(It.IsAny<CounterOptions>(), It.IsAny<MetricTags>()))
                 .Verifiable();
         }
+
         protected void SetupMetricsDecrement()
         {
             _metricsMock
                 .Setup(x => x.Measure.Counter.Decrement(It.IsAny<CounterOptions>(), It.IsAny<MetricTags>()))
                 .Verifiable();
         }
+
         protected void SetupUserGetByKeyAsync(string userId, User user)
         {
             _userRepositoryMock
-                .Setup(x => x.GetByKeyAsync(userId ?? It.IsAny<string>()))
+                .Setup(x => x.GetByKeyAsync(userId))
                 .ReturnsAsync(user)
                 .Verifiable();
         }
+
         protected void SetupWorkspaceGetByKeyASync(Workspace workspace)
         {
             _workspaceRepositoryMock
@@ -1055,13 +1037,26 @@ namespace Provis.UnitTests.Core.Services
                 .ReturnsAsync(workspace)
                 .Verifiable();
         }
-        protected void SetupUserTaskGetListBySpecAsync(List<string> emails)
+
+        protected void SetupUserTaskEmailsGetListBySpecAsync(List<string> emails)
         {
             _userTaskRepositoryMock
                 .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<UserTask, string>>()))
                 .ReturnsAsync(emails)
                 .Verifiable();
         }
+
+        protected void SetupTaskGetListBySpecAsync(
+            IEnumerable<Tuple<int, WorkspaceTask, int, int, string>> tasks)
+        {
+            _workspaceTaskRepositoryMock
+                .Setup(x => x.GetListBySpecAsync(
+                    It.IsAny<ISpecification<WorkspaceTask,
+                    Tuple<int, WorkspaceTask, int, int, string>>>()))
+                .ReturnsAsync(tasks)
+                .Verifiable();
+        }
+
         protected void SetupChangeTaskSendManyMailsASync()
         {
             _emailSendServiceMock
@@ -1069,6 +1064,7 @@ namespace Provis.UnitTests.Core.Services
                 .Returns(Task.CompletedTask)
                 .Verifiable();
         }
+
         protected void SetupChangeStatusSendManyMailsASync()
         {
             _emailSendServiceMock
@@ -1076,6 +1072,7 @@ namespace Provis.UnitTests.Core.Services
                 .Returns(Task.CompletedTask)
                 .Verifiable();
         }
+
         protected void SetupHistoryAddAsync(StatusHistory history)
         {
             _statusHistoryRepositoryMock
@@ -1083,6 +1080,7 @@ namespace Provis.UnitTests.Core.Services
                 .ReturnsAsync(history)
                 .Verifiable();
         }
+
         protected void SetupTaskUpdateAsync()
         {
             _workspaceTaskRepositoryMock
@@ -1090,6 +1088,7 @@ namespace Provis.UnitTests.Core.Services
                 .Returns(Task.CompletedTask)
                 .Verifiable();
         }
+
         protected void SetupTaskSaveChangesAsync()
         {
             _workspaceTaskRepositoryMock
@@ -1097,6 +1096,7 @@ namespace Provis.UnitTests.Core.Services
                 .ReturnsAsync(1)
                 .Verifiable();
         }
+
         protected void SetupClientUrlOptions(ClientUrl url)
         {
             _clientUrlOptionsMock
@@ -1104,6 +1104,7 @@ namespace Provis.UnitTests.Core.Services
                 .Returns(url)
                 .Verifiable();
         }
+
         protected void SetupUserWorkspaceAllBySpecAsync(bool state)
         {
             _userWorkspaceRepositoryMock
@@ -1113,6 +1114,7 @@ namespace Provis.UnitTests.Core.Services
                 .ReturnsAsync(state)
                 .Verifiable();
         }
+
         protected void SetupUserWorkspaceGetFirstBySpecAsync(UserWorkspace userWorkspace)
         {
             _userWorkspaceRepositoryMock
@@ -1120,6 +1122,7 @@ namespace Provis.UnitTests.Core.Services
                 .ReturnsAsync(userWorkspace)
                 .Verifiable();
         }
+
         protected void SetupTaskAddAsync(WorkspaceTask workspaceTask)
         {
             _workspaceTaskRepositoryMock
@@ -1127,214 +1130,11 @@ namespace Provis.UnitTests.Core.Services
                 .ReturnsAsync(workspaceTask)
                 .Verifiable();
         }
+
         protected void SetupUserTaskAddRangeAsync()
         {
             _userTaskRepositoryMock
                 .Setup(x => x.AddRangeAsync(It.IsAny<List<UserTask>>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-        }
-
-        protected void SetupTaskAttachmentGetListById(IEnumerable<WorkspaceTaskAttachment> attachments)
-        {
-            _workspaceTaskAttachmentsRepositoryMock
-                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<WorkspaceTaskAttachment>>()))
-                .ReturnsAsync(attachments)
-                .Verifiable();
-        }
-
-        protected void SetupGetFirstBySpec(WorkspaceTaskAttachment attachment)
-        {
-            _workspaceTaskAttachmentsRepositoryMock
-                .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<WorkspaceTaskAttachment>>()))
-                .ReturnsAsync(attachment)
-                .Verifiable();
-        }
-
-        protected void SetupGetFileAsync(DownloadFile downloadFile)
-        {
-            _fileServiceMock
-                .Setup(x => x.GetFileAsync(It.IsAny<string>()))
-                .ReturnsAsync(downloadFile)
-                .Verifiable();
-        }
-
-        protected DownloadFile SetupGetDownloadFile()
-        {
-            return new DownloadFile()
-            {
-                Content = null,
-                ContentType = "txt",
-                Name = "name.txt"
-            };
-        }
-
-        protected void SetupDeleteFileAsync(string path)
-        {
-            _fileServiceMock
-                .Setup(x => x.DeleteFileAsync(It.IsAny<string>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-        }
-
-        protected void SetupAttachmentDeleteAsync(WorkspaceTaskAttachment attachment)
-        {
-            _workspaceTaskAttachmentsRepositoryMock
-                .Setup(x => x.DeleteAsync(It.IsAny<WorkspaceTaskAttachment>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-        }
-
-        protected void SetupAttachmentSaveChangesAsync()
-        {
-            _workspaceTaskAttachmentsRepositoryMock
-                .Setup(x => x.SaveChangesAsync())
-                .ReturnsAsync(1)
-                .Verifiable();
-        }
-
-        protected void SetupAttachmentOptions(int max)
-        {
-            _attachmentsSettingsOptionsMock
-                .Setup(x => x.Value)
-                .Returns(new TaskAttachmentSettings { MaxCount = max })
-                .Verifiable();
-        }
-
-        protected void SetupTaskGetListBySpec(IEnumerable<WorkspaceTaskAttachment> workspaceTasks)
-        {
-            _workspaceTaskAttachmentsRepositoryMock
-                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<WorkspaceTaskAttachment>>()))
-                .ReturnsAsync(workspaceTasks)
-                .Verifiable();
-        }
-
-        protected void SetupAddFileAsync(string folderPath, string fileName, string dbPathInstance)
-        {
-            _fileServiceMock
-                .Setup(x => x.AddFileAsync(It.IsAny<Stream>(),
-                                           folderPath ?? It.IsAny<string>(),
-                                           fileName ?? It.IsAny<string>()))
-                .Returns(Task.FromResult(dbPathInstance))
-                .Verifiable();
-        }
-
-        protected void SetupAddAttachmentAsync(WorkspaceTaskAttachment taskAttachment)
-        {
-            _workspaceTaskAttachmentsRepositoryMock
-                .Setup(x => x.AddAsync(It.IsAny<WorkspaceTaskAttachment>()))
-                .ReturnsAsync(taskAttachment)
-                .Verifiable();
-        }
-
-        protected void SetupGetUserTaskFirstBySpec(UserTask userTask)
-        {
-            _userTaskRepositoryMock
-                .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<UserTask>>()))
-                .ReturnsAsync(userTask)
-                .Verifiable();
-        }
-
-        protected void SetupStatusHistoryGetListBySpecAsync(IEnumerable<StatusHistory> statusHistories)
-        {
-            _statusHistoryRepositoryMock
-                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<StatusHistory>>()))
-                .ReturnsAsync(statusHistories)
-                .Verifiable();
-        }
-
-        protected void SetupStatusHistoryDeleteRange()
-        {
-            _statusHistoryRepositoryMock
-                .Setup(x => x.DeleteRangeAsync(It.IsAny<IEnumerable<StatusHistory>>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-        }
-
-        protected void SetupCommentGetListBySpecAsync(IEnumerable<Comment> comments)
-        {
-            _commentRepositoryMock
-                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<Comment>>()))
-                .ReturnsAsync(comments)
-                .Verifiable();
-        }
-
-        protected void SetupCommentDeleteRange()
-        {
-            _commentRepositoryMock
-                .Setup(x => x.DeleteRangeAsync(It.IsAny<IEnumerable<Comment>>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-        }
-
-        protected void SetupAttachmentGetListBySpecAsync(IEnumerable<WorkspaceTaskAttachment> workspaceTaskAttachments)
-        {
-            _workspaceTaskAttachmentsRepositoryMock
-                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<WorkspaceTaskAttachment>>()))
-                .ReturnsAsync(workspaceTaskAttachments)
-                .Verifiable();
-        }
-
-        protected void SetupAttachmentDeleteRange()
-        {
-            _workspaceTaskAttachmentsRepositoryMock
-                .Setup(x => x.DeleteRangeAsync(It.IsAny<IEnumerable<WorkspaceTaskAttachment>>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-        }
-
-        protected void SetupUserTaskGetListBySpecAsync(IEnumerable<UserTask> userTasks)
-        {
-            _userTaskRepositoryMock
-                .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<UserTask>>()))
-                .ReturnsAsync(userTasks)
-                .Verifiable();
-        }
-
-        protected void SetupUserTaskDeleteRange()
-        {
-            _userTaskRepositoryMock
-                .Setup(x => x.DeleteRangeAsync(It.IsAny<IEnumerable<UserTask>>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-        }
-
-        protected void SetupWorkspaceTaskDeleteAsync()
-        {
-            _workspaceTaskRepositoryMock
-                .Setup(x => x.DeleteAsync(It.IsAny<WorkspaceTask>()))
-                .Returns(Task.CompletedTask)
-                .Verifiable();
-        }
-
-        protected void SetupWorkspaceTaskSaveChangesAsync()
-        {
-            _workspaceTaskRepositoryMock
-                .Setup(x => x.SaveChangesAsync())
-                .Returns(Task.FromResult(1))
-                .Verifiable();
-        }
-
-        protected void SetupUserTaskGetFirstBySpecAsync(UserTask userTask)
-        {
-            _userTaskRepositoryMock
-               .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<UserTask>>()))
-               .ReturnsAsync(userTask)
-               .Verifiable();
-        }
-
-        protected void SetupUserGetFirstBySpecAsync(User user)
-        {
-            _userRepositoryMock
-                .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<User>>()))
-                .ReturnsAsync(user)
-                .Verifiable();
-        }
-
-        protected void SetupUserTaskDeleteAsync()
-        {
-            _userTaskRepositoryMock
-                .Setup(x => x.DeleteAsync(It.IsAny<UserTask>()))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
         }
