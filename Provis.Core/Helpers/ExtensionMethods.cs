@@ -1,6 +1,7 @@
 ﻿using Provis.Core.Entities.EventEntity;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.UserEntity;
+using Provis.Core.Entities.UserEventsEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
@@ -60,6 +61,15 @@ namespace Provis.Core.Helpers.Mails
         public static void EventNullChecking(this Event @event)
         {
             if (@event == null)
+            {
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.EventNotFound);
+            }
+        }
+
+        public static void UserEventNullChecking(this UserEvent userEvent)
+        {
+            if (userEvent == null)
             {
                 throw new HttpException(HttpStatusCode.NotFound,
                     ErrorMessages.EventNotFound);

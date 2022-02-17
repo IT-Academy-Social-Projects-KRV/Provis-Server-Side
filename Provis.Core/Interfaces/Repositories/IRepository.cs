@@ -13,6 +13,7 @@ namespace Provis.Core.Interfaces.Repositories
         Task<TEntity> AddAsync(TEntity entity);
         Task<IEnumerable<TEntity>> GetAllAsync();
         Task<TEntity> GetByKeyAsync<TKey>(TKey key);
+        Task<TEntity> GetByDoubleKeyAsync<TKey, TKey1>(TKey key, TKey1 key1);
         Task UpdateAsync(TEntity entity);
         Task DeleteAsync(TEntity entity);
         Task DeleteRangeAsync(IEnumerable<TEntity> entities);
