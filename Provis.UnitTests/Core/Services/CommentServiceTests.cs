@@ -13,7 +13,6 @@ using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Exeptions;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Services;
-using Provis.UnitTests.Base.TestData;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -59,14 +58,9 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("1")]
-        public async Task AddCommentAsync_ValidComment_ReturnCommentListDTO(string userId)
+        public async Task AddCommentAsync_ValidComment_ReturnCommentListDTO(string userId = "1")
         {
-            Comment comment = new()
-            {
-                DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
-                UserId = userId
-            };
+            var comment = GetComment();
             CreateCommentDTO createCommentDTO = new()
             {
                 CommentText = "Text",
@@ -108,11 +102,11 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(1)]
-        public async Task GetCommentListsAsync_TaskIdValid_ReturnListOfComments(int taskId)
+        public async Task GetCommentListsAsync_TaskIdValid_ReturnListOfComments()
         {
-            var comments = CommentTestData.GetCommentsList();
-            var commentsDTO = CommentTestData.GetCommentsListDTOs();
+            int taskId = 1;
+            var comments = GetCommentsList();
+            var commentsDTO = GetCommentsListDTOs();
 
             SetupGetCommentsListBySpecAsync(comments);
             _mapperMock.SetupMap(comments, commentsDTO);
@@ -128,8 +122,8 @@ namespace Provis.UnitTests.Core.Services
         [TestCase("1")]
         public async Task EditCommentAsync_UserIsCreator_ReturnTaskComplete(string creatorId)
         {
-            var comment = CommentTestData.GetComment();
-            var editCommentDTO = CommentTestData.GetEditCommentDTO();
+            var comment = GetComment();
+            var editCommentDTO = GetEditCommentDTO();
 
             SetupCommentGetByKeyASync(comment);
 
@@ -140,6 +134,7 @@ namespace Provis.UnitTests.Core.Services
             SetupCommentSaveChangesAsync();
 
             var result = _commentService.EditCommentAsync(editCommentDTO, creatorId);
+            result.Wait();
 
             result.IsCompleted.Should().BeTrue();
             result.IsCompletedSuccessfully.Should().BeTrue();
@@ -150,8 +145,8 @@ namespace Provis.UnitTests.Core.Services
         [TestCase("2")]
         public async Task EditCommentAsync_UserIsNotCreator_ThrowHttpException(string creatorId)
         {
-            var comment = CommentTestData.GetComment();
-            var editCommentDTO = CommentTestData.GetEditCommentDTO();
+            var comment = GetComment();
+            var editCommentDTO = GetEditCommentDTO();
 
             SetupCommentGetByKeyASync(comment);
 
@@ -170,8 +165,8 @@ namespace Provis.UnitTests.Core.Services
         [TestCase(1, "1", 1)]
         public async Task DeleteCommentAsync_UserIsHavePermission_ReturnTaskComplete(int id, string userId, int workspaceId)
         {
-            var userWorkspaceMock = CommentTestData.GetUserWorkspace();
-            var comment = CommentTestData.GetComment();
+            var userWorkspaceMock = GetUserWorkspace();
+            var comment = GetComment();
 
             SetupUserWorkspaceGetFirstBySpecAsync(userWorkspaceMock);
             SetupCommentGetByKeyASync(comment);
@@ -179,6 +174,7 @@ namespace Provis.UnitTests.Core.Services
             SetupCommentSaveChangesAsync();
 
             var result = _commentService.DeleteCommentAsync(id, userId, workspaceId);
+            result.Wait();
 
             result.IsCompleted.Should().BeTrue();
             result.IsCompletedSuccessfully.Should().BeTrue();
@@ -189,8 +185,8 @@ namespace Provis.UnitTests.Core.Services
         [TestCase(1, "2", 1)]
         public async Task DeleteCommentAsync_UserIsNotPermission_ThrowHttpException(int id, string userId, int workspaceId)
         {
-            var userWorkspaceMock = CommentTestData.GetUserWorkspace();
-            var comment = CommentTestData.GetComment();
+            var userWorkspaceMock = GetUserWorkspace();
+            var comment = GetComment();
 
             SetupUserWorkspaceGetFirstBySpecAsync(userWorkspaceMock);
             SetupCommentGetByKeyASync(comment);
@@ -266,6 +262,107 @@ namespace Provis.UnitTests.Core.Services
             _commentRepositoryMock
                 .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<Comment>>()))
                 .ReturnsAsync(comments);
+        }
+
+        private UserWorkspace GetUserWorkspace()
+        {
+            return new UserWorkspace()
+            {
+                UserId = "1",
+                RoleId = 2,
+                WorkspaceId = 1
+            };
+        }
+
+        private Comment GetComment()
+        {
+            return new Comment()
+            {
+                Id = 1,
+                CommentText = "Text1",
+                TaskId = 1,
+                UserId = "1",
+                DateOfCreate = new DateTime(2000, 1, 1, 1, 1, 1),
+                User = new User() { UserName = "Username1" }
+            };
+        }
+
+        private List<Comment> GetCommentsList()
+        {
+            return new List<Comment>()
+            {
+                new Comment()
+                {
+                    Id = 1,
+                    CommentText = "Text1",
+                    TaskId = 1,
+                    UserId = "1",
+                    DateOfCreate = new DateTime(2000, 1, 1, 1, 1, 1),
+                    User = new User(){UserName = "Username1"}
+                },
+                new Comment()
+                {
+                    Id = 2,
+                    CommentText = "Text2",
+                    TaskId = 1,
+                    UserId = "2",
+                    DateOfCreate = new DateTime(2000, 1, 1, 1, 1, 1),
+                    User = new User(){UserName = "Username2"}
+                },
+                new Comment()
+                {
+                    Id = 3,
+                    CommentText = "Text3",
+                    TaskId = 1,
+                    UserId = "3",
+                    DateOfCreate = new DateTime(2000, 1, 1, 1, 1, 1),
+                    User = new User(){UserName = "Username3"}
+                }
+            };
+        }
+
+        private List<CommentListDTO> GetCommentsListDTOs()
+        {
+            return new List<CommentListDTO>()
+            {
+                new CommentListDTO()
+                {
+                    Id = 1,
+                    CommentText = "Text1",
+                    TaskId = 1,
+                    UserId = "1",
+                    UserName = "Username1",
+                    DateTime = new DateTime(2000, 1, 1, 1, 1, 1)
+                },
+                new CommentListDTO()
+                {
+                    Id = 2,
+                    CommentText = "Text2",
+                    TaskId = 1,
+                    UserId = "2",
+                    UserName = "Username2",
+                    DateTime = new DateTime(2000, 1, 1, 1, 1, 1)
+                },
+                new CommentListDTO()
+                {
+                    Id = 3,
+                    CommentText = "Text3",
+                    TaskId = 1,
+                    UserId = "3",
+                    UserName = "Username3",
+                    DateTime = new DateTime(2000, 1, 1, 1, 1, 1)
+                }
+            };
+        }
+
+        private EditCommentDTO GetEditCommentDTO()
+        {
+            return new EditCommentDTO()
+            {
+                CommentId = 1,
+                CommentText = "Edited text",
+                WorkspaceId = 1
+            };
         }
     }
 }
