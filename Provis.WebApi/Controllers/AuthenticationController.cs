@@ -13,7 +13,6 @@ namespace Provis.WebApi.Controllers
     public class AuthenticationController : ControllerBase
     {
         private readonly IAuthenticationService authenticationService;
-        private string UserId => User.FindFirst(ClaimTypes.NameIdentifier).Value;
 
         public AuthenticationController(IAuthenticationService authenticationService)
         {
@@ -92,13 +91,6 @@ namespace Provis.WebApi.Controllers
             return Ok();
         }
 
-        [HttpPost]
-        [Route("password")]
-        public async Task<IActionResult> SetPasswordAsync([FromBody] UserSetPasswordDTO userSetPasswordDTO)
-        {
-            await authenticationService.SetPasswordAsync(UserId, userSetPasswordDTO);
-
-            return Ok();
-        }
+        
     }
 }

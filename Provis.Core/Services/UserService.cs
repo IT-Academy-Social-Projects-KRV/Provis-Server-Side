@@ -183,5 +183,23 @@ namespace Provis.Core.Services
 
             await Task.CompletedTask;
         }
+
+        public async Task SetPasswordAsync(string userId, UserSetPasswordDTO userSetPasswordDTO)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            user.UserNullChecking();
+            if (await _userManager.HasPasswordAsync(user))
+            {
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, ErrorMessages.PasswordIsExist);
+            }
+
+            await _userManager.AddPasswordAsync(user, userSetPasswordDTO.Password);
+        }
+
+        public async Task<bool> IsHavePasswordAsync(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            return await _userManager.HasPasswordAsync(user);
+        }
     }
 }

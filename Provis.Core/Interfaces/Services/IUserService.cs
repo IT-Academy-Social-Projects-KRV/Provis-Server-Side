@@ -17,5 +17,7 @@ namespace Provis.Core.Interfaces.Services
         Task SendTwoFactorCodeAsync(string userId);
         Task UpdateUserImageAsync(IFormFile img, string userId);
         Task<DownloadFile> GetUserImageAsync(string userId);
+        Task SetPasswordAsync(string userId, UserSetPasswordDTO userSetPasswordDTO);
+        Task<bool> IsHavePasswordAsync(string userId);
     }
 }

@@ -13,6 +13,5 @@ namespace Provis.Core.Interfaces.Services
         Task<UserAutorizationDTO> LoginTwoStepAsync(UserTwoFactorDTO twoFactorDTO);
         Task SentResetPasswordTokenAsync(string userEmail);
         Task ResetPasswordAsync(UserChangePasswordDTO userChangePasswordDTO);
-        Task SetPasswordAsync(string userId, UserSetPasswordDTO userSetPasswordDTO);
     }
 }
