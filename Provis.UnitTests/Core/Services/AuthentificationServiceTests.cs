@@ -66,14 +66,14 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("test1@gmail.com")]
-        public async Task LoginAsync_UserNotExist_ThrowException(string email)
+        public async Task LoginAsync_UserNotExist_ThrowException()
         {
             var userMock = UserTestData.GetTestUser();
 
-            SetupFindByEmailAsync(email, null);
+            SetupFindByEmailAsync(userMock.Email, null);
 
-            Func<Task<UserAutorizationDTO>> act = () => _authentificationService.LoginAsync(email, null);
+            Func<Task<UserAutorizationDTO>> act = () => 
+                _authentificationService.LoginAsync(userMock.Email, null);
 
             await act.Should()
                 .ThrowAsync<HttpException>()
@@ -82,19 +82,19 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("test1@gmail.com")]
-        public async Task LoginAsync_2FaEnabledInvalidProvider_ThrowException(string email)
+        public async Task LoginAsync_2FaEnabledInvalidProvider_ThrowException()
         {
             var userMock = UserTestData.GetTestUser();
             string userPassword = "Password_1";
             IList<string> list = new List<string>() { "ssss" };
 
-            SetupFindByEmailAsync(email, userMock);
+            SetupFindByEmailAsync(userMock.Email, userMock);
             SetupCheckPasswordAsync(userMock, userPassword);
             SetupGetTwoFactorEnabled(userMock, true);
             SetupGetValidTwoFactorProviders(userMock, list);
 
-            Func<Task<UserAutorizationDTO>> act = () => _authentificationService.LoginAsync(email, null);
+            Func<Task<UserAutorizationDTO>> act = () => 
+                _authentificationService.LoginAsync(userMock.Email, null);
 
             await act.Should()
                 .ThrowAsync<HttpException>()
@@ -103,8 +103,7 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("test1@gmail.com")]
-        public async Task LoginAsync_2FaEnabled_ReturnUserAutorizationDTO(string email)
+        public async Task LoginAsync_2FaEnabled_ReturnUserAutorizationDTO()
         {
             var userMock = UserTestData.GetTestUser();
             string userPassword = "Password_1";
@@ -124,40 +123,37 @@ namespace Provis.UnitTests.Core.Services
                 Provider = "Email"
             };
 
-
-            SetupFindByEmailAsync(email, userMock);
+            SetupFindByEmailAsync(userMock.Email, userMock);
             SetupCheckPasswordAsync(userMock, userPassword);
             SetupGetTwoFactorEnabled(userMock, true);
             SetupGetValidTwoFactorProviders(userMock, list);
             SetupGenerateTwoFactorTokenAsync(userMock, "Email");
             SetupSendEmail();
-
             SetupGetTemplateHtmlAsStringAsync(viewName, templateStringMock);
             SetupApplicationUrl(new() { ApplicationUrl = uriMock });
 
-            var result = await _authentificationService.LoginAsync(email, userPassword);
+            var result = await _authentificationService.LoginAsync(userMock.Email, userPassword);
 
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(expectedUserAutorizationDTO);
         }
 
         [Test]
-        [TestCase("test1@gmail.com")]
-        public async Task LoginAsync_2FaDisabled_ReturnUserAutorizationDTO(string email)
+        public async Task LoginAsync_2FaDisabled_ReturnUserAutorizationDTO()
         {
             var claims = GetClaimList();
             var userMock = UserTestData.GetTestUser();
             string userPassword = "Password_1";
             var expectedUserAutorizationDTO = GetUserAutorizationDTO();
 
-            SetupFindByEmailAsync(email, userMock);
+            SetupFindByEmailAsync(userMock.Email, userMock);
             SetupCheckPasswordAsync(userMock, userPassword);
             SetupGetTwoFactorEnabled(userMock, false);
             SetupSetClaims(userMock, claims);
             SetupCreateToken(claims, "token");
             SetupCreateRefreshToken("refreshToken");
 
-            var result = await _authentificationService.LoginAsync(email, userPassword);
+            var result = await _authentificationService.LoginAsync(userMock.Email, userPassword);
 
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(expectedUserAutorizationDTO);
@@ -171,9 +167,9 @@ namespace Provis.UnitTests.Core.Services
 
             SetupFindByEmailAsync(userMock.Email, userMock);
             SetupVerifyTwoFactorTokenAsync(userMock,
-                                           userTwoFactorDTOMock.Provider,
-                                           userTwoFactorDTOMock.Token,
-                                           false);
+                userTwoFactorDTOMock.Provider,
+                userTwoFactorDTOMock.Token,
+                false);
 
             Func<Task<UserAutorizationDTO>> act = () =>
                 _authentificationService.LoginTwoStepAsync(userTwoFactorDTOMock);
@@ -197,9 +193,9 @@ namespace Provis.UnitTests.Core.Services
             SetupCreateToken(claims, "token");
             SetupCreateRefreshToken("refreshToken");
             SetupVerifyTwoFactorTokenAsync(userMock,
-                                           userTwoFactorDTOMock.Provider,
-                                           userTwoFactorDTOMock.Token,
-                                           true);
+                userTwoFactorDTOMock.Provider,
+                userTwoFactorDTOMock.Token,
+                true);
 
             var result = await _authentificationService.LoginTwoStepAsync(userTwoFactorDTOMock);
 
@@ -234,7 +230,6 @@ namespace Provis.UnitTests.Core.Services
         public async Task RegistrationAsync_RoleNull_ReturnTaskCompleted()
         {
             var userMock = UserTestData.GetTestUser();
-            IdentityRole role = new IdentityRole();
             string password = "password";
             string roleName = "role";
 
@@ -310,7 +305,7 @@ namespace Provis.UnitTests.Core.Services
             result.Wait();
 
             result.IsCompleted.Should().BeTrue();
-            result.IsCompletedSuccessfully.Should().BeTrue(); // change assert
+            result.IsCompletedSuccessfully.Should().BeTrue();
         }
 
         [Test]
@@ -329,7 +324,7 @@ namespace Provis.UnitTests.Core.Services
             result.Wait();
 
             result.IsCompleted.Should().BeTrue();
-            result.IsCompletedSuccessfully.Should().BeTrue();// change assert
+            result.IsCompletedSuccessfully.Should().BeTrue();
         }
 
         [Test]
@@ -408,45 +403,7 @@ namespace Provis.UnitTests.Core.Services
             _templateServiceMock.Verify();
             _clientUrlMock.Verify();
         }
-        private RefreshToken GetRefreshToken()
-        {
-            return new RefreshToken()
-            {
-                Id = 1,
-                UserId = "1",
-                User = new User(),
-                Token = "refreshToken"
-            };
-        }
-
-        private UserChangePasswordDTO GetUserChangePasswordDTO()
-        {
-            return new UserChangePasswordDTO()
-            {
-                Email = "test1@gmail.com",
-                Code = "Code",
-                NewPassword = "password"
-            };
-        }
-
-        public static List<Claim> GetClaimList()
-        {
-            return new List<Claim>()
-            {
-                new Claim("type", "value") {}
-            };
-        }
-
-        public static UserTwoFactorDTO GetUserTwoFactorDTO()
-        {
-            return new UserTwoFactorDTO()
-            {
-                Email = "test1@gmail.com",
-                Provider = "Email",
-                Token = "token"
-            };
-        }
-
+        
         protected void SetupFindByEmailAsync(string email, User userInstance)
         {
             _userManagerMock
@@ -500,7 +457,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _templateServiceMock
                 .Setup(x => x.GetTemplateHtmlAsStringAsync(viewName ?? It.IsAny<string>(),
-                                                           It.IsAny<UserToken>()))
+                    It.IsAny<UserToken>()))
                 .ReturnsAsync(templateInstance)
                 .Verifiable();
         }
@@ -543,8 +500,8 @@ namespace Provis.UnitTests.Core.Services
         {
             _userManagerMock
                .Setup(x => x.VerifyTwoFactorTokenAsync(user ?? It.IsAny<User>(),
-                                                      tokenProvider ?? It.IsAny<string>(),
-                                                      token ?? It.IsAny<string>()))
+                    tokenProvider ?? It.IsAny<string>(),
+                    token ?? It.IsAny<string>()))
                .ReturnsAsync(result)
                .Verifiable();
         }
@@ -557,14 +514,6 @@ namespace Provis.UnitTests.Core.Services
                 .Verifiable();
         }
 
-        protected UserAutorizationDTO GetUserAutorizationDTO()
-        {
-            return new UserAutorizationDTO()
-            {
-                Token = "token",
-                RefreshToken = "refreshToken"
-            };
-        }
 
         protected void SetupGetClaimsFromExpiredToken(string token, IEnumerable<Claim> claims)
         {
@@ -655,6 +604,54 @@ namespace Provis.UnitTests.Core.Services
                 .Setup(x => x.AddToRoleAsync(user, role))
                 .ReturnsAsync(result)
                 .Verifiable();
+        }
+
+        private RefreshToken GetRefreshToken()
+        {
+            return new RefreshToken()
+            {
+                Id = 1,
+                UserId = "1",
+                User = new User(),
+                Token = "refreshToken"
+            };
+        }
+
+        protected UserAutorizationDTO GetUserAutorizationDTO()
+        {
+            return new UserAutorizationDTO()
+            {
+                Token = "token",
+                RefreshToken = "refreshToken"
+            };
+        }
+
+        private UserChangePasswordDTO GetUserChangePasswordDTO()
+        {
+            return new UserChangePasswordDTO()
+            {
+                Email = "test1@gmail.com",
+                Code = "Code",
+                NewPassword = "password"
+            };
+        }
+
+        public static List<Claim> GetClaimList()
+        {
+            return new List<Claim>()
+            {
+                new Claim("type", "value") {}
+            };
+        }
+
+        public static UserTwoFactorDTO GetUserTwoFactorDTO()
+        {
+            return new UserTwoFactorDTO()
+            {
+                Email = "test1@gmail.com",
+                Provider = "Email",
+                Token = "token"
+            };
         }
     }
 }
