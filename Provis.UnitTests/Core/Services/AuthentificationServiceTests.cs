@@ -408,7 +408,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _userManagerMock
                 .Setup(x => x.FindByEmailAsync(email ?? It.IsAny<string>()))
-                .Returns(Task.FromResult(userInstance))
+                .ReturnsAsync(userInstance)
                 .Verifiable();
         }
 
