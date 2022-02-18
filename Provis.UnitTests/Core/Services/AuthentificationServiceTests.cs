@@ -416,7 +416,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _userManagerMock
                 .Setup(x => x.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>()))
-                .Returns(Task.FromResult(true))
+                .ReturnsAsync((true))
                 .Verifiable();
         }
 
@@ -432,7 +432,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _userManagerMock
                 .Setup(x => x.GetTwoFactorEnabledAsync(It.IsAny<User>()))
-                .Returns(Task.FromResult(result))
+                .ReturnsAsync(result)
                 .Verifiable();
         }
 
@@ -440,7 +440,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _userManagerMock
                 .Setup(x => x.GenerateTwoFactorTokenAsync(It.IsAny<User>(), It.IsAny<string>()))
-                .Returns(Task.FromResult("OK"))
+                .ReturnsAsync("OK")
                 .Verifiable();
         }
 
@@ -535,7 +535,6 @@ namespace Provis.UnitTests.Core.Services
         {
             _refreshTokenRepositoryMock
                 .Setup(x => x.UpdateAsync(refreshToken))
-                .Returns(Task.FromResult(1))
                 .Verifiable();
         }
 
@@ -543,7 +542,6 @@ namespace Provis.UnitTests.Core.Services
         {
             _refreshTokenRepositoryMock
                 .Setup(x => x.DeleteAsync(refreshToken))
-                .Returns(Task.FromResult(Task.CompletedTask))
                 .Verifiable();
         }
 
@@ -636,7 +634,7 @@ namespace Provis.UnitTests.Core.Services
             };
         }
 
-        public static List<Claim> GetClaimList()
+        public List<Claim> GetClaimList()
         {
             return new List<Claim>()
             {
@@ -644,7 +642,7 @@ namespace Provis.UnitTests.Core.Services
             };
         }
 
-        public static UserTwoFactorDTO GetUserTwoFactorDTO()
+        public UserTwoFactorDTO GetUserTwoFactorDTO()
         {
             return new UserTwoFactorDTO()
             {
