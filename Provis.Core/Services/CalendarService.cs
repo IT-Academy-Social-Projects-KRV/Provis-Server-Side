@@ -166,10 +166,10 @@ namespace Provis.Core.Services
             var eventLeave = await _eventRepository.GetByKeyAsync(eventId);
             eventLeave.EventNullChecking();
 
-            var userEvent = await _userEventRepository.GetByDoubleKeyAsync(userId, eventId);
+            var userEvent = await _userEventRepository.GetByPairOfKeysAsync(userId, eventId);
             userEvent.UserEventNullChecking();
 
-            var userWorkspace = await _userWorkspaceRepository.GetByDoubleKeyAsync(userId, workspaceId);
+            var userWorkspace = await _userWorkspaceRepository.GetByPairOfKeysAsync(userId, workspaceId);
             userWorkspace.UserWorkspaceNullChecking();
 
             bool EventCreatorOrNotWorkspaceOwnerOrManager = eventLeave.CreatorId == userId
