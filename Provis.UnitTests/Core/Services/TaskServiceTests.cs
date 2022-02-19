@@ -108,6 +108,8 @@ namespace Provis.UnitTests.Core.Services
                 _metricsMock.Object);
         }
 
+        #region ArtemTest
+
         [Test]
         [TestCaseSource("TaskStatuses")]
         public async Task GetTaskStatuses_StatusesExists_ReturnTaskStatuses(List<Status> statuses)
@@ -556,6 +558,203 @@ namespace Provis.UnitTests.Core.Services
                 .Should()
                 .BeEquivalentTo(expectedList);
         }
+        #endregion
+
+        [Test]
+        [TestCase("1")]
+        public async Task ChangeMemberRole_TaskNotFound_ReturnHttpExeption(string userId)
+        {
+            SetupTaskGetFirstBySpecAsync(null);
+
+            Func<Task> act = () => _taskService.ChangeMemberRoleAsync(ChangeRoleDTO, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.TaskNotFound);
+        }
+
+        [Test]
+        [TestCase("1")]
+        public async Task ChangeMemberRole_UserNotFound_ReturnHttpExeption(string userId)
+        {
+            SetupTaskGetFirstBySpecAsync(GetWorkspaceTask);
+            SetupUserTaskGetFirstBySpecAsync(null);
+
+            Func<Task> act = () => _taskService.ChangeMemberRoleAsync(ChangeRoleDTO, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.UserNotFound);
+        }
+
+        [Test]
+        [TestCase("3")]
+        public async Task ChangeMemberRole_UserNotPermission_ReturnHttpExeption(string userId)
+        {
+            SetupTaskGetFirstBySpecAsync(GetWorkspaceTask);
+            SetupUserTaskGetFirstBySpecAsync(UserTask);
+            SetupUserWorkspaceGetFirstBySpecAsync(GetUserWorkspace);
+
+            Func<Task> act = () => _taskService.ChangeMemberRoleAsync(ChangeRoleDTO, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
+                .WithMessage(ErrorMessages.NotPermission);
+        }
+
+        [Test]
+        [TestCase("1")]
+        public async Task ChangeMemberRole_ThereIsAccessAndExistingData_ReturnTaskComplated(string userId)
+        {
+            var task = GetWorkspaceTask;
+            task.TaskCreatorId = userId;
+
+            SetupTaskGetFirstBySpecAsync(task);
+            SetupUserTaskGetFirstBySpecAsync(UserTask);
+            SetupUserWorkspaceGetFirstBySpecAsync(GetUserWorkspace);
+            SetupMetricsDecrement();
+            SetupMetricsIncrement();
+            SetupUserTaskSaveChangesAsync();
+
+            var result = Task.Run(() =>
+                _taskService.ChangeMemberRoleAsync(ChangeRoleDTO, userId)
+            );
+            result.Wait();
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
+        [Test]
+        [TestCase(2, 2, "2")]
+        public async Task DeleteTask_TaskNotFound_ReturnHttpExeption(int workspaceId, int taskId, string userId)
+        {
+            SetupTaskGetByKeyAsync(null);
+
+            Func<Task> act = () => _taskService.DeleteTaskAsync(workspaceId, taskId, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.TaskNotFound);
+        }
+
+        [Test]
+        [TestCase(2, 2, "1")]
+        public async Task DeleteTask_UserNotPermission_ReturnHttpExeption(int workspaceId, int taskId, string userId)
+        {
+            SetupTaskGetByKeyAsync(GetWorkspaceTask);
+
+            Func<Task> act = () => _taskService.DeleteTaskAsync(workspaceId, taskId, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
+                .WithMessage(ErrorMessages.NotPermission);
+        }
+
+        //[Test]
+        //[TestCase(2, 2, "2")]
+        //public async Task DeleteTask_ThereIsAccessAndExistingData_ReturnTaskComplated(int workspaceId, int taskId, string userId)
+        //{
+        //    var statusHistoriesList = StatusHistories;
+        //    var commentList = CommentList;
+        //    var attachmentList = TaskAttachmentsList;
+        //    var userTaskList = UserTaskList;
+
+
+        //    SetupTaskGetByKeyAsync(GetWorkspaceTask);
+        //    SetupMetricsDecrement();
+        //    SetupHistoryGetBySpecAsync(StatusHistories);
+        //    SetupStatusHistoryDeleteRange();
+        //    SetupCommentGetListBySpecAsync(commentList);
+        //    SetupCommentDeleteRange();
+        //    SetupAttachmentGetListBySpecAsync(attachmentList);
+        //    SetupAttachmentDeleteRange();
+        //    SetupUserTaskGetListBySpecAsync(userTaskList);
+        //    SetupUserTaskDeleteRange();
+        //    SetupMetricsIncrement();
+        //    SetupWorkspaceTaskDeleteAsync();
+        //    SetupWorkspaceTaskSaveChangesAsync();
+
+        //    var result = Task.Run(() =>
+        //        _taskService.DeleteTaskAsync(workspaceId, taskId, userId)
+        //    );
+        //    result.Wait();
+
+        //    result.IsCompleted.Should().BeTrue();
+        //    result.IsCompletedSuccessfully.Should().BeTrue();
+
+        //    await Task.CompletedTask;
+        //}
+
+        [Test]
+        [TestCase(2, 2, "1", "2")]
+        public async Task DisjoinTask_TaskNotFound_ReturnHttpExeption(int workspaceId, int taskId, string disUserId, string userId)
+        {
+            SetupTaskGetFirstBySpecAsync(null);
+
+            Func<Task> act = () => _taskService.DisjoinTaskAsync(workspaceId, taskId, disUserId, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.TaskNotFound);
+        }
+
+        [Test]
+        [TestCase(2, 2, "1", "2")]
+        public async Task DisjoinTask_UserTaskNotFound_ReturnHttpExeption(int workspaceId, int taskId, string disUserId, string userId)
+        {
+            SetupTaskGetFirstBySpecAsync(GetWorkspaceTask);
+            SetupUserTaskGetFirstBySpecAsync(null);
+
+            Func<Task> act = () => _taskService.DisjoinTaskAsync(workspaceId, taskId, disUserId, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.NotFound)
+                .WithMessage(ErrorMessages.UserNotFound);
+        }
+
+        [Test]
+        [TestCase(2, 2, "1", "3")]
+        public async Task DisjoinTask_UserNotPermission_ReturnHttpExeption(int workspaceId, int taskId, string disUserId, string userId)
+        {
+            SetupTaskGetFirstBySpecAsync(GetWorkspaceTask);
+            SetupUserTaskGetFirstBySpecAsync(UserTask);
+            SetupUserWorkspaceGetFirstBySpecAsync(GetUserWorkspace);
+
+            Func<Task> act = () => _taskService.DisjoinTaskAsync(workspaceId, taskId, disUserId, userId);
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.Forbidden)
+                .WithMessage(ErrorMessages.NotPermission);
+        }
+
+        [Test]
+        [TestCase(2, 2, "1", "2")]
+        public async Task DisjoinTask_ThereIsAccessAndExistingData_ReturnTaskComplated(int workspaceId, int taskId, string disUserId, string userId)
+        {
+            var task = GetWorkspaceTask;
+            var userTask = UserTask;
+            var userWorkspace = GetUserWorkspace;
+
+            SetupTaskGetFirstBySpecAsync(task);
+            SetupUserTaskGetFirstBySpecAsync(userTask);
+            SetupUserWorkspaceGetFirstBySpecAsync(userWorkspace);
+            SetupMetricsDecrement();
+            SetupUserTaskDeleteAsync();
+            SetupUserTaskSaveChangesAsync();
+
+            var result = Task.Run(() =>
+                _taskService.DisjoinTaskAsync(workspaceId, taskId, disUserId, userId)
+            );
+            result.Wait();
+
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
 
         [TearDown]
         public void TearDown()
@@ -579,6 +778,8 @@ namespace Provis.UnitTests.Core.Services
             _imageSettingsOptionsMock.Verify();
             _metricsMock.Verify();
         }
+
+        #region Artem setup
 
         protected void SetupStatusesGetAllAsync(IEnumerable<Status> statuses)
         {
@@ -841,6 +1042,34 @@ namespace Provis.UnitTests.Core.Services
             SetupTaskSaveChangesAsync();
         }
 
+        #endregion
+
+        protected void SetupUserTaskGetFirstBySpecAsync(UserTask userTask)
+        {
+            _userTaskRepositoryMock
+                .Setup(x => x.GetFirstBySpecAsync(It.IsAny<ISpecification<UserTask>>()))
+                .ReturnsAsync(userTask)
+                .Verifiable();
+        }
+
+        //protected void SetupCommentGetListBySpecAsync(Comment comment)
+        //{
+        //    _commentRepositoryMock
+        //        .Setup(x => x.GetListBySpecAsync(It.IsAny<ISpecification<Comment>>()))
+        //        .ReturnsAsync(comment)
+
+        //}
+
+        protected void SetupUserTaskDeleteAsync()
+        {
+            _userTaskRepositoryMock
+                .Setup(x => x.DeleteAsync(UserTask))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+        }
+
+        #region ArtemDate
+
         private static User GetUser
         {
             get
@@ -863,8 +1092,8 @@ namespace Provis.UnitTests.Core.Services
             {
                 return new UserWorkspace()
                 {
-                    UserId = "1",
-                    RoleId = 1,
+                    UserId = "3",
+                    RoleId = 3,
                     WorkspaceId = 2
                 };
             }
@@ -896,7 +1125,7 @@ namespace Provis.UnitTests.Core.Services
                     DateOfEnd = DateTimeOffset.UtcNow,
                     Description = "Nope",
                     StatusId = 1,
-                    WorkspaceId = 1,
+                    WorkspaceId = 2,
                     TaskCreatorId = "2"
                 };
             }
@@ -1227,6 +1456,169 @@ namespace Provis.UnitTests.Core.Services
                             UserRoleTagId = 1
                         },
                         3,4,"Test")
+                };
+            }
+        }
+
+        #endregion
+
+        public static List<WorkspaceTaskAttachment> TaskAttachmentsList
+        {
+            get
+            {
+                return new List<WorkspaceTaskAttachment>()
+                {
+                    new WorkspaceTaskAttachment()
+                    {
+                        Id = 1,
+                        AttachmentPath = "name1.txt",
+                        TaskId = 2
+                    },
+                    new WorkspaceTaskAttachment()
+                    {
+                        Id = 2,
+                        AttachmentPath = "name2.png",
+                        TaskId = 2
+                    }
+                };
+            }
+        }
+
+        public static List<TaskAttachmentInfoDTO> AttachmentInfoDTOs
+        {
+            get
+            {
+                return new List<TaskAttachmentInfoDTO>()
+                {
+                    new TaskAttachmentInfoDTO()
+                    {
+                        Id = 1,
+                        Name = "name1.txt",
+                        ContentType = "png"
+                    },
+                    new TaskAttachmentInfoDTO()
+                    {
+                        Id = 2,
+                        Name = "name2.png",
+                        ContentType = "txt"
+                    }
+                };
+            }
+        }
+
+        public static WorkspaceTaskAttachment WorkspaceTaskAttachment
+        {
+            get
+            {
+                return new WorkspaceTaskAttachment()
+                {
+                    Id = 1,
+                    AttachmentPath = "name3.png",
+                    TaskId = 2
+                };
+            }
+        }
+
+        public static TaskAttachmentsDTO TaskAttachmentDTO
+        {
+            get
+            {
+                return new TaskAttachmentsDTO()
+                {
+                    //Attachment = FileTestData.GetTestFormFile("name.txt", "content", "txt"),
+                    TaskId = 1,
+                    WorkspaceId = 2
+                };
+            }
+        }
+
+        public static TaskAttachmentInfoDTO AttachmentExpected
+        {
+            get
+            {
+                return new TaskAttachmentInfoDTO()
+                {
+                    Id = 1,
+                    Name = "Name",
+                    ContentType = "txt"
+                };
+            }
+        }
+
+        public static TaskChangeRoleDTO ChangeRoleDTO
+        {
+            get
+            {
+                return new TaskChangeRoleDTO()
+                {
+                    RoleId = 1,
+                    TaskId = 1,
+                    UserId = "1",
+                    WorkspaceId = 1
+                };
+            }
+        }
+
+        public static UserTask UserTask
+        {
+            get
+            {
+                return new UserTask()
+                {
+                    IsUserDeleted = false,
+                    TaskId = 2,
+                    UserId = "3",
+                    UserRoleTagId = 3
+                };
+            }
+        }
+
+        public static List<Comment> CommentList
+        {
+            get
+            {
+                return new List<Comment>()
+                {
+                    new Comment()
+                    {
+                        CommentText = "sdsd",
+                        DateOfCreate = new DateTimeOffset(DateTime.UtcNow,TimeSpan.Zero),
+                        Id = 1,
+                        TaskId = 2,
+                        UserId = "1"
+                    },
+                    new Comment()
+                    {
+                        CommentText = "dsds",
+                        DateOfCreate = new DateTimeOffset(DateTime.UtcNow,TimeSpan.Zero),
+                        Id = 2,
+                        TaskId = 2,
+                        UserId = "2"
+                    }
+                };
+            }
+        }
+
+        public static List<UserTask> UserTaskList
+        {
+            get
+            {
+                return new List<UserTask>()
+                {
+                    new UserTask()
+                    {
+                        IsUserDeleted = false,
+                        TaskId = 2,
+                        UserId = "3",
+                        UserRoleTagId = 3
+                    },
+                    new UserTask()
+                    {
+                        IsUserDeleted = false,
+                        TaskId = 2,
+                        UserId = "2",
+                        UserRoleTagId = 1
+                    }
                 };
             }
         }
