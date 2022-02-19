@@ -32,6 +32,7 @@ using System.Net;
 using Provis.Core.Resources;
 using Ardalis.Specification;
 using Microsoft.EntityFrameworkCore;
+using Provis.Core.Entities.SprintEntity;
 
 namespace Provis.Core.Services
 {
@@ -55,6 +56,7 @@ namespace Provis.Core.Services
         private readonly IOptions<ClientUrl> _clientUrl;
         private readonly IEmailSenderService _emailSenderService;
         private readonly IMetrics _metrics;
+        private readonly IRepository<Sprint> _sprintRepository;
 
         public TaskService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
@@ -73,8 +75,8 @@ namespace Provis.Core.Services
             IOptions<ClientUrl> options,
             IEmailSenderService emailSenderService,
             IOptions<ImageSettings> imageSettings,
-            IMetrics metrics
-            )
+            IMetrics metrics,
+            IRepository<Sprint> sprintRepository)
         {
             _userManager = userManager;
             _imageSettings = imageSettings;
@@ -94,6 +96,7 @@ namespace Provis.Core.Services
             _clientUrl = options;
             _emailSenderService = emailSenderService;
             _metrics = metrics;
+            _sprintRepository = sprintRepository;
         }
 
         public async Task<TaskChangeStatusDTO> ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus, string userId)
@@ -104,7 +107,7 @@ namespace Provis.Core.Services
             var fromStatus = (TaskStatuses)task.StatusId;
 
             if (task.StatusId != changeTaskStatus.StatusId)
-            { 
+            {
                 try
                 {
                     task.StatusId = changeTaskStatus.StatusId;
@@ -400,7 +403,7 @@ namespace Provis.Core.Services
                             }
                         });
                     });
-                }             
+                }
             }
 
             return _mapper.Map<TaskInfoDTO>(await _taskRepository.GetByKeyAsync(workspaceTask.Id));
@@ -676,6 +679,29 @@ namespace Provis.Core.Services
             }
 
             await _taskRepository.DeleteAsync(workspaceTask);
+            await _taskRepository.SaveChangesAsync();
+        }
+
+        public async Task MoveTaskToSprint(int taskId, int workspaceId, int? sprintId)
+        {
+            var task = await _taskRepository.GetByKeyAsync(taskId);
+            task.TaskNullChecking();
+
+            if (sprintId != null)
+            {
+                var sprint = await _sprintRepository.GetByKeyAsync(sprintId);
+                if (sprint.WorkspaceId != workspaceId)
+                {
+                    throw new HttpException(HttpStatusCode.BadRequest, ErrorMessages.SprintIsNotInWorkspace);
+                }
+            }
+
+            if (sprintId == task.SprintId)
+                return;
+
+            task.SprintId = sprintId;
+
+            await _taskRepository.UpdateAsync(task);
             await _taskRepository.SaveChangesAsync();
         }
     }
