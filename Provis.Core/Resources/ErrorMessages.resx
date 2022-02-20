@@ -150,6 +150,9 @@
   <data name="EmailNotConfirm" xml:space="preserve">
     <value>First you need to confirm your email address</value>
   </data>
+  <data name="EventNotFound" xml:space="preserve">
+    <value>ThisEvent doesn't found</value>
+  </data>
   <data name="FileIsEmpty" xml:space="preserve">
     <value>This file is empty</value>
   </data>

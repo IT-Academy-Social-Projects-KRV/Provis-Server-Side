@@ -161,7 +161,16 @@ namespace Provis.Core.Resources {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на This file is empty.
+        ///   Looks up a localized string similar to ThisEvent doesn&apos;t found.
+        /// </summary>
+        internal static string EventNotFound {
+            get {
+                return ResourceManager.GetString("EventNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This file is empty.
         /// </summary>
         internal static string FileIsEmpty {
             get {
