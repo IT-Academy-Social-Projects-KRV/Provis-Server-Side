@@ -261,4 +261,7 @@
   <data name="WorkspaceNotFound" xml:space="preserve">
     <value>Workspace ot found</value>
   </data>
+  <data name="WrongResetPasswordCode" xml:space="preserve">
+    <value>Wrong code or this code is deprecated, try again!</value>
+  </data>
 </root>
