@@ -23,5 +23,6 @@ namespace Provis.Core.Interfaces.Services
         Task<TaskChangeRoleDTO> ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId);
         Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId);
         Task DeleteTaskAsync(int workspaceId, int taskId, string userId);
+        Task MoveTaskToSprint(int taskId, int workspaceId, int? sprintId);
     }
 }
