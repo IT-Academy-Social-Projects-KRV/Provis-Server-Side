@@ -1,4 +1,5 @@
-﻿using Provis.Core.Entities.InviteUserEntity;
+﻿using Provis.Core.DTO.UserDTO;
+using Provis.Core.Entities.InviteUserEntity;
 using System;
 using System.Collections.Generic;
 

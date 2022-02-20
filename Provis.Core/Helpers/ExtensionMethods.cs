@@ -1,9 +1,10 @@
-
+using Provis.Core.Entities.EventEntity;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.SprintEntity;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.Entities.CommentEntity;
 using Provis.Core.Entities.UserEntity;
+using Provis.Core.Entities.UserEventsEntity;
 using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
@@ -84,6 +85,24 @@ namespace Provis.Core.Helpers.Mails
             {
                 throw new HttpException(HttpStatusCode.NotFound,
                     ErrorMessages.CommentNotFound);
+            }
+        }
+
+        public static void EventNullChecking(this Event events)
+        {
+            if (events == null)
+            {
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.EventNotFound);
+            }
+        }
+
+        public static void UserEventNullChecking(this UserEvent userEvent)
+        {
+            if (userEvent == null)
+            {
+                throw new HttpException(HttpStatusCode.NotFound,
+                    ErrorMessages.EventNotFound);
             }
         }
     }

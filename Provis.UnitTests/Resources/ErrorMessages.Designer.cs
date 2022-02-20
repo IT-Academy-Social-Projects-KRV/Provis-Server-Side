@@ -19,7 +19,7 @@ namespace Provis.UnitTests.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class ErrorMessages {
@@ -358,6 +358,15 @@ namespace Provis.UnitTests.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The sprint is not in the workspace.
+        /// </summary>
+        internal static string SprintIsNotInWorkspace {
+            get {
+                return ResourceManager.GetString("SprintIsNotInWorkspace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Sprint not found.
         /// </summary>
         internal static string SprintNotFound {
@@ -489,6 +498,15 @@ namespace Provis.UnitTests.Resources {
         internal static string WorkspaceNotFound {
             get {
                 return ResourceManager.GetString("WorkspaceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wrong code or this code is deprecated, try again!.
+        /// </summary>
+        internal static string WrongResetPasswordCode {
+            get {
+                return ResourceManager.GetString("WrongResetPasswordCode", resourceCulture);
             }
         }
     }
