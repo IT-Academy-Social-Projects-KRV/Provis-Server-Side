@@ -160,6 +160,15 @@ namespace Provis.Core.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to ThisEvent doesn&apos;t found.
+        /// </summary>
+        internal static string EventNotFound {
+            get {
+                return ResourceManager.GetString("EventNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This file is empty.
         /// </summary>
         internal static string FileIsEmpty {
@@ -498,6 +507,15 @@ namespace Provis.Core.Resources {
         internal static string WorkspaceNotFound {
             get {
                 return ResourceManager.GetString("WorkspaceNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wrong code or this code is deprecated, try again!.
+        /// </summary>
+        internal static string WrongResetPasswordCode {
+            get {
+                return ResourceManager.GetString("WrongResetPasswordCode", resourceCulture);
             }
         }
     }

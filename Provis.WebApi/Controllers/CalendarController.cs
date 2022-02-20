@@ -34,11 +34,49 @@ namespace Provis.WebApi.Controllers
         }
 
         [Authorize]
+        [HttpPut]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId})]
+        public async Task<IActionResult> EditEventAsync([FromBody] EventEditDTO eventCreateDTO)
+        {
+            await _calendarService.EditEventAsync(eventCreateDTO, UserId);
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId})]
+        [Route("workspace/{workspaceId}/event")]
+        public async Task<IActionResult> DeleteEventAsync(int eventId)
+        {
+            await _calendarService.DeleteEventAsync(eventId, UserId);
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId})]
+        [Route("workspace/{workspaceId}/user-event")]
+        public async Task<IActionResult> LeaveEventAsync(int eventId, int workspaceId)
+        {
+            await _calendarService.LeaveEventAsync(eventId, UserId, workspaceId);
+
+            return Ok();
+        }
+
+        [Authorize]
         [HttpGet]
         [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
-        [Route("workspace/{workspaceId}")]
+        [Route("workspace/{workspaceId}/months-events")]
         public async Task<IActionResult> GetAllEventsAsync(int workspaceId)
         {
             var getEvents = await _calendarService.GetAllEventsAsync(workspaceId, UserId);
@@ -57,6 +95,19 @@ namespace Provis.WebApi.Controllers
             var getEvents = await _calendarService.GetDayEventsAsync(workspaceId, dateTime, UserId);
 
             return Ok(getEvents);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
+        [Route("workspace/{workspaceId}/event")]
+        public async Task<IActionResult> GetEventInfoAsync(int workspaceId, int eventId)
+        {
+            var getEvent = await _calendarService.GetEventInfoAsync(workspaceId, eventId, UserId);
+
+            return Ok(getEvent);
         }
     }
 }
