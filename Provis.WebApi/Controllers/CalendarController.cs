@@ -38,7 +38,6 @@ namespace Provis.WebApi.Controllers
         [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId})]
-        [Route("workspace/{workspaceId}")]
         public async Task<IActionResult> EditEventAsync([FromBody] EventEditDTO eventCreateDTO)
         {
             await _calendarService.EditEventAsync(eventCreateDTO, UserId);
@@ -51,8 +50,8 @@ namespace Provis.WebApi.Controllers
         [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId})]
-        [Route("workspace/{workspaceId}/delete")]
-        public async Task<IActionResult> DeleteEventAsync(int eventId, int workspaceId)
+        [Route("workspace/{workspaceId}/event")]
+        public async Task<IActionResult> DeleteEventAsync(int eventId)
         {
             await _calendarService.DeleteEventAsync(eventId, UserId);
 
@@ -64,7 +63,7 @@ namespace Provis.WebApi.Controllers
         [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId})]
-        [Route("workspace/{workspaceId}/leave")]
+        [Route("workspace/{workspaceId}/user-event")]
         public async Task<IActionResult> LeaveEventAsync(int eventId, int workspaceId)
         {
             await _calendarService.LeaveEventAsync(eventId, UserId, workspaceId);
@@ -77,7 +76,7 @@ namespace Provis.WebApi.Controllers
         [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId, WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId, WorkSpaceRoles.ViewerId})]
-        [Route("workspace/{workspaceId}/events")]
+        [Route("workspace/{workspaceId}/months-events")]
         public async Task<IActionResult> GetAllEventsAsync(int workspaceId)
         {
             var getEvents = await _calendarService.GetAllEventsAsync(workspaceId, UserId);
