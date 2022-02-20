@@ -1,4 +1,7 @@
 ﻿using Provis.Core.Entities.UserEntity;
+using Provis.Core.Helpers.Mails;
+using Provis.Core.Helpers.Mails.ViewModels;
+using System;
 using System.Collections.Generic;
 
 namespace Provis.UnitTests.Base.TestData

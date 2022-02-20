@@ -11,9 +11,9 @@ namespace Provis.Core.Validation
 {
     public class TaskAttachmentValidation : AbstractValidator<TaskAttachmentsDTO>
     {
-        private readonly IOptions<TaskAttachmentSettings> options;
+        private readonly IOptions<AttachmentSettings> options;
 
-        public TaskAttachmentValidation(IOptions<TaskAttachmentSettings> options)
+        public TaskAttachmentValidation(IOptions<AttachmentSettings> options)
         {
             this.options = options;
 
