@@ -232,7 +232,5 @@ namespace Provis.Core.Services
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Wrong code or this code is deprecated, try again!");
             }
         }
-
-        
     }
 }
