@@ -115,7 +115,7 @@ namespace Provis.UnitTests.Core.Services
 
             IList<string> list = new List<string>()
             {
-                "ssss",
+                "Provider",
                 "Email"
             };
             var expectedUserAutorizationDTO = new UserAutorizationDTO()
@@ -397,7 +397,7 @@ namespace Provis.UnitTests.Core.Services
             var authDTOMock = GetUserAuthDTO();
 
             Func<Task> act = () =>
-                _authentifiactioService.ExternalLoginAsync(authDTOMock);
+                _authentificationService.ExternalLoginAsync(authDTOMock);
 
             await act.Should()
                 .ThrowAsync<HttpException>()
@@ -429,7 +429,7 @@ namespace Provis.UnitTests.Core.Services
                 RefreshToken = "refToken"
             };
 
-            var result = await _authentifiactioService.ExternalLoginAsync(userAuthDTO);
+            var result = await _authentificationService.ExternalLoginAsync(userAuthDTO);
 
             result.Should().NotBeNull();
             result.Should().BeEquivalentTo(expectedResult);
@@ -447,14 +447,6 @@ namespace Provis.UnitTests.Core.Services
             _confirmEmailServiceMock.Verify();
             _templateServiceMock.Verify();
             _clientUrlMock.Verify();
-        }
-
-        protected void SetupCreateRefreshToken(string token)
-        {
-            _jwtServiceMock
-                .Setup(x => x.CreateRefreshToken())
-                .Returns(token)
-                .Verifiable();
         }
 
         protected void SetupCreateToken(string token)
