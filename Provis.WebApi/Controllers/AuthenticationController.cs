@@ -89,5 +89,13 @@ namespace Provis.WebApi.Controllers
 
             return Ok();
         }
+
+        [HttpPost]
+        [Route("signin-google")]
+        public async Task<IActionResult> ExternalLoginAsync([FromBody] UserExternalAuthDTO authDTO)
+        {
+            var result = await authenticationService.ExternalLoginAsync(authDTO);
+            return Ok(result);
+        }
     }
 }

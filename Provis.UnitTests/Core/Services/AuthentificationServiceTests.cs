@@ -1,5 +1,6 @@
 ﻿using Ardalis.Specification;
 using FluentAssertions;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -114,7 +115,7 @@ namespace Provis.UnitTests.Core.Services
 
             IList<string> list = new List<string>()
             {
-                "ssss",
+                "Provider",
                 "Email"
             };
             var expectedUserAutorizationDTO = new UserAutorizationDTO()
@@ -390,6 +391,50 @@ namespace Provis.UnitTests.Core.Services
             await Task.CompletedTask;
         }
 
+        [Test]
+        public async Task ExternalLoginAsync_PayloadIsInvalid_ThrowHttpException()
+        {
+            var authDTOMock = GetUserAuthDTO();
+
+            Func<Task> act = () =>
+                _authentificationService.ExternalLoginAsync(authDTOMock);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.InvalidRequest);
+        }
+
+        [Test]
+        public async Task ExternalLoginAsync_PayloadIsValid_ReturnUserAuthResponseDTO()
+        {
+            var userAuthDTO = GetUserAuthDTO();
+            var payloadMock = GetPayload();
+
+            SetupVerifyGoogleToken(payloadMock);
+
+            var userMock = GetTestUserList()[0];
+            SetupFindByEmailAsync(userMock.Email, userMock);
+
+            var claimsMock = GetClaims();
+
+            SetupAddLoginAsync();
+            SetupSetClaimsAsync(claimsMock);
+            SetupCreateToken("token");
+            SetupCreateRefreshToken("refToken");
+
+            var expectedResult = new UserAuthResponseDTO
+            {
+                Token = "token",
+                RefreshToken = "refToken"
+            };
+
+            var result = await _authentificationService.ExternalLoginAsync(userAuthDTO);
+
+            result.Should().NotBeNull();
+            result.Should().BeEquivalentTo(expectedResult);
+        }
+
         [TearDown]
         public void TearDown()
         {
@@ -403,7 +448,39 @@ namespace Provis.UnitTests.Core.Services
             _templateServiceMock.Verify();
             _clientUrlMock.Verify();
         }
-        
+
+        protected void SetupCreateToken(string token)
+        {
+            _jwtServiceMock
+                .Setup(x => x.CreateToken(It.IsAny<IEnumerable<Claim>>()))
+                .Returns(token)
+                .Verifiable();
+        }
+
+        protected void SetupSetClaimsAsync(IEnumerable<Claim> claims)
+        {
+            _jwtServiceMock
+                .Setup(x => x.SetClaims(It.IsAny<User>()))
+                .Returns(claims)
+                .Verifiable();
+        }
+
+        protected void SetupAddLoginAsync()
+        {
+            _userManagerMock
+                .Setup(x => x.AddLoginAsync(It.IsAny<User>(), It.IsAny<UserLoginInfo>()))
+                .ReturnsAsync(IdentityResult.Success)
+                .Verifiable();
+        }
+
+        protected void SetupVerifyGoogleToken(GoogleJsonWebSignature.Payload payload)
+        {
+            _jwtServiceMock
+                .Setup(x => x.VerifyGoogleToken(It.IsAny<UserExternalAuthDTO>()))
+                .ReturnsAsync(payload)
+                .Verifiable();
+        }
+
         protected void SetupFindByEmailAsync(string email, User userInstance)
         {
             _userManagerMock
@@ -416,7 +493,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _userManagerMock
                 .Setup(x => x.CheckPasswordAsync(It.IsAny<User>(), It.IsAny<string>()))
-                .ReturnsAsync((true))
+                .ReturnsAsync(true)
                 .Verifiable();
         }
 
@@ -601,6 +678,68 @@ namespace Provis.UnitTests.Core.Services
                 .Setup(x => x.AddToRoleAsync(user, role))
                 .ReturnsAsync(result)
                 .Verifiable();
+        }
+
+        public UserExternalAuthDTO GetUserAuthDTO()
+        {
+            return new UserExternalAuthDTO()
+            {
+                IdToken = "1",
+                Provider = "2"
+            };
+        }
+
+        public GoogleJsonWebSignature.Payload GetPayload()
+        {
+            return new GoogleJsonWebSignature.Payload()
+            {
+                Scope = "1",
+                Prn = "1",
+                HostedDomain = "1",
+                Email = "test1@gmail.com",
+                EmailVerified = true,
+                Name = "Name1",
+                GivenName = "Name1",
+                FamilyName = "Name1",
+                Picture = "1",
+                Locale = "1",
+                Subject = "1"
+            };
+        }
+
+        public IEnumerable<Claim> GetClaims()
+        {
+            return new List<Claim>
+            {
+                new Claim("1","2"),
+                new Claim("3","4")
+            };
+        }
+
+        public List<User> GetTestUserList()
+        {
+            return new List<User>()
+            {
+                new User()
+                {
+                    Id = "1",
+                    Email = "test1@gmail.com",
+                    Name = "Name1",
+                    Surname = "Surname1",
+                    UserName = "Username1",
+                    ImageAvatarUrl = "Path1"
+                },
+
+                new User()
+                {
+                    Id = "2",
+                    Email = "test2@gmail.com",
+                    Name = "Name2",
+                    Surname = "Surname2",
+                    UserName = "Username2",
+                    ImageAvatarUrl = "Path2"
+                }
+            };
         }
 
         private RefreshToken GetRefreshToken()
