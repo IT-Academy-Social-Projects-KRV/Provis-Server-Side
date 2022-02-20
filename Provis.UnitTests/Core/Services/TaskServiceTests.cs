@@ -58,7 +58,7 @@ namespace Provis.UnitTests.Core.Services
         protected Mock<IRepository<WorkspaceTaskAttachment>> _workspaceTaskAttachmentsRepositoryMock;
         protected Mock<IRepository<Comment>> _commentRepositoryMock;
         protected Mock<IFileService> _fileServiceMock;
-        protected Mock<IOptions<TaskAttachmentSettings>> _attachmentsSettingsOptionsMock;
+        protected Mock<IOptions<AttachmentSettings>> _attachmentsSettingsOptionsMock;
         protected Mock<UserManager<User>> _userManagerMock;
         protected Mock<IOptions<ClientUrl>> _clientUrlOptionsMock;
         protected Mock<IEmailSenderService> _emailSendServiceMock;
@@ -80,7 +80,7 @@ namespace Provis.UnitTests.Core.Services
             _workspaceTaskAttachmentsRepositoryMock = new Mock<IRepository<WorkspaceTaskAttachment>>();
             _commentRepositoryMock = new Mock<IRepository<Comment>>();
             _fileServiceMock = new Mock<IFileService>();
-            _attachmentsSettingsOptionsMock = new Mock<IOptions<TaskAttachmentSettings>>();
+            _attachmentsSettingsOptionsMock = new Mock<IOptions<AttachmentSettings>>();
             _userManagerMock = UserManagerMock.GetUserManager<User>();
             _clientUrlOptionsMock = new Mock<IOptions<ClientUrl>>();
             _emailSendServiceMock = new Mock<IEmailSenderService>();
@@ -499,15 +499,17 @@ namespace Provis.UnitTests.Core.Services
         public async Task GetTasks_UserIdNull_ReturnTaskGroupDTO()
         {
             string userId = null;
-            var workspaceId = 1;
+            var sprintId = 1;
+            var workspace = WithWorkspace;
             var taskMock = WithWorkspaceTasks;
             var taskDTO = WithTaskDTOs;
             var expectedList = WithGetTasks(userId, taskDTO);
 
+            SetupWorkspaceGetByKeyASync(workspace);
             SetupTaskGetListBySpecAsync(taskMock);
             _mapperMock.SetupListToDictionaryMap(taskDTO, taskMock);
 
-            var result = await _taskService.GetTasks(userId, workspaceId);
+            var result = await _taskService.GetTasks(userId, workspace.Id, sprintId);
 
             result
                 .Should()
@@ -517,16 +519,18 @@ namespace Provis.UnitTests.Core.Services
         [Test]
         public async Task GetTasks_UserIdExist_ReturnTaskGroupDTO()
         {
+            var sprintId = 1;
             string userId = "2";
-            var workspaceId = 1;
+            var workspace = WithWorkspace;
             var taskMock = WithUserTasks;
             var taskDTO = WithTaskDTOs;
             var expectedList = WithGetTasks(userId, taskDTO);
 
+            SetupWorkspaceGetByKeyASync(workspace);
             SetupUserTaskGetListBySpecAsync(taskMock);
             _mapperMock.SetupListToDictionaryMap(taskDTO, taskMock);
 
-            var result = await _taskService.GetTasks(userId, workspaceId);
+            var result = await _taskService.GetTasks(userId, workspace.Id, sprintId);
 
             result
                 .Should()
@@ -855,7 +859,8 @@ namespace Provis.UnitTests.Core.Services
                     Id = 1,
                     DateOfCreate = DateTime.Now,
                     Description = "Description mock",
-                    Name = "Provis"
+                    Name = "Provis",
+                    isUseSprints = false
                 };
             }
         }
