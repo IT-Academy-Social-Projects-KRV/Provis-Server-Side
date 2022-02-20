@@ -93,7 +93,7 @@ namespace Provis.UnitTests.Core.Services
         [Test]
         public async Task ExternalLoginAsync_PayloadIsInvalid_ThrowHttpException()
         {
-            var authDTOMock = AuthenticationTestData.GetUserAuthDTO();
+            var authDTOMock = GetUserAuthDTO();
 
             Func<Task> act = () =>
                 _authentifiactioService.ExternalLoginAsync(authDTOMock);
@@ -107,15 +107,15 @@ namespace Provis.UnitTests.Core.Services
         [Test]
         public async Task ExternalLoginAsync_PayloadIsValid_ReturnUserAuthResponseDTO()
         {
-            var userAuthDTO = AuthenticationTestData.GetUserAuthDTO();
-            var payloadMock = AuthenticationTestData.GetPayload();
+            var userAuthDTO = GetUserAuthDTO();
+            var payloadMock = GetPayload();
 
             SetupVerifyGoogleToken(payloadMock);
 
-            var userMock = UserTestData.GetTestUserList()[0];
+            var userMock = GetTestUserList()[0];
             SetupFindByEmailAsync(userMock.Email, userMock);
 
-            var claimsMock = AuthenticationTestData.GetClaims();
+            var claimsMock = GetClaims();
 
             SetupAddLoginAsync();
             SetupSetClaimsAsync(claimsMock);
@@ -159,7 +159,7 @@ namespace Provis.UnitTests.Core.Services
         protected void SetupCreateToken(string token)
         {
             _jwtServiceMock
-                .Setup(x => x.CreateToken(It.IsAny<System.Collections.Generic.IEnumerable<System.Security.Claims.Claim>>()))
+                .Setup(x => x.CreateToken(It.IsAny<IEnumerable<Claim>>()))
                 .Returns(token)
                 .Verifiable();
         }
@@ -184,7 +184,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _jwtServiceMock
                 .Setup(x => x.VerifyGoogleToken(It.IsAny<UserExternalAuthDTO>()))
-                .Returns(Task.FromResult(payload))
+                .ReturnsAsync(payload)
                 .Verifiable();
         }
 
@@ -192,7 +192,7 @@ namespace Provis.UnitTests.Core.Services
         {
             _userManagerMock
                 .Setup(x => x.FindByEmailAsync(email ?? It.IsAny<string>()))
-                .Returns(Task.FromResult(userInstance))
+                .ReturnsAsync(userInstance)
                 .Verifiable();
         }
 
@@ -200,8 +200,44 @@ namespace Provis.UnitTests.Core.Services
         {
             _userManagerMock
                 .Setup(x => x.CheckPasswordAsync(user, password ?? It.IsAny<string>()))
-                .Returns(Task.FromResult(true))
+                .ReturnsAsync(true)
                 .Verifiable();
+        }
+
+        public UserExternalAuthDTO GetUserAuthDTO()
+        {
+            return new UserExternalAuthDTO()
+            {
+                IdToken = "1",
+                Provider = "2"
+            };
+        }
+
+        public GoogleJsonWebSignature.Payload GetPayload()
+        {
+            return new GoogleJsonWebSignature.Payload()
+            {
+                Scope = "1",
+                Prn = "1",
+                HostedDomain = "1",
+                Email = "test1@gmail.com",
+                EmailVerified = true,
+                Name = "Name1",
+                GivenName = "Name1",
+                FamilyName = "Name1",
+                Picture = "1",
+                Locale = "1",
+                Subject = "1"
+            };
+        }
+
+        public IEnumerable<Claim> GetClaims()
+        {
+            return new List<Claim>
+            {
+                new Claim("1","2"),
+                new Claim("3","4")
+            };
         }
     }
 }
