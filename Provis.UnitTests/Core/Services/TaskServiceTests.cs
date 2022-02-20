@@ -11,6 +11,7 @@ using NUnit.Framework;
 using Provis.Core.DTO.TaskDTO;
 using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.CommentEntity;
+using Provis.Core.Entities.SprintEntity;
 using Provis.Core.Entities.StatusEntity;
 using Provis.Core.Entities.StatusHistoryEntity;
 using Provis.Core.Entities.UserEntity;
@@ -64,6 +65,7 @@ namespace Provis.UnitTests.Core.Services
         protected Mock<IEmailSenderService> _emailSendServiceMock;
         protected Mock<IOptions<ImageSettings>> _imageSettingsOptionsMock;
         protected Mock<IMetrics> _metricsMock;
+        protected Mock<IRepository<Sprint>> _sprintMock;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -86,6 +88,7 @@ namespace Provis.UnitTests.Core.Services
             _emailSendServiceMock = new Mock<IEmailSenderService>();
             _imageSettingsOptionsMock = new Mock<IOptions<ImageSettings>>();
             _metricsMock = new Mock<IMetrics>();
+            _sprintMock = new Mock<IRepository<Sprint>>();
 
             _taskService = new TaskService(
                 _userRepositoryMock.Object,
@@ -105,7 +108,8 @@ namespace Provis.UnitTests.Core.Services
                 _clientUrlOptionsMock.Object,
                 _emailSendServiceMock.Object,
                 _imageSettingsOptionsMock.Object,
-                _metricsMock.Object);
+                _metricsMock.Object,
+                _sprintMock.Object);
         }
 
         [Test]
