@@ -187,7 +187,7 @@ namespace Provis.Core.Services
         public async Task SetPasswordAsync(string userId, UserSetPasswordDTO userSetPasswordDTO)
         {
             var user = await _userManager.FindByIdAsync(userId);
-            user.UserNullChecking();
+
             if (await _userManager.HasPasswordAsync(user))
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, ErrorMessages.PasswordIsExist);
