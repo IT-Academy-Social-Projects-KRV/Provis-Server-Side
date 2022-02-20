@@ -15,6 +15,6 @@ namespace Provis.Core.DTO.CalendarDTO
         public string CreatorId { get; set; }
         public string CreatorUserName { get; set; }
 
-        public List<UserCalendarInfoDTO> Users { get; set; }
+        public IEnumerable<UserCalendarInfoDTO> Users { get; set; }
     }
 }

@@ -281,13 +281,15 @@ namespace Provis.Core.Services
 
             var eventCreator = await _userRepository.GetByKeyAsync(eventGet.CreatorId);
 
-            var returnDTO = new EventGetInfoDTO();
-
             var userEventSpecification = new UserEvents.GetUsersOnEvent(eventId);
             var assignUsers = await _userEventRepository.GetListBySpecAsync(userEventSpecification);
 
-            returnDTO.Users = (List<UserCalendarInfoDTO>)assignUsers;
-            returnDTO.CreatorUserName = eventCreator.UserName;
+            EventGetInfoDTO returnDTO = new()
+            {
+                Users = assignUsers,
+                CreatorUserName = eventCreator.UserName
+            };
+
             _mapper.Map(eventGet, returnDTO);
 
             return returnDTO;
