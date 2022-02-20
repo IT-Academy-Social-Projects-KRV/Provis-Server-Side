@@ -340,6 +340,15 @@ namespace Provis.UnitTests.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Password is already created.
+        /// </summary>
+        internal static string PasswordIsExist {
+            get {
+                return ResourceManager.GetString("PasswordIsExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to You cannot send invite to your account.
         /// </summary>
         internal static string SendInviteYourself {

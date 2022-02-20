@@ -210,6 +210,9 @@
   <data name="OwnerCannotLeaveWorkspace" xml:space="preserve">
     <value>Owner can't leave workspace</value>
   </data>
+  <data name="PasswordIsExist" xml:space="preserve">
+    <value>Password is already created</value>
+  </data>
   <data name="SendInviteYourself" xml:space="preserve">
     <value>You cannot send invite to your account</value>
   </data>

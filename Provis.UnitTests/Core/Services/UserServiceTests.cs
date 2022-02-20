@@ -377,6 +377,60 @@ namespace Provis.UnitTests.Core.Services
             await Task.CompletedTask;
         }
 
+        [Test]
+        public async Task SetPasswordAsync_PasswordNotExist_AddPassword()
+        {
+            var userMock = UserTestData.GetTestUser();
+            var userSetPasswordDTO = GetUserSetPasswordDTO();
+            var userId = userMock.Id;
+            bool passwordExist = false;
+
+            SetupUserFindByIdAsync(userId, userMock);
+            SetupHasPasswordAsync(userMock, passwordExist);
+            SetupAddPasswordAsync(userMock, userSetPasswordDTO.Password, IdentityResult.Success);
+
+            var result = _userService.SetPasswordAsync(userId, userSetPasswordDTO);
+            result.IsCompleted.Should().BeTrue();
+            result.IsCompletedSuccessfully.Should().BeTrue();
+
+            await Task.CompletedTask;
+        }
+
+        [Test]
+        public async Task SetPasswordAsync_PasswordIsExist_ThrowHttpException()
+        {
+            var userMock = UserTestData.GetTestUser();
+            var userSetPasswordDTO = GetUserSetPasswordDTO();
+            var userId = userMock.Id;
+            bool passwordExist = true;
+
+            SetupUserFindByIdAsync(userId, userMock);
+            SetupHasPasswordAsync(userMock, passwordExist);
+
+            Func<Task> act = () => _userService
+                .SetPasswordAsync(userId, userSetPasswordDTO);
+
+            await act.Should()
+                .ThrowAsync<HttpException>()
+                .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
+                .WithMessage(ErrorMessages.PasswordIsExist);
+        }
+
+        [Test]
+        public async Task IsHavePasswordAsync_UserExist_ReturnBoolValue()
+        {
+            var userMock = UserTestData.GetTestUser();
+            var userId = userMock.Id;
+            bool passwordExist = true;
+
+            SetupUserFindByIdAsync(userId, userMock);
+            SetupHasPasswordAsync(userMock, passwordExist);
+
+            var result = await _userService.IsHavePasswordAsync(userId);
+
+            result.Should().Be(passwordExist);
+        }
+
         [TearDown]
         public void TearDown()
         {
@@ -584,7 +638,21 @@ namespace Provis.UnitTests.Core.Services
                                                        enabled ?? It.IsAny<bool>()))
                 .ReturnsAsync(identityResultInstance);
         }
+        protected void SetupAddPasswordAsync(User user, string password, IdentityResult identityResultInstance)
+        {
+            _userManagerMock
+                .Setup(x => x.AddPasswordAsync(user ?? It.IsAny<User>(), password ?? It.IsAny<string>()))
+                .ReturnsAsync(identityResultInstance)
+                .Verifiable();
+        }
 
+        protected void SetupHasPasswordAsync(User user, bool res)
+        {
+            _userManagerMock
+                .Setup(x => x.HasPasswordAsync(user))
+                .ReturnsAsync(res)
+                .Verifiable();
+        }
         protected UserChangeInfoDTO GetUserChangeInfo()
         {
             return new UserChangeInfoDTO()
@@ -623,6 +691,13 @@ namespace Provis.UnitTests.Core.Services
                     IsConfirm = true,
                     WorkspaceName = "worksace2"
                 }
+            };
+        }
+        public static UserSetPasswordDTO GetUserSetPasswordDTO()
+        {
+            return new UserSetPasswordDTO()
+            {
+                Password = "Password_1"
             };
         }
 

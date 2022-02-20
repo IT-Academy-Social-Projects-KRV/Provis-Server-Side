@@ -139,5 +139,23 @@ namespace Provis.WebApi.Controllers
 
             return Ok();
         }
+
+        [HttpPost]
+        [Authorize]
+        [Route("password")]
+        public async Task<IActionResult> SetPasswordAsync([FromBody] UserSetPasswordDTO userSetPasswordDTO)
+        {
+            await _userService.SetPasswordAsync(UserId, userSetPasswordDTO);
+
+            return Ok();
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("password/check")]
+        public async Task<IActionResult> IsHavePasswordAsync()
+        {
+            return Ok(await _userService.IsHavePasswordAsync(UserId));
+        }
     }
 }

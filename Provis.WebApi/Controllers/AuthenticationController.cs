@@ -4,6 +4,7 @@ using Provis.Core.Interfaces.Services;
 using Provis.Core.Roles;
 using System.Threading.Tasks;
 using Provis.Core.Entities.UserEntity;
+using System.Security.Claims;
 
 namespace Provis.WebApi.Controllers
 {
