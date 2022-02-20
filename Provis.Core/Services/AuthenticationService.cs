@@ -9,7 +9,9 @@ using Provis.Core.Helpers.Mails.ViewModels;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Resources;
+using Provis.Core.Roles;
 using System;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -86,7 +88,7 @@ namespace Provis.Core.Services
         {
             var refeshToken = _jwtService.CreateRefreshToken();
 
-            RefreshToken rt = new RefreshToken()
+            RefreshToken rt = new()
             {
                 Token = refeshToken,
                 UserId = user.Id
@@ -143,7 +145,7 @@ namespace Provis.Core.Services
 
             if (!result.Succeeded)
             {
-                StringBuilder errorMessage = new StringBuilder();
+                StringBuilder errorMessage = new();
                 foreach (var error in result.Errors)
                 {
                     errorMessage.Append(error.Description.ToString() + " ");
@@ -232,6 +234,53 @@ namespace Provis.Core.Services
             {
                 throw new HttpException(System.Net.HttpStatusCode.BadRequest, ErrorMessages.WrongResetPasswordCode);
             }
+        }
+
+        public async Task<UserAuthResponseDTO> ExternalLoginAsync(UserExternalAuthDTO authDTO)
+        {
+            var payload = await _jwtService.VerifyGoogleToken(authDTO);
+            if (payload == null)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.InvalidRequest);
+            }
+
+            var info = new UserLoginInfo(authDTO.Provider, payload.Subject, authDTO.Provider);
+
+            var user = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+
+            if (user == null)
+            {
+                user = await _userManager.FindByEmailAsync(payload.Email);
+                if (user == null)
+                {
+                    user = new User { Email = payload.Email, UserName = payload.GivenName, 
+                        Name = payload.GivenName, Surname = payload.FamilyName,
+                        CreateDate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero) };
+                    await _userManager.CreateAsync(user);
+                    //prepare and send an email for the email confirmation
+
+                    var findRole = await _roleManager.FindByNameAsync(SystemRoles.User);
+
+                    if (findRole == null)
+                    {
+                        await _roleManager.CreateAsync(new IdentityRole(SystemRoles.User));
+                    }
+
+                    await _userManager.AddToRoleAsync(user, SystemRoles.User);
+                    await _userManager.AddLoginAsync(user, info);
+                }
+                else
+                {
+                    await _userManager.AddLoginAsync(user, info);
+                }
+            }
+
+            var claims = _jwtService.SetClaims(user);
+            var token =  _jwtService.CreateToken(claims);
+            var refreshToken = _jwtService.CreateRefreshToken();
+
+            return (new UserAuthResponseDTO { Token = token, RefreshToken = refreshToken });
         }
     }
 }

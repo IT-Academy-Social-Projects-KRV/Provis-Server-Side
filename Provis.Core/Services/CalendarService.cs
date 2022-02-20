@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Provis.Core.DTO.CalendarDTO;
 using Provis.Core.DTO.EventDTO;
+using Provis.Core.DTO.UserDTO;
 using Provis.Core.Entities.EventEntity;
 using Provis.Core.Entities.UserEntity;
 using Provis.Core.Entities.UserEventsEntity;
@@ -14,6 +15,7 @@ using Provis.Core.Helpers.Mails;
 using Provis.Core.Interfaces.Repositories;
 using Provis.Core.Interfaces.Services;
 using Provis.Core.Resources;
+using Provis.Core.Roles;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,7 +38,7 @@ namespace Provis.Core.Services
 
         public CalendarService(IRepository<User> user,
             IRepository<WorkspaceTask> task,
-            IRepository<Event> @event,
+            IRepository<Event> eventService,
             IRepository<UserWorkspace> userWorkspace,
             IRepository<Workspace> workspace,
             UserManager<User> userManager,
@@ -49,7 +51,7 @@ namespace Provis.Core.Services
             _userWorkspaceRepository = userWorkspace;
             _userRepository = user;
             _taskRepository = task;
-            _eventRepository = @event;
+            _eventRepository = eventService;
             _mapper = mapper;
             _userTaskRepository = userTask;
             _userEventRepository = userEvent;
@@ -118,11 +120,74 @@ namespace Provis.Core.Services
             }
         }
 
+        public async Task EditEventAsync(EventEditDTO eventEditDTO, string userId)
+        {
+            var changeEvent = await _eventRepository.GetByKeyAsync(eventEditDTO.EventId);
+            changeEvent.EventNullChecking();
+
+            bool notCreator = changeEvent.CreatorId != userId;
+            if (notCreator)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest,
+                        ErrorMessages.NotPermission);
+            }
+
+            bool wrongDate = eventEditDTO.DateOfStart > eventEditDTO.DateOfEnd;
+            if (wrongDate)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest,
+                        ErrorMessages.InvalidDateOfEnd);
+            }
+
+            _mapper.Map(eventEditDTO, changeEvent);
+
+            await _eventRepository.UpdateAsync(changeEvent);
+            await _eventRepository.SaveChangesAsync();
+        }
+
+        public async Task DeleteEventAsync(int eventId, string userId)
+        {
+            var deleteEvent = await _eventRepository.GetByKeyAsync(eventId);
+            deleteEvent.EventNullChecking();
+
+            bool notCreator = deleteEvent.CreatorId != userId;
+            if (notCreator)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest,
+                        ErrorMessages.NotPermission);
+            }
+
+            await _eventRepository.DeleteAsync(deleteEvent);
+            await _eventRepository.SaveChangesAsync();
+        }
+
+        public async Task LeaveEventAsync(int eventId, string userId, int workspaceId)
+        {
+            var eventLeave = await _eventRepository.GetByKeyAsync(eventId);
+            eventLeave.EventNullChecking();
+
+            var userEvent = await _userEventRepository.GetByPairOfKeysAsync(userId, eventId);
+            userEvent.UserEventNullChecking();
+
+            var userWorkspace = await _userWorkspaceRepository.GetByPairOfKeysAsync(userId, workspaceId);
+            userWorkspace.UserWorkspaceNullChecking();
+
+            bool EventCreatorOrNotWorkspaceOwnerOrManager = eventLeave.CreatorId == userId
+                || !(userWorkspace.RoleId == (int)WorkSpaceRoles.OwnerId)
+                && !(userWorkspace.RoleId == (int)WorkSpaceRoles.ManagerId);
+
+            if (EventCreatorOrNotWorkspaceOwnerOrManager)
+            {
+                throw new HttpException(HttpStatusCode.BadRequest,
+                        ErrorMessages.NotPermission);
+            }
+
+            await _userEventRepository.DeleteAsync(userEvent);
+            await _userEventRepository.SaveChangesAsync();
+        }
+
         public async Task<List<EventDTO>> GetAllEventsAsync(int workspaceId, string userId)
         {
-            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
-            workspace.WorkspaceNullChecking();
-
             var eventSpecification = new Events.GetMyEvents(userId, workspaceId);
             var eventList = await _eventRepository.GetListBySpecAsync(eventSpecification);
 
@@ -167,9 +232,6 @@ namespace Provis.Core.Services
 
         public async Task<List<EventDayDTO>> GetDayEventsAsync(int workspaceId, DateTimeOffset dateTime, string userId)
         {
-            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
-            workspace.WorkspaceNullChecking();
-
             var eventSpecification = new Events.GetDayEvents(userId, workspaceId, dateTime);
             var eventList = await _eventRepository.GetListBySpecAsync(eventSpecification);
 
@@ -210,6 +272,27 @@ namespace Provis.Core.Services
 
                 return listToReturn;
             }
+        }
+
+        public async Task<EventGetInfoDTO> GetEventInfoAsync(int workspaceId, int eventId, string userId)
+        {
+            var eventGet = await _eventRepository.GetByKeyAsync(eventId);
+            eventGet.EventNullChecking();
+
+            var eventCreator = await _userRepository.GetByKeyAsync(eventGet.CreatorId);
+
+            var userEventSpecification = new UserEvents.GetUsersOnEvent(eventId);
+            var assignUsers = await _userEventRepository.GetListBySpecAsync(userEventSpecification);
+
+            EventGetInfoDTO returnDTO = new()
+            {
+                Users = assignUsers,
+                CreatorUserName = eventCreator.UserName
+            };
+
+            _mapper.Map(eventGet, returnDTO);
+
+            return returnDTO;
         }
     }
 }

@@ -89,7 +89,7 @@ namespace Provis.WebApi.Controllers
         [Route("workspace")]
         public async Task<IActionResult> UpdateWorkspaceAsync([FromBody] WorkspaceUpdateDTO workspaceUpdate)
         {
-            await _workspaceService.UpdateWorkspaceAsync(workspaceUpdate, UserId);
+            await _workspaceService.UpdateWorkspaceAsync(workspaceUpdate);
 
             return Ok();
         }
