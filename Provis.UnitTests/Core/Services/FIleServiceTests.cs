@@ -12,7 +12,8 @@ using System.Threading.Tasks;
 
 namespace Provis.UnitTests.Core.Services
 {
-    public class FIleServiceTests
+    [TestFixture]
+    public class FileServiceTests
     {
         protected FileService _fileService;
 
