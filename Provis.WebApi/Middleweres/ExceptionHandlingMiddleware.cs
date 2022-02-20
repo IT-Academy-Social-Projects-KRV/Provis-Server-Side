@@ -26,12 +26,23 @@ namespace Provis.WebApi.Middleweres
             catch(FileException ex)
             {
                 HttpStatusCode statusCode = (ex is FileNotFoundException) ? HttpStatusCode.NotFound : HttpStatusCode.BadRequest;
-                await CreateErrorAsync(context, statusCode, ex.Message);
+                await CreateErrorAsync(context, statusCode, new { error = ex.Message });
+                return;
+            }
+            catch(TaskStatusRowVersionException ex)
+            {
+                await CreateErrorAsync(context, ex.StatusCode, 
+                    new 
+                    { 
+                        error = ex.Message, 
+                        statusId = ex.StatusId, 
+                        rowVersion = ex.RowVersion 
+                    });
                 return;
             }
             catch (HttpException ex)
             {
-                await CreateErrorAsync(context, ex.StatusCode, ex.Message);
+                await CreateErrorAsync(context, ex.StatusCode, new { error = ex.Message });
                 return;
             }
             catch(Exception)
@@ -44,11 +55,12 @@ namespace Provis.WebApi.Middleweres
         private async Task CreateErrorAsync(
             HttpContext context,
             HttpStatusCode statusCode = HttpStatusCode.InternalServerError,
-            string erroMessage = "Unknown error has occured")
+            object errorBody = null)
         {
+            _ = errorBody ?? new { error = "Unknown error has occured" };
             context.Response.ContentType = "application/json";
             context.Response.StatusCode = (int)statusCode;
-            await context.Response.WriteAsync(JsonConvert.SerializeObject(new { error = erroMessage }));
+            await context.Response.WriteAsync(JsonConvert.SerializeObject(errorBody));
         }
     }
 }

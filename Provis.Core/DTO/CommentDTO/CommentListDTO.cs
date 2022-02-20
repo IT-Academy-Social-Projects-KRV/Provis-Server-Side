@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Provis.Core.DTO.CommentDTO
+namespace Provis.Core.DTO.CommentsDTO
 {
     public class CommentListDTO
     {

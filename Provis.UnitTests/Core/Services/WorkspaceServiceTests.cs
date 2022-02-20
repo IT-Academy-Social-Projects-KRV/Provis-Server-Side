@@ -36,6 +36,7 @@ namespace Provis.UnitTests.Core.Services
         protected Mock<ITemplateService> _templateServiceMock;
         protected Mock<IOptions<ClientUrl>> _optionsMock;
         protected Mock<IMetrics> _metricsMock;
+        protected Mock<ISprintService> _sprintServiceMock;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -53,6 +54,7 @@ namespace Provis.UnitTests.Core.Services
             _templateServiceMock = new Mock<ITemplateService>();
             _optionsMock = new Mock<IOptions<ClientUrl>>();
             _metricsMock = new Mock<IMetrics>();
+            _sprintServiceMock = new Mock<ISprintService>();
 
             _workspaceService = new WorkspaceService(
                 _userRepositoryMock.Object,
@@ -67,7 +69,8 @@ namespace Provis.UnitTests.Core.Services
                 _roleAccessMock.Object,
                 _templateServiceMock.Object,
                 _optionsMock.Object,
-                _metricsMock.Object);
+                _metricsMock.Object,
+                _sprintServiceMock.Object);
         }
 
         [TearDown]
