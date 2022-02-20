@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Moq;
+using System.Collections.Generic;
 
 namespace Provis.UnitTests.Base
 {
@@ -17,6 +18,30 @@ namespace Provis.UnitTests.Base
                 .Setup(x => x.Map<TReturn>(obj ?? It.IsAny<object>()))
                 .Returns(objToReturn)
                 .Verifiable();
+        }
+
+        public static void SetupListToListMap<TSource, TDest>(this Mock<IMapper> _mapperMock, List<TSource> sources, List<TDest> dests)
+        {
+            for (int i = 0; i < sources.Count; i++)
+            {
+                _mapperMock.SetupMap(sources[i], dests[i]);
+            }
+        }
+
+        public static void SetupListToDictionaryMap<TFirst, TSecond, TDest>(
+                this Mock<IMapper> _mapperMock,
+                Dictionary<TFirst,List<TSecond>> sources,
+                List<TDest> dests)
+        {
+            var counter = 0;
+            foreach (var task in sources.Keys)
+            {
+                foreach (var item in sources[task])
+                {
+                    _mapperMock.SetupMap(dests[counter], item);
+                    counter++;
+                }
+            }
         }
     }
 }
