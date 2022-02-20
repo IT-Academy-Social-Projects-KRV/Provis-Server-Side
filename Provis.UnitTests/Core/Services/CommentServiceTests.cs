@@ -58,41 +58,17 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        public async Task AddCommentAsync_ValidComment_ReturnCommentListDTO(string userId = "1")
+        public async Task AddCommentAsync_ValidComment_ReturnCommentListDTO()
         {
+            string userId = "1";
             var comment = GetComment();
-            CreateCommentDTO createCommentDTO = new()
-            {
-                CommentText = "Text",
-                TaskId = 1,
-                WorkspaceId = 1
-            };
-            
-            comment.CommentText = createCommentDTO.CommentText;
-            comment.TaskId = createCommentDTO.TaskId;
+            var createCommentDTO = GetCreateCommentDTO();
+            var commentListDTO = GetCommentListDTO();
 
-            _mapperMock.Setup(x => 
-                x.Map(It.IsAny<CreateCommentDTO>(), It.IsAny<Comment>()))
-                    .Returns(comment);
+            SetupMap(createCommentDTO, comment);
             SetupCommentAddAsync(comment);
             SetupCommentSaveChangesAsync();
-
-            comment.Id = 1;
-            comment.User = new User() { UserName = "Username1" };
-
-            CommentListDTO commentListDTO = new()
-            {
-                Id = comment.Id,
-                CommentText = comment.CommentText,
-                DateTime = comment.DateOfCreate,
-                TaskId = comment.TaskId,
-                UserId = comment.UserId,
-                UserName = comment.User.UserName
-            };
-
-            _mapperMock.Setup(x =>
-               x.Map(It.IsAny<Comment>(), It.IsAny<CommentListDTO>()))
-                   .Returns(commentListDTO);
+            SetupMap(comment, commentListDTO);
 
             var result = await _commentService.AddCommentAsync(createCommentDTO, userId);
 
@@ -126,15 +102,10 @@ namespace Provis.UnitTests.Core.Services
             var editCommentDTO = GetEditCommentDTO();
 
             SetupCommentGetByKeyASync(comment);
-
-            comment.DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero);
-            comment.CommentText = editCommentDTO.CommentText;
-
-            SetupCommentUpdateAsync();
+            SetupCommentUpdateAsync(comment);
             SetupCommentSaveChangesAsync();
 
             var result = _commentService.EditCommentAsync(editCommentDTO, creatorId);
-            result.Wait();
 
             result.IsCompleted.Should().BeTrue();
             result.IsCompletedSuccessfully.Should().BeTrue();
@@ -150,9 +121,6 @@ namespace Provis.UnitTests.Core.Services
 
             SetupCommentGetByKeyASync(comment);
 
-            comment.DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero);
-            comment.CommentText = editCommentDTO.CommentText;
-
             Func<Task> act = () => _commentService.EditCommentAsync(editCommentDTO, creatorId);
 
             await act.Should()
@@ -162,9 +130,11 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(1, "1", 1)]
-        public async Task DeleteCommentAsync_UserIsHavePermission_ReturnTaskComplete(int id, string userId, int workspaceId)
+        [TestCase("1")]
+        public async Task DeleteCommentAsync_UserIsHavePermission_ReturnTaskComplete(string userId)
         {
+            int id = 1;
+            int workspaceId = 1;
             var userWorkspaceMock = GetUserWorkspace();
             var comment = GetComment();
 
@@ -182,9 +152,11 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(1, "2", 1)]
-        public async Task DeleteCommentAsync_UserIsNotPermission_ThrowHttpException(int id, string userId, int workspaceId)
+        [TestCase("2")]
+        public async Task DeleteCommentAsync_UserIsNotPermission_ThrowHttpException(string userId)
         {
+            int id = 1;
+            int workspaceId = 1;
             var userWorkspaceMock = GetUserWorkspace();
             var comment = GetComment();
 
@@ -211,6 +183,14 @@ namespace Provis.UnitTests.Core.Services
             _mapperMock.Verify();
         }
 
+        protected void SetupMap<TSource, TDestination>(TSource source, TDestination destination)
+        {
+            _mapperMock
+                .Setup(x => x.Map(source ?? It.IsAny<TSource>(), It.IsAny<TDestination>()))
+                .Returns(destination)
+                .Verifiable();
+        }
+
         protected void SetupDeleteCommentAsync(Comment comment)
         {
             _commentRepositoryMock
@@ -226,17 +206,19 @@ namespace Provis.UnitTests.Core.Services
                 .ReturnsAsync(userWorkspace)
                 .Verifiable();
         }
+
         protected void SetupCommentSaveChangesAsync()
         {
             _commentRepositoryMock
                 .Setup(x => x.SaveChangesAsync())
-                .Returns(Task.FromResult(1))
+                .ReturnsAsync(1)
                 .Verifiable();
         }
-        protected void SetupCommentUpdateAsync()
+
+        protected void SetupCommentUpdateAsync(Comment coment)
         {
             _commentRepositoryMock
-                .Setup(x => x.UpdateAsync(It.IsAny<Comment>()))
+                .Setup(x => x.UpdateAsync(coment ?? It.IsAny<Comment>()))
                 .Returns(Task.CompletedTask)
                 .Verifiable();
         }
@@ -274,6 +256,16 @@ namespace Provis.UnitTests.Core.Services
             };
         }
 
+        private CreateCommentDTO GetCreateCommentDTO()
+        {
+            return new CreateCommentDTO()
+            {
+                CommentText = "Text1",
+                TaskId = 1,
+                WorkspaceId = 1
+            };
+        }
+
         private Comment GetComment()
         {
             return new Comment()
@@ -284,6 +276,19 @@ namespace Provis.UnitTests.Core.Services
                 UserId = "1",
                 DateOfCreate = new DateTime(2000, 1, 1, 1, 1, 1),
                 User = new User() { UserName = "Username1" }
+            };
+        }
+
+        private CommentListDTO GetCommentListDTO()
+        {
+            return new CommentListDTO()
+            {
+                Id = 1,
+                CommentText = "Text1",
+                TaskId = 1,
+                UserId = "1",
+                UserName = "Username1",
+                DateTime = new DateTime(2000, 1, 1, 1, 1, 1)
             };
         }
 
@@ -360,7 +365,7 @@ namespace Provis.UnitTests.Core.Services
             return new EditCommentDTO()
             {
                 CommentId = 1,
-                CommentText = "Edited text",
+                CommentText = "Text1",
                 WorkspaceId = 1
             };
         }
