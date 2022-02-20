@@ -6,11 +6,11 @@ namespace Provis.Core.Interfaces.Services
 {
     public interface ITaskService
     {
-        Task ChangeTaskStatusAsync(TaskChangeStatusDTO cangeTaskStatus, string userId);
+        Task<TaskChangeStatusDTO> ChangeTaskStatusAsync(TaskChangeStatusDTO cangeTaskStatus, string userId);
         Task CreateTaskAsync(TaskCreateDTO taskCreateDTO, string userId);
-        Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId);
+        Task<TaskGroupByStatusDTO> GetTasks(string userId, int workspaceId, int? sprintId);
         Task<List<TaskStatusDTO>> GetTaskStatuses();
-        Task ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId);
+        Task<TaskInfoDTO> ChangeTaskInfoAsync(TaskChangeInfoDTO taskChangeInfoDTO, string userId);
         Task JoinTaskAsync(TaskAssignDTO taskAssignDTO, string userId);
         Task<List<TaskRoleDTO>> GetWorkerRoles();
         Task<List<TaskStatusHistoryDTO>> GetStatusHistories(int taskId);
@@ -20,7 +20,7 @@ namespace Provis.Core.Interfaces.Services
         Task DeleteTaskAttachmentAsync(int attachmentId);
         Task<TaskAttachmentInfoDTO> SendTaskAttachmentsAsync(TaskAttachmentsDTO taskAttachmentsDTO);
         Task<DownloadFile> GetTaskAttachmentPreviewAsync(int attachmentId);
-        Task ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId);
+        Task<TaskChangeRoleDTO> ChangeMemberRoleAsync(TaskChangeRoleDTO changeRoleDTO, string userId);
         Task DisjoinTaskAsync(int workspaceId, int taskId, string disUserId, string userId);
         Task DeleteTaskAsync(int workspaceId, int taskId, string userId);
     }

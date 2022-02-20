@@ -1,6 +1,26 @@
-﻿namespace Provis.Core.Entities.UserEntity
+﻿using Ardalis.Specification;
+using System.Linq;
+using System;
+using Provis.Core.DTO.EventDTO;
+using Provis.Core.Statuses;
+
+namespace Provis.Core.Entities.UserEntity
 {
     public class Users
     {
+        internal class UserDateOfBirth : Specification<User, EventDTO>
+        {
+            public UserDateOfBirth(string userId, int workspaceId)
+            {
+                Query
+                    .Select(x => new EventDTO()
+                    {
+                        EventDay = (DateTimeOffset)x.BirthDate,
+                        Status = CalendarStatuses.BirthDay
+                    })
+                    .Where(x => x.BirthDate.Value.Month == DateTimeOffset.UtcNow.Month &&
+                    x.UserWorkspaces.Exists(x => x.WorkspaceId == workspaceId && x.UserId == userId));
+            }
+        }
     }
 }

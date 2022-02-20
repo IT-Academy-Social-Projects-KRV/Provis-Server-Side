@@ -1,6 +1,11 @@
 ﻿using Ardalis.Specification;
+using Provis.Core.DTO.CalendarDTO;
+using Provis.Core.DTO.EventDTO;
+using Provis.Core.DTO.UserDTO;
+using Provis.Core.Statuses;
 using System;
 using System.Linq;
+using System.Linq.Expressions;
 
 namespace Provis.Core.Entities.WorkspaceTaskEntity
 {
@@ -8,17 +13,30 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
     {
         internal class UnassignedTaskList : Specification<WorkspaceTask, Tuple<int, WorkspaceTask, int, int, string>>
         {
+            public UnassignedTaskList(int workspaceId, int? sprintId)
+            {
+                SetQuery(x => x.WorkspaceId == workspaceId &&
+                    (!x.UserTasks.Any() || x.UserTasks.All(y => y.IsUserDeleted == true)) &&
+                    x.SprintId == sprintId);
+            }
+
             public UnassignedTaskList(int workspaceId)
             {
+                SetQuery(x => x.WorkspaceId == workspaceId &&
+                    (!x.UserTasks.Any() || x.UserTasks.All(y => y.IsUserDeleted == true)));
+            }
+
+            private void SetQuery(Expression<Func<WorkspaceTask, bool>> whereCriteria)
+            {
                 Query
-                    .Select(x => new Tuple<int, WorkspaceTask, int, int, string>(
-                        x.StatusId,
-                        x,
-                        x.Comments.Count,
-                        x.UserTasks.Count,
-                        x.TaskCreator.UserName))
-                    .Where(x => x.WorkspaceId == workspaceId && (!x.UserTasks.Any() || x.UserTasks.All(y => y.IsUserDeleted == true)))
-                    .OrderBy(x => x.StatusId);
+                   .Select(x => new Tuple<int, WorkspaceTask, int, int, string>(
+                       x.StatusId,
+                       x,
+                       x.Comments.Count,
+                       x.UserTasks.Count,
+                       x.TaskCreator.UserName))
+                   .Where(whereCriteria)
+                   .OrderBy(x => x.StatusId);
             }
         }
 
@@ -31,6 +49,98 @@ namespace Provis.Core.Entities.WorkspaceTaskEntity
                     .Include(p => p.UserTasks
                         .Where(x => !x.IsUserDeleted))
                         .ThenInclude(x => x.User);
+            }
+        }
+
+        internal class GetSprintIdOfTask : Specification<WorkspaceTask, WorkspaceTask>
+        {
+            public GetSprintIdOfTask(int workspaceId)
+            {
+                Query
+                    .Select(x => new WorkspaceTask()
+                    {
+                        Id = x.Id,
+                        SprintId = x.SprintId
+                    })
+                    .Where(x=>x.WorkspaceId == workspaceId);
+            }
+        }
+
+        internal class TaskByUser : Specification<WorkspaceTask, EventDTO>
+        {
+            public TaskByUser(string userId, int workspaceId)
+            {
+                Query
+                    .Select(x => new EventDTO()
+                    {
+                        EventDay = x.DateOfEnd.UtcDateTime,
+                        Status = CalendarStatuses.TaskDeadline
+                    })
+                    .Include(x => x.UserTasks)
+                    .Where(p => p.WorkspaceId == workspaceId &&
+                        p.DateOfEnd.Month == DateTime.UtcNow.Month &&
+                        p.TaskCreatorId == userId);
+            }
+        }
+
+        internal class TaskDayByUser : Specification<WorkspaceTask, EventDayDTO>
+        {
+            public TaskDayByUser(string userId, int workspaceId, DateTimeOffset dateTime)
+            {
+                Query
+                    .Select(x => new EventDayDTO()
+                    {
+                        Status = CalendarStatuses.TaskDeadline,
+                        Name = x.Name,
+                        DateOfStart = x.DateOfEnd.UtcDateTime,
+                        DateOfEnd = null,
+                        AssignedUsers = x.UserTasks.Select(y => new UserCalendarInfoDTO()
+                        {
+                            UserId = y.UserId,
+                            UserName = y.User.UserName
+                        }).ToList()
+                    })
+                    .Include(x => x.UserTasks)
+                    .Where(p => p.WorkspaceId == workspaceId &&
+                        p.DateOfEnd.Date == dateTime.Date &&
+                        p.TaskCreatorId == userId);
+            }
+        }
+
+        internal class AllWorkspaceTasks : Specification<WorkspaceTask, EventDTO>
+        {
+            public AllWorkspaceTasks(int workspaceId)
+            {
+                Query
+                    .Select(x => new EventDTO()
+                    {
+                        EventDay = x.DateOfEnd.UtcDateTime,
+                        Status = CalendarStatuses.TaskDeadline
+                    })
+                    .Where(p => p.WorkspaceId == workspaceId &&
+                        p.DateOfEnd.Month == DateTime.UtcNow.Month);
+            }
+        }
+
+        internal class AllWorkspaceDayTasks : Specification<WorkspaceTask, EventDayDTO>
+        {
+            public AllWorkspaceDayTasks(int workspaceId, DateTimeOffset dateTime)
+            {
+                Query
+                    .Select(x => new EventDayDTO()
+                    {
+                        Status = CalendarStatuses.TaskDeadline,
+                        Name = x.Name,
+                        DateOfStart = x.DateOfEnd.UtcDateTime,
+                        DateOfEnd = null,
+                        AssignedUsers = x.UserTasks.Select(y => new UserCalendarInfoDTO()
+                        {
+                            UserId = y.UserId,
+                            UserName = y.User.UserName
+                        }).ToList()
+                    })
+                    .Where(p => p.WorkspaceId == workspaceId &&
+                        p.DateOfEnd.Date == dateTime.Date);
             }
         }
     }

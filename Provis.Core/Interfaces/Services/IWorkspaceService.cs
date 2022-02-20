@@ -12,7 +12,7 @@ namespace Provis.Core.Interfaces.Services
         Task<List<WorkspaceInfoDTO>> GetWorkspaceListAsync(string userid);
         Task SendInviteAsync(WorkspaceInviteUserDTO inviteUser, string userId);
         Task<WorkspaceChangeRoleDTO> ChangeUserRoleAsync(string userId, WorkspaceChangeRoleDTO userChangeRole);
-        Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceDTO, string userId);
+        Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceDTO);
         Task<WorkspaceInfoDTO> GetWorkspaceInfoAsync(int id, string userId);
         Task<WorkspaceDescriptionDTO> GetWorkspaceDescriptionAsync(int workspaceId);
         Task<List<WorkspaceInviteInfoDTO>> GetWorkspaceActiveInvitesAsync(int id, string userId);
@@ -21,6 +21,7 @@ namespace Provis.Core.Interfaces.Services
         Task CancelInviteAsync(int id, int workspaceId, string userId);
         Task<List<WorkspaceRoleDTO>> GetAllowedRoles();
         Task<List<WorkspaceDetailMemberDTO>> GetDetailMemberAsyns(int workspaceId);
+        Task SetUsingSprintsAsync(int workspaceId, bool isUseSptints);
     }
 }
 

@@ -23,6 +23,7 @@ using App.Metrics;
 using Provis.Core.Metrics;
 using System.Net;
 using Provis.Core.Resources;
+using Microsoft.EntityFrameworkCore;
 
 namespace Provis.Core.Services
 {
@@ -39,8 +40,9 @@ namespace Provis.Core.Services
         protected readonly IMapper _mapper;
         protected readonly RoleAccess _roleAccess;
         protected readonly ITemplateService _templateService;
-        protected readonly ClientUrl _clientUrl;
+        protected readonly IOptions<ClientUrl> _clientUrl;
         private readonly IMetrics _metrics;
+        private readonly ISprintService _sprintService;
 
         public WorkspaceService(IRepository<User> user,
             UserManager<User> userManager,
@@ -54,7 +56,8 @@ namespace Provis.Core.Services
             RoleAccess roleAccess,
             ITemplateService templateService,
             IOptions<ClientUrl> options,
-            IMetrics metrics)
+            IMetrics metrics,
+            ISprintService sprintService)
         {
             _userRepository = user;
             _userManager = userManager;
@@ -67,14 +70,13 @@ namespace Provis.Core.Services
             _userRoleRepository = userRoleRepository;
             _templateService = templateService;
             _userTaskRepository = userTasksRepository;
-            _clientUrl = options.Value;
+            _clientUrl = options;
             _metrics = metrics;
+            _sprintService = sprintService;
         }
         public async Task CreateWorkspaceAsync(WorkspaceCreateDTO workspaceDTO, string userid)
         {
-            var user = await _userManager.FindByIdAsync(userid);
-
-            Workspace workspace = new Workspace()
+            Workspace workspace = new()
             {
                 DateOfCreate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero),
                 Name = workspaceDTO.Name,
@@ -83,9 +85,9 @@ namespace Provis.Core.Services
             await _workspaceRepository.AddAsync(workspace);
             await _workspaceRepository.SaveChangesAsync();
 
-            UserWorkspace userWorkspace = new UserWorkspace()
+            UserWorkspace userWorkspace = new()
             {
-                UserId = user.Id,
+                UserId = userid,
                 WorkspaceId = workspace.Id,
                 RoleId = (int)WorkSpaceRoles.OwnerId
             };
@@ -99,7 +101,7 @@ namespace Provis.Core.Services
             await Task.CompletedTask;
         }
 
-        public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO, string userId)
+        public async Task UpdateWorkspaceAsync(WorkspaceUpdateDTO workspaceUpdateDTO)
         {
             var workspaceRec = await _workspaceRepository.GetByKeyAsync(workspaceUpdateDTO.WorkspaceId);
             workspaceRec.WorkspaceNullChecking();
@@ -130,18 +132,19 @@ namespace Provis.Core.Services
             workspace.WorkspaceNullChecking();
 
             var inviteUserListSpecification = new InviteUsers.InviteList(inviteUser.Id, workspace.Id);
-            if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x=>x.IsConfirm == null))
-            {
-                throw new HttpException(HttpStatusCode.BadRequest,
-                    ErrorMessages.UserAlreadyHasInvite);
-            }
-
             var userWorkspaceInviteSpecification = new UserWorkspaces.WorkspaceMember(inviteUser.Id, workspace.Id);
+
             if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x => x.IsConfirm.Value == true)
                 && await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspaceInviteSpecification) != null)
             {
                 throw new HttpException(HttpStatusCode.BadRequest,
                     ErrorMessages.UserAcceptedInvite);
+            }
+
+            if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x=>x.IsConfirm == null))
+            {
+                throw new HttpException(HttpStatusCode.BadRequest,
+                    ErrorMessages.UserAlreadyHasInvite);
             }
 
             InviteUser user = new InviteUser
@@ -166,7 +169,7 @@ namespace Provis.Core.Services
                         Owner = owner.UserName,
                         WorkspaceName = workspace.Name,
                         UserName = inviteUser.UserName,
-                        Uri = _clientUrl.ApplicationUrl
+                        Uri = _clientUrl.Value.ApplicationUrl
                     })
             });
 
@@ -220,7 +223,7 @@ namespace Provis.Core.Services
 
             inviteUserRec.IsConfirm = true;
 
-            var userTaskSpecification = new UserTasks.UserTaskList(userid, inviteUserRec.WorkspaceId);
+            var userTaskSpecification = new UserTasks.UserTaskList(userid, inviteUserRec.WorkspaceId, null);
             var userTasks = await _userTaskRepository.GetListBySpecAsync(userTaskSpecification);
 
             if (userTasks != null)
@@ -252,8 +255,6 @@ namespace Provis.Core.Services
             var modifierSpecification = new UserWorkspaces.WorkspaceMember(userId, userChangeRole.WorkspaceId);
             var modifier = await _userWorkspaceRepository.GetFirstBySpecAsync(modifierSpecification);
 
-            modifier.User.UserNullChecking();
-
             var targetSpecification = new UserWorkspaces.WorkspaceMember(userChangeRole.UserId, userChangeRole.WorkspaceId);
             var target = await _userWorkspaceRepository.GetFirstBySpecAsync(targetSpecification);
 
@@ -268,14 +269,23 @@ namespace Provis.Core.Services
                     .Any(p => p == (WorkSpaceRoles)userChangeRole.RoleId)
                 )
             {
+                try
+                {
+                    target.RoleId = userChangeRole.RoleId;
+                    await _userWorkspaceRepository.SetOriginalRowVersion(target, userChangeRole.RowVersion);
+                    await _userWorkspaceRepository.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
+                }
+
                 _metrics.Measure.Counter.Decrement(WorkspaceMetrics.MembersCountByWorkspaceRole,
                     MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, target.RoleId));
 
                 _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
                     MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, userChangeRole.RoleId));
 
-                target.RoleId = userChangeRole.RoleId;
-                await _userWorkspaceRepository.SaveChangesAsync();
                 return _mapper.Map<WorkspaceChangeRoleDTO>(target);
             }
             else
@@ -335,14 +345,13 @@ namespace Provis.Core.Services
             var userWorkspSpecification = new UserWorkspaces.WorkspaceMember(userId, workspaceId);
             var userWorksp = await _userWorkspaceRepository.GetFirstBySpecAsync(userWorkspSpecification);
 
-
             if (userWorksp.RoleId == (int)WorkSpaceRoles.OwnerId)
             {
                 throw new HttpException(HttpStatusCode.NotFound,
                     ErrorMessages.OwnerCannotLeaveWorkspace);
             }
 
-            var userTaskSpecification = new UserTasks.UserTaskList(userId, workspaceId);
+            var userTaskSpecification = new UserTasks.UserTaskList(userId, workspaceId, null);
             var userTasks = await _userTaskRepository.GetListBySpecAsync(userTaskSpecification);
 
             if (userTasks != null)
@@ -404,6 +413,15 @@ namespace Provis.Core.Services
             var memberListToReturn = _mapper.Map<List<WorkspaceDetailMemberDTO>>(memberList);
 
             return memberListToReturn;
+        }
+
+        public async Task SetUsingSprintsAsync(int workspaceId, bool isUseSptints)
+        {
+            var workspace = await _workspaceRepository.GetByKeyAsync(workspaceId);
+            workspace.isUseSprints = isUseSptints;
+
+            await _workspaceRepository.UpdateAsync(workspace);
+            await _workspaceRepository.SaveChangesAsync();
         }
     }
 }

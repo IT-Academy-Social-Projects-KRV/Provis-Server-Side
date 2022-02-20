@@ -1,7 +1,9 @@
 ﻿using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Entities.UserEntity;
+using Provis.Core.Entities.CommentAttachmentEntity;
 using Provis.Core.Interfaces;
 using System;
+using System.Collections.Generic;
 
 namespace Provis.Core.Entities.CommentEntity
 {
@@ -17,5 +19,6 @@ namespace Provis.Core.Entities.CommentEntity
 
         public string UserId { get; set; }
         public User User { get; set; }
+        public List<CommentAttachment> Attachments { get; set; } = new List<CommentAttachment>();
     }
 }

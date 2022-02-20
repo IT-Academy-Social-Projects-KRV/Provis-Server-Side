@@ -12,6 +12,7 @@ namespace Provis.Core.DTO.TaskDTO
         public int WorkspaceId { get; set; }
         public int StatusId { get; set; }
         public int? StoryPoints { get; set; }
+        public int? SprintId { get; set; }
         public List<UserAssignedOnTaskDTO>  AssignedUsers { get; set; }
     }
 }
