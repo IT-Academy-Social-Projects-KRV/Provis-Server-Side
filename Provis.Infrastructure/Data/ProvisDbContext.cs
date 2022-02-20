@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Provis.Core.Entities.CommentEntity;
+using Provis.Core.Entities.CommentAttachmentEntity;
 using Provis.Core.Entities.EventEntity;
 using Provis.Core.Entities.InviteUserEntity;
 using Provis.Core.Entities.RefreshTokenEntity;
@@ -32,6 +33,7 @@ namespace Provis.Infrastructure.Data
             base.OnModelCreating(modelBuilder);
 
             modelBuilder.ApplyConfiguration(new CommentConfiguration());
+            modelBuilder.ApplyConfiguration(new CommentAttachmentConfiguration());
             modelBuilder.ApplyConfiguration(new InviteUserConfiguration());
             modelBuilder.ApplyConfiguration(new RefreshTokenConfiguration());
             modelBuilder.ApplyConfiguration(new RoleConfiguration());
@@ -62,6 +64,7 @@ namespace Provis.Infrastructure.Data
         public DbSet<Workspace> Workspaces { get; set; }
         public DbSet<WorkspaceTask> Tasks { get; set; }
         public DbSet<WorkspaceTaskAttachment> TaskAttachments { get; set; }
+        public DbSet<CommentAttachment> CommentAttachments { get; set; }
         public DbSet<Sprint> Sprints { get; set; }
         public DbSet<Event> Events { get; set; }
         public DbSet<UserEvent> UserEvents { get; set; }

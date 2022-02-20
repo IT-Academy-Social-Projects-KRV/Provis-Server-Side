@@ -52,7 +52,7 @@ namespace Provis.Core.Services
         protected readonly IRepository<Comment> _commentRepository;
         protected readonly IMapper _mapper;
         private readonly IFileService _fileService;
-        private readonly IOptions<TaskAttachmentSettings> _attachmentSettings;
+        private readonly IOptions<AttachmentSettings> _attachmentSettings;
         private readonly IOptions<ClientUrl> _clientUrl;
         private readonly IEmailSenderService _emailSenderService;
         private readonly IMetrics _metrics;
@@ -70,7 +70,7 @@ namespace Provis.Core.Services
             IRepository<WorkspaceTaskAttachment> taskAttachmentRepository,
             IRepository<Comment> commentRepository,
             IFileService fileService,
-            IOptions<TaskAttachmentSettings> attachmentSettings,
+            IOptions<AttachmentSettings> attachmentSettings,
             UserManager<User> userManager,
             IOptions<ClientUrl> options,
             IEmailSenderService emailSenderService,
@@ -105,6 +105,7 @@ namespace Provis.Core.Services
             task.TaskNullChecking();
 
             var fromStatus = (TaskStatuses)task.StatusId;
+            var currentStatusId = task.StatusId;
 
             if (task.StatusId != changeTaskStatus.StatusId)
             {
@@ -118,7 +119,7 @@ namespace Provis.Core.Services
                 }
                 catch(DbUpdateConcurrencyException)
                 {
-                    throw new HttpException(HttpStatusCode.Conflict, ErrorMessages.ConcurrencyCheck);
+                    throw new TaskStatusRowVersionException(currentStatusId, task.RowVersion);
                 }
 
                 var user = await _userRepository.GetByKeyAsync(userId);
@@ -437,7 +438,7 @@ namespace Provis.Core.Services
             var specification = new WorkspaceTaskAttachments.TaskAttachments(taskId);
             var listAttachments = await _taskAttachmentRepository.GetListBySpecAsync(specification);
 
-            var listToReturn = listAttachments.Select(x => _mapper.Map<TaskAttachmentInfoDTO>(x)).ToList();
+            var listToReturn = _mapper.Map<List<TaskAttachmentInfoDTO>>(listAttachments);
             var provider = new FileExtensionContentTypeProvider();
             foreach (var item in listToReturn)
             {

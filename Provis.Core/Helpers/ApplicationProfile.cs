@@ -15,9 +15,9 @@ using Provis.Core.Entities.UserWorkspaceEntity;
 using Provis.Core.Entities.WorkspaceEntity;
 using Provis.Core.Entities.WorkspaceTaskEntity;
 using Provis.Core.Entities.WorkspaceTaskAttachmentEntity;
+using Provis.Core.Entities.CommentAttachmentEntity;
 using System.IO;
 using Provis.Core.Entities.CommentEntity;
-using Provis.Core.DTO.CommentDTO;
 using Provis.Core.DTO.CommentsDTO;
 using System;
 using Provis.Core.Entities.SprintEntity;
@@ -175,6 +175,9 @@ namespace Provis.Core.Helpers
             CreateMap<WorkspaceTaskAttachment, TaskAttachmentInfoDTO>()
                 .ForMember(x => x.Name, act => act.MapFrom(srs=> Path.GetFileName(srs.AttachmentPath)));
 
+            CreateMap<CommentAttachment, CommentAttachmentInfoDTO>()
+                .ForMember(x => x.Name, act => act.MapFrom(srs => Path.GetFileName(srs.AttachmentPath)));
+
             CreateMap<UserTask, TaskAssignedUsersDTO>()
                 .ForMember(x => x.UserName, act => act.MapFrom(srs => srs.User.UserName))
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
@@ -214,12 +217,9 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.UserId, act => act.MapFrom(srs => srs.UserId))
                 .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.RowVersion));
                 
-            CreateMap<EventCreateDTO, Event>()
-                .ForMember(x => x.EventName, act => act.MapFrom(srs => srs.EventName))
-                .ForMember(x => x.EventMessage, act => act.MapFrom(srs => srs.EventMessage))
-                .ForMember(x => x.DateOfStart, act => act.MapFrom(srs => srs.DateOfStart))
-                .ForMember(x => x.DateOfEnd, act => act.MapFrom(srs => srs.DateOfEnd))
-                .ForMember(x => x.WorkspaceId, act => act.MapFrom(srs => srs.WorkspaceId));
+            CreateMap<EventCreateDTO, Event>();
+            CreateMap<Event, EventGetInfoDTO>();
+            CreateMap<EventEditDTO, Event>();
         }
     }
 }

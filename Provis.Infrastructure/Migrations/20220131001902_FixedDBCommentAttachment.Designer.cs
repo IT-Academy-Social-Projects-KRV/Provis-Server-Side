@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Provis.Infrastructure.Data;
 
 namespace Provis.Infrastructure.Migrations
 {
     [DbContext(typeof(ProvisDbContext))]
-    partial class ProvisDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220131001902_FixedDBCommentAttachment")]
+    partial class FixedDBCommentAttachment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -202,47 +204,6 @@ namespace Provis.Infrastructure.Migrations
                     b.ToTable("Comments");
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.EventEntity.Event", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("CreatorId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTimeOffset?>("DateOfEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset>("DateOfStart")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("EventMessage")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<string>("EventName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("IsCreatorExist")
-                        .HasColumnType("bit");
-
-                    b.Property<int>("WorkspaceId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CreatorId");
-
-                    b.HasIndex("WorkspaceId");
-
-                    b.ToTable("Events");
-                });
-
             modelBuilder.Entity("Provis.Core.Entities.InviteUserEntity.InviteUser", b =>
                 {
                     b.Property<int>("Id")
@@ -340,38 +301,6 @@ namespace Provis.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.SprintEntity.Sprint", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<DateTimeOffset?>("DateOfEnd")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("DateOfStart")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("WorkspaceId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("WorkspaceId");
-
-                    b.ToTable("Sprints");
-                });
-
             modelBuilder.Entity("Provis.Core.Entities.StatusEntity.Status", b =>
                 {
                     b.Property<int>("Id")
@@ -449,9 +378,6 @@ namespace Provis.Infrastructure.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<DateTimeOffset?>("BirthDate")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
@@ -527,21 +453,6 @@ namespace Provis.Infrastructure.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.UserEventsEntity.UserEvent", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("EventId")
-                        .HasColumnType("int");
-
-                    b.HasKey("UserId", "EventId");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("UserEvents");
-                });
-
             modelBuilder.Entity("Provis.Core.Entities.UserRoleTagEntity.UserRoleTag", b =>
                 {
                     b.Property<int>("Id")
@@ -587,11 +498,6 @@ namespace Provis.Infrastructure.Migrations
                     b.Property<bool>("IsUserDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
                     b.Property<int>("UserRoleTagId")
                         .HasColumnType("int");
 
@@ -614,11 +520,6 @@ namespace Provis.Infrastructure.Migrations
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
 
                     b.HasKey("UserId", "WorkspaceId");
 
@@ -646,9 +547,6 @@ namespace Provis.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<bool>("isUseSprints")
-                        .HasColumnType("bit");
 
                     b.HasKey("Id");
 
@@ -696,14 +594,6 @@ namespace Provis.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("SprintId")
-                        .HasColumnType("int");
-
-                    b.Property<byte[]>("RowVersion")
-                        .IsConcurrencyToken()
-                        .ValueGeneratedOnAddOrUpdate()
-                        .HasColumnType("rowversion");
-
                     b.Property<int>("StatusId")
                         .HasColumnType("int");
 
@@ -718,8 +608,6 @@ namespace Provis.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("SprintId");
 
                     b.HasIndex("StatusId");
 
@@ -811,25 +699,6 @@ namespace Provis.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.EventEntity.Event", b =>
-                {
-                    b.HasOne("Provis.Core.Entities.UserEntity.User", "User")
-                        .WithMany("Events")
-                        .HasForeignKey("CreatorId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Provis.Core.Entities.WorkspaceEntity.Workspace", "Workspace")
-                        .WithMany("Events")
-                        .HasForeignKey("WorkspaceId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("User");
-
-                    b.Navigation("Workspace");
-                });
-
             modelBuilder.Entity("Provis.Core.Entities.InviteUserEntity.InviteUser", b =>
                 {
                     b.HasOne("Provis.Core.Entities.UserEntity.User", "FromUser")
@@ -868,17 +737,6 @@ namespace Provis.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Provis.Core.Entities.SprintEntity.Sprint", b =>
-                {
-                    b.HasOne("Provis.Core.Entities.WorkspaceEntity.Workspace", "Workspace")
-                        .WithMany("Sprints")
-                        .HasForeignKey("WorkspaceId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Workspace");
-                });
-
             modelBuilder.Entity("Provis.Core.Entities.StatusHistoryEntity.StatusHistory", b =>
                 {
                     b.HasOne("Provis.Core.Entities.StatusEntity.Status", "Status")
@@ -901,25 +759,6 @@ namespace Provis.Infrastructure.Migrations
                     b.Navigation("Status");
 
                     b.Navigation("Task");
-
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("Provis.Core.Entities.UserEventsEntity.UserEvent", b =>
-                {
-                    b.HasOne("Provis.Core.Entities.EventEntity.Event", "Event")
-                        .WithMany("UserEvents")
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Provis.Core.Entities.UserEntity.User", "User")
-                        .WithMany("UserEvents")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
 
                     b.Navigation("User");
                 });
@@ -991,10 +830,6 @@ namespace Provis.Infrastructure.Migrations
 
             modelBuilder.Entity("Provis.Core.Entities.WorkspaceTaskEntity.WorkspaceTask", b =>
                 {
-                    b.HasOne("Provis.Core.Entities.SprintEntity.Sprint", "Sprint")
-                        .WithMany("Tasks")
-                        .HasForeignKey("SprintId");
-
                     b.HasOne("Provis.Core.Entities.StatusEntity.Status", "Status")
                         .WithMany("Tasks")
                         .HasForeignKey("StatusId")
@@ -1013,8 +848,6 @@ namespace Provis.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Sprint");
-
                     b.Navigation("Status");
 
                     b.Navigation("TaskCreator");
@@ -1026,20 +859,10 @@ namespace Provis.Infrastructure.Migrations
                 {
                     b.Navigation("Attachments");
                 });
-                
-            modelBuilder.Entity("Provis.Core.Entities.EventEntity.Event", b =>
-                {
-                    b.Navigation("UserEvents");
-                });
 
             modelBuilder.Entity("Provis.Core.Entities.RoleEntity.Role", b =>
                 {
                     b.Navigation("UserWorkspaces");
-                });
-
-            modelBuilder.Entity("Provis.Core.Entities.SprintEntity.Sprint", b =>
-                {
-                    b.Navigation("Tasks");
                 });
 
             modelBuilder.Entity("Provis.Core.Entities.StatusEntity.Status", b =>
@@ -1053,8 +876,6 @@ namespace Provis.Infrastructure.Migrations
                 {
                     b.Navigation("Comments");
 
-                    b.Navigation("Events");
-
                     b.Navigation("Invites");
 
                     b.Navigation("MyInvites");
@@ -1064,8 +885,6 @@ namespace Provis.Infrastructure.Migrations
                     b.Navigation("StatusHistories");
 
                     b.Navigation("Tasks");
-
-                    b.Navigation("UserEvents");
 
                     b.Navigation("UserTasks");
 
@@ -1079,11 +898,7 @@ namespace Provis.Infrastructure.Migrations
 
             modelBuilder.Entity("Provis.Core.Entities.WorkspaceEntity.Workspace", b =>
                 {
-                    b.Navigation("Events");
-
                     b.Navigation("InviteUsers");
-
-                    b.Navigation("Sprints");
 
                     b.Navigation("Tasks");
 

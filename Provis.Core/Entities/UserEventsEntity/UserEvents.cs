@@ -50,5 +50,19 @@ namespace Provis.Core.Entities.UserEventsEntity
                         c.UserId == userId);
             }
         }
+
+        internal class GetUsersOnEvent : Specification<UserEvent, UserCalendarInfoDTO>
+        {
+            public GetUsersOnEvent(int eventId)
+            {
+                Query
+                    .Select(x => new UserCalendarInfoDTO()
+                    {
+                        UserId = x.UserId,
+                        UserName = x.User.UserName
+                    })
+                    .Where(c => c.EventId == eventId);
+            }
+        }
     }
 }

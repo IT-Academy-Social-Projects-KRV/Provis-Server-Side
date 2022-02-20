@@ -1,7 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
-using Provis.Core.DTO.TaskDTO;
+using Provis.Core.DTO.CommentsDTO;
 using Provis.Core.Helpers;
 using System;
 using System.Collections.Generic;
@@ -9,15 +9,15 @@ using System.Linq;
 
 namespace Provis.Core.Validation
 {
-    public class TaskAttachmentValidation : AbstractValidator<TaskAttachmentsDTO>
+    public class CommentAttachmentValidation : AbstractValidator<CommentAttachmentsDTO>
     {
         private readonly IOptions<AttachmentSettings> options;
 
-        public TaskAttachmentValidation(IOptions<AttachmentSettings> options)
+        public CommentAttachmentValidation(IOptions<AttachmentSettings> options)
         {
             this.options = options;
 
-            RuleFor(x => x.TaskId)
+            RuleFor(x => x.CommentId)
                 .NotNull()
                 .NotEmpty();
 
@@ -41,14 +41,14 @@ namespace Provis.Core.Validation
         }
 
         private bool IsTaskAttachment(IFormFile attachment)
-        {            
+        {
             var type = attachment.ContentType.Split("/");
 
             return !(options.Value.SubtypesBlackList.Contains(type[1]));
         }
 
         private bool CheckSize(IFormFile attachment)
-        {  
+        {
             return attachment.Length <= options.Value.MaxSize * 1024 * 1024;
         }
     }

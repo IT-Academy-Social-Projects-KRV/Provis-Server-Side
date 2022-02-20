@@ -33,6 +33,12 @@ namespace Provis.Infrastructure.Data.Repositories
             return await _dbSet.FindAsync(key);
         }
 
+        public async Task<TEntity> GetByPairOfKeysAsync<TFirstKey, TSecondKey>
+            (TFirstKey firstKey, TSecondKey secondKey)
+        {
+            return await _dbSet.FindAsync(firstKey, secondKey);
+        }
+
         public async Task<TEntity> AddAsync(TEntity entity)
         {
             return (await _dbSet.AddAsync(entity)).Entity;
