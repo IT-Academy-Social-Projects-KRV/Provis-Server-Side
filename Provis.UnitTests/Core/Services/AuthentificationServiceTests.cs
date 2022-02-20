@@ -86,7 +86,7 @@ namespace Provis.UnitTests.Core.Services
         {
             var userMock = UserTestData.GetTestUser();
             string userPassword = "Password_1";
-            IList<string> list = new List<string>() { "ssss" };
+            IList<string> list = new List<string>() { "Invalid provider" };
 
             SetupFindByEmailAsync(userMock.Email, userMock);
             SetupCheckPasswordAsync(userMock, userPassword);
@@ -448,7 +448,6 @@ namespace Provis.UnitTests.Core.Services
         {
             _emailSenderServiceMock
                 .Setup(x => x.SendEmailAsync(It.IsAny<MailRequest>()))
-                .Returns(Task.CompletedTask)
                 .Verifiable();
         }
 
