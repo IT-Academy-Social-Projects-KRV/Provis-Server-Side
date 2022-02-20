@@ -25,9 +25,9 @@ namespace Provis.WebApi.Controllers
         [Authorize]
         [HttpPut]
         [Route("status")]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
-            WorkSpaceRoles.OwnerId, 
-            WorkSpaceRoles.ManagerId, 
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId })]
         public async Task<IActionResult> ChangeTaskStatusAsync(TaskChangeStatusDTO changeTaskStatus)
         {
@@ -38,9 +38,9 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
-            WorkSpaceRoles.OwnerId, 
-            WorkSpaceRoles.ManagerId, 
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId })]
         [Route("task")]
         public async Task<IActionResult> AddTaskAsync([FromBody] TaskCreateDTO createDTO)
@@ -95,9 +95,9 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPut]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
-            WorkSpaceRoles.OwnerId, 
-            WorkSpaceRoles.ManagerId, 
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId })]
         [Route("task")]
         public async Task<IActionResult> ChangeTaskAsync([FromBody] TaskChangeInfoDTO taskChangeInfoDTO)
@@ -133,9 +133,9 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
+        [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId })]
         [Route("task/{taskId}/workspace/{workspaceId}/attachments")]
         public async Task<IActionResult> GetTaskAttachmentsAsync(int taskId)
@@ -147,9 +147,9 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpGet]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
+        [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId })]
         [Route("task/workspace/{workspaceId}/attachment/{attachmentId}")]
         public async Task<IActionResult> GetTaskAttachmentAsync(int attachmentId)
@@ -173,9 +173,9 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpDelete]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
+        [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId })]
         [Route("task/workspace/{workspaceId}/attachment/{attachmentId}")]
         public async Task<IActionResult> DeleteTaskAttachmentAsync(int attachmentId)
@@ -187,9 +187,9 @@ namespace Provis.WebApi.Controllers
 
         [Authorize]
         [HttpPost]
-        [WorkspaceRoles(new WorkSpaceRoles[] { 
+        [WorkspaceRoles(new WorkSpaceRoles[] {
             WorkSpaceRoles.OwnerId,
-            WorkSpaceRoles.ManagerId, 
+            WorkSpaceRoles.ManagerId,
             WorkSpaceRoles.MemberId })]
         [Route("task/attachments")]
         public async Task<IActionResult> SendTaskAttachmentsAsync([FromForm] TaskAttachmentsDTO taskAttachmentsDTO)
@@ -233,6 +233,20 @@ namespace Provis.WebApi.Controllers
         public async Task<IActionResult> DeleteTaskAsync(int taskId, int workspaceId)
         {
             await _taskService.DeleteTaskAsync(workspaceId, taskId, UserId);
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpPut]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("{taskId}/workspace/{workspaceId}")]
+        public async Task<IActionResult> MoveTaskToSprintAsync([FromRoute] int taskId,
+            [FromRoute] int workspaceId,
+            [FromBody] ChangeSprintForTaskDTO changeSprintForTask)
+        {
+            await _taskService.MoveTaskToSprint(taskId, workspaceId, changeSprintForTask.SprintId);
 
             return Ok();
         }

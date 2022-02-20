@@ -222,6 +222,9 @@
   <data name="SendInviteYourself" xml:space="preserve">
     <value>You cannot send invite to your account</value>
   </data>
+  <data name="SprintIsNotInWorkspace" xml:space="preserve">
+    <value>The sprint is not in the workspace</value>
+  </data>
   <data name="SprintNotFound" xml:space="preserve">
     <value>Sprint not found</value>
   </data>
