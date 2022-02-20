@@ -45,7 +45,8 @@ namespace Provis.WebApi.Controllers
                 UserName = regDTO.Username,
                 Surname = regDTO.Surname,
                 Name = regDTO.Name,
-                Email = regDTO.Email
+                Email = regDTO.Email,
+                BirthDate = regDTO.BirthDay
             };
 
             await authenticationService.RegistrationAsync(user, regDTO.Password, SystemRoles.User);
@@ -72,7 +73,7 @@ namespace Provis.WebApi.Controllers
         }
 
         [HttpGet]
-        [Route("forgot-password/{email}")]
+        [Route("password/{email}")]
         public async Task<IActionResult> SentResetPasswordTokenAsync(string email)
         {
             await authenticationService.SentResetPasswordTokenAsync(email);
@@ -80,8 +81,8 @@ namespace Provis.WebApi.Controllers
             return Ok();
         }
 
-        [HttpPost]
-        [Route("reset-password")]
+        [HttpPut]
+        [Route("password")]
         public async Task<IActionResult> ResetPasswordAsync([FromBody] UserChangePasswordDTO userChangePasswordDTO)
         {
             await authenticationService.ResetPasswordAsync(userChangePasswordDTO);

@@ -77,5 +77,73 @@ namespace Provis.WebApi.Controllers
 
             return Ok();
         }
+
+        [Authorize]
+        [HttpGet]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId })]
+        [Route("comment/{commentId}/workspace/{workspaceId}/attachments")]
+        public async Task<IActionResult> GetCommentAttachmentsAsync(int commentId)
+        {
+            var res = await _commentService.GetCommentAttachmentsAsync(commentId);
+
+            return Ok(res);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId })]
+        [Route("comment/workspace/{workspaceId}/attachment/{attachmentId}")]
+        public async Task<IActionResult> GetCommentAttachmentAsync(int attachmentId)
+        {
+            var file = await _commentService.GetCommentAttachmentAsync(attachmentId);
+
+            return File(file.Content, file.ContentType, file.Name);
+        }
+
+        [Authorize]
+        [HttpGet]
+        [WorkspaceRoles(new WorkSpaceRoles[] { WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId, WorkSpaceRoles.MemberId })]
+        [Route("comment/workspace/{workspaceId}/attachment/{attachmentId}/preview")]
+        public async Task<IActionResult> GetCommentAttachmentPreviewAsync(int attachmentId)
+        {
+            var file = await _commentService.GetCommentAttachmentPreviewAsync(attachmentId);
+
+            return File(file.Content, file.ContentType, file.Name);
+        }
+
+        [Authorize]
+        [HttpDelete]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId })]
+        [Route("comment/workspace/{workspaceId}/attachment/{attachmentId}")]
+        public async Task<IActionResult> DeleteCommentAttachmentAsync(int attachmentId)
+        {
+            await _commentService.DeleteCommentAttachmentAsync(attachmentId);
+
+            return Ok();
+        }
+
+        [Authorize]
+        [HttpPost]
+        [WorkspaceRoles(new WorkSpaceRoles[] {
+            WorkSpaceRoles.OwnerId,
+            WorkSpaceRoles.ManagerId,
+            WorkSpaceRoles.MemberId })]
+        [Route("comment/attachments")]
+        public async Task<IActionResult> SendCommentAttachmentsAsync([FromForm] CommentAttachmentsDTO commentAttachmentsDTO)
+        {
+            var result = await _commentService.SendCommentAttachmentsAsync(commentAttachmentsDTO);
+
+            return Ok(result);
+        }
     }
 }

@@ -25,7 +25,7 @@ namespace Provis.Core.Services
         protected readonly IEmailSenderService _emailSenderService;
         protected readonly IConfirmEmailService _confirmEmailService;
         protected readonly ITemplateService _templateService;
-        protected readonly ClientUrl _clientUrl;
+        protected readonly IOptions<ClientUrl> _clientUrl;
 
         public AuthenticationService(
             UserManager<User> userManager,
@@ -46,7 +46,7 @@ namespace Provis.Core.Services
             _emailSenderService = emailSenderService;
             _confirmEmailService = confirmEmailService;
             _templateService = templateService;
-            _clientUrl = options.Value;
+            _clientUrl = options;
         }
 
         public async Task<UserAutorizationDTO> LoginAsync(string email, string password)
@@ -113,7 +113,7 @@ namespace Provis.Core.Services
                 ToEmail = user.Email,
                 Subject = "Provis authentication code",
                 Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/TwoFactorCode",
-                    new UserToken() { Token = twoFactorToken, UserName = user.UserName, Uri = _clientUrl.ApplicationUrl })
+                    new UserToken() { Token = twoFactorToken, UserName = user.UserName, Uri = _clientUrl.Value.ApplicationUrl })
             };
 
             await _emailSenderService.SendEmailAsync(message);
@@ -146,8 +146,9 @@ namespace Provis.Core.Services
                 StringBuilder errorMessage = new StringBuilder();
                 foreach (var error in result.Errors)
                 {
-                    errorMessage.Append(error.ToString() + " ");
+                    errorMessage.Append(error.Description.ToString() + " ");
                 }
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, errorMessage.ToString());
             }
 
             var findRole = await _roleManager.FindByNameAsync(roleName);
@@ -214,7 +215,7 @@ namespace Provis.Core.Services
                 ToEmail = user.Email,
                 Subject = "Provis Reset Password",
                 Body = await _templateService.GetTemplateHtmlAsStringAsync("Mails/ResetPassword",
-                    new UserToken() { Token = encodedCode, UserName = user.UserName, Uri = _clientUrl.ApplicationUrl })
+                    new UserToken() { Token = encodedCode, UserName = user.UserName, Uri = _clientUrl.Value.ApplicationUrl })
             });
         }
 
@@ -229,7 +230,7 @@ namespace Provis.Core.Services
 
             if (!result.Succeeded)
             {
-                throw new HttpException(System.Net.HttpStatusCode.BadRequest, "Wrong code or this code is deprecated, try again!");
+                throw new HttpException(System.Net.HttpStatusCode.BadRequest, ErrorMessages.WrongResetPasswordCode);
             }
         }
     }

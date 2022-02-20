@@ -5,5 +5,6 @@ namespace Provis.Core.DTO.WorkspaceDTO
         public string Id { get; set; }
         public string UserName { get; set; }
         public int Role { get; set; }
+        public byte[] RowVersion { get; set; }
     }
 }

@@ -18,6 +18,10 @@ namespace Provis.Core.Entities.WorkspaceEntity
             builder
                 .Property(x => x.DateOfCreate)
                 .IsRequired();
+
+            builder
+                .Property(x => x.isUseSprints)
+                .IsRequired();
         }
     }
 }
