@@ -119,7 +119,8 @@ namespace Provis.Core.Helpers
                 .ForMember(x => x.StoryPoints, act => act.MapFrom(srs => srs.Item2.StoryPoints))
                 .ForMember(x => x.CommentCount, act => act.MapFrom(srs => srs.Item3))
                 .ForMember(x => x.MemberCount, act => act.MapFrom(src => src.Item4))
-                .ForMember(x => x.CreatorUsername, act => act.MapFrom(src => src.Item5));
+                .ForMember(x => x.CreatorUsername, act => act.MapFrom(src => src.Item5))
+                .ForMember(x => x.RowVersion, act => act.MapFrom(srs => srs.Item2.RowVersion));
 
             CreateMap<UserChangeInfoDTO, User>();
 
