@@ -46,6 +46,11 @@ namespace Provis.WebApi
             services.AddCors();
             services.AddMvcCore().AddRazorViewEngine();
             services.ConfigureClientApplicationUrl(Configuration);
+
+            services.Configure<IdentityOptions>(options =>
+            {
+                options.User.AllowedUserNameCharacters = null;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -141,7 +141,7 @@ namespace Provis.Core.Services
                     ErrorMessages.UserAcceptedInvite);
             }
 
-            if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x=>x.IsConfirm == null))
+            if (await _inviteUserRepository.AnyBySpecAsync(inviteUserListSpecification, x => x.IsConfirm == null))
             {
                 throw new HttpException(HttpStatusCode.BadRequest,
                     ErrorMessages.UserAlreadyHasInvite);

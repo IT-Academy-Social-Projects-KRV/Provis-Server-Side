@@ -258,7 +258,6 @@ namespace Provis.Core.Services
                         Name = payload.GivenName, Surname = payload.FamilyName,
                         CreateDate = new DateTimeOffset(DateTime.UtcNow, TimeSpan.Zero) };
                     await _userManager.CreateAsync(user);
-                    //prepare and send an email for the email confirmation
 
                     var findRole = await _roleManager.FindByNameAsync(SystemRoles.User);
 
