@@ -163,7 +163,7 @@ namespace Provis.Core.Services
                     MetricTagsConstructor.TaskCountByStatus(changeTaskStatus.WorkspaceId, changeTaskStatus.StatusId));
 
                 _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskCountByStatus,
-                    MetricTagsConstructor.TaskCountByStatus(task.WorkspaceId, task.StatusId));
+                    MetricTagsConstructor.TaskCountByStatus(task.WorkspaceId, currentStatusId));
 
                 await _statusHistoryRepository.AddAsync(statusHistory);
                 await _statusHistoryRepository.SaveChangesAsync();
