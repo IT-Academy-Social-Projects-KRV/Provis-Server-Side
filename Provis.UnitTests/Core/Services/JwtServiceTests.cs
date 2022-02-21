@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Moq;
 using NUnit.Framework;
@@ -21,14 +22,16 @@ namespace Provis.UnitTests.Core.Services
 
         protected Mock<IOptions<JwtOptions>> _jwtOptionsMock;
         protected Mock<UserManager<User>> _userManagerMock;
+        protected Mock<IConfiguration> _configurationMock;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
         {
             _jwtOptionsMock = new Mock<IOptions<JwtOptions>>();
             _userManagerMock = UserManagerMock.GetUserManager<User>();
+            _configurationMock = new Mock<IConfiguration>();
 
-            _jwtService = new JwtService(_jwtOptionsMock.Object, _userManagerMock.Object);
+            _jwtService = new JwtService(_jwtOptionsMock.Object, _userManagerMock.Object, _configurationMock.Object);
         }
 
         [Test]
