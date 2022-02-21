@@ -3,6 +3,7 @@ using App.Metrics.Counter;
 using Ardalis.Specification;
 using AutoMapper;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Options;
@@ -543,15 +544,15 @@ namespace Provis.UnitTests.Core.Services
         #endregion
 
         [Test]
-        [TestCase("2")]
+        [TestCase(2)]
         public async Task GetTaskAttachments_ContentTypeNotFound_ThrowHttpExeption(int taskId)
         {
-            var listAttachments = TaskAttachmentsList.Take(1).ToList();
-            var attachmentsListDTO = AttachmentInfoDTOs.Take(1).ToList();
+            var listAttachments = TaskAttachmentsList;
+            var attachmentsListDTO = AttachmentInfoDTOs;
             attachmentsListDTO[0].Name = "name";
 
             SetupAttachmentGetListBySpecAsync(listAttachments);
-            _mapperMock.SetupMap(listAttachments[0], attachmentsListDTO[0]);
+            _mapperMock.SetupMap(listAttachments, attachmentsListDTO);
 
             Func<Task> act = () => _taskService.GetTaskAttachmentsAsync(taskId);
             await act.Should()
@@ -561,14 +562,14 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase("2")]
+        [TestCase(2)]
         public async Task GetTaskAttachments_ThereIsAccessAndExistingData_ReturnTaskAttachmentInfoDTO(int taskId)
         {
-            var listAttachments = TaskAttachmentsList.Take(1).ToList();
-            var attachmentsListDTO = AttachmentInfoDTOs.Take(1).ToList();
+            var listAttachments = TaskAttachmentsList;
+            var attachmentsListDTO = AttachmentInfoDTOs;
 
             SetupAttachmentGetListBySpecAsync(listAttachments);
-            _mapperMock.SetupMap(listAttachments[0], attachmentsListDTO[0]);
+            _mapperMock.SetupMap(listAttachments, attachmentsListDTO);
 
             var result = await _taskService.GetTaskAttachmentsAsync(taskId);
 
@@ -646,7 +647,7 @@ namespace Provis.UnitTests.Core.Services
         [Test]
         public async Task SendTaskAttachments_AttachmentsMaxCount_ReturnHttpExeption()
         {
-            TaskAttachmentSettings taskAttachmentSettings = new();
+            AttachmentSettings taskAttachmentSettings = new();
             taskAttachmentSettings.MaxCount = 2;
 
             SetupAttachmentGetListBySpecAsync(TaskAttachmentsList);
@@ -657,27 +658,6 @@ namespace Provis.UnitTests.Core.Services
                 .ThrowAsync<HttpException>()
                 .Where(x => x.StatusCode == HttpStatusCode.BadRequest)
                 .WithMessage($"You have exceeded limit of {taskAttachmentSettings.MaxCount} attachments");
-        }
-
-        [Test]
-        public async Task SendTaskAttachments_AttachmentsSend_ReturnTaskAttachmentDTO()
-        {
-            var taskAttachmentsDTO = TaskAttachmentDTO;
-            var file = TaskAttachmentDTO.Attachment;
-            var folderPath = "file";
-            var path = "path";
-            var attachmentExpected = AttachmentExpected;
-            TaskAttachmentSettings taskAttachmentSettings = new();
-
-            SetupAddFileAsync(file.OpenReadStream(), folderPath, file.FileName, path);
-            SetupAddAttachmentAsync(It.IsAny<WorkspaceTaskAttachment>());
-            SetupAttachmentSaveChangesAsync();
-            SetupAttachmentOptions(taskAttachmentSettings);
-            _mapperMock.SetupMap(It.IsAny<WorkspaceTaskAttachment>(), attachmentExpected);
-
-            var res = await _taskService.SendTaskAttachmentsAsync(taskAttachmentsDTO);
-            res.Should().NotBeNull();
-            res.Should().BeEquivalentTo(attachmentExpected);
         }
 
         [Test]
@@ -738,6 +718,7 @@ namespace Provis.UnitTests.Core.Services
         [TestCase("1")]
         public async Task ChangeMemberRole_TaskNotFound_ReturnHttpExeption(string userId)
         {
+            SetupUserTaskGetFirstBySpecAsync(UserTask);
             SetupTaskGetFirstBySpecAsync(null);
 
             Func<Task> act = () => _taskService.ChangeMemberRoleAsync(ChangeRoleDTO, userId);
@@ -751,7 +732,6 @@ namespace Provis.UnitTests.Core.Services
         [TestCase("1")]
         public async Task ChangeMemberRole_UserNotFound_ReturnHttpExeption(string userId)
         {
-            SetupTaskGetFirstBySpecAsync(GetWorkspaceTask);
             SetupUserTaskGetFirstBySpecAsync(null);
 
             Func<Task> act = () => _taskService.ChangeMemberRoleAsync(ChangeRoleDTO, userId);
@@ -765,9 +745,9 @@ namespace Provis.UnitTests.Core.Services
         [TestCase("3")]
         public async Task ChangeMemberRole_UserNotPermission_ReturnHttpExeption(string userId)
         {
-            SetupTaskGetFirstBySpecAsync(GetWorkspaceTask);
+            SetupTaskGetFirstBySpecAsync(WithWorkspaceTask);
             SetupUserTaskGetFirstBySpecAsync(UserTask);
-            SetupUserWorkspaceGetFirstBySpecAsync(GetUserWorkspace);
+            SetupUserWorkspaceGetFirstBySpecAsync(WithUserWorkspace);
 
             Func<Task> act = () => _taskService.ChangeMemberRoleAsync(ChangeRoleDTO, userId);
             await act.Should()
@@ -780,12 +760,12 @@ namespace Provis.UnitTests.Core.Services
         [TestCase("1")]
         public async Task ChangeMemberRole_ThereIsAccessAndExistingData_ReturnTaskComplated(string userId)
         {
-            var task = GetWorkspaceTask;
+            var task = WithWorkspaceTask;
             task.TaskCreatorId = userId;
 
             SetupTaskGetFirstBySpecAsync(task);
             SetupUserTaskGetFirstBySpecAsync(UserTask);
-            SetupUserWorkspaceGetFirstBySpecAsync(GetUserWorkspace);
+            SetupUserWorkspaceGetFirstBySpecAsync(WithUserWorkspace);
             SetupMetricsDecrement();
             SetupMetricsIncrement();
             SetupUserTaskSaveChangesAsync();
@@ -802,9 +782,11 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(2, 2, "2")]
-        public async Task DeleteTask_TaskNotFound_ReturnHttpExeption(int workspaceId, int taskId, string userId)
+        public async Task DeleteTask_TaskNotFound_ReturnHttpExeption()
         {
+            int workspaceId = 2;
+            int taskId = 2;
+            string userId = "2";
             SetupTaskGetByKeyAsync(null);
 
             Func<Task> act = () => _taskService.DeleteTaskAsync(workspaceId, taskId, userId);
@@ -815,10 +797,13 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(2, 2, "1")]
-        public async Task DeleteTask_UserNotPermission_ReturnHttpExeption(int workspaceId, int taskId, string userId)
+        public async Task DeleteTask_UserNotPermission_ReturnHttpExeption()
         {
-            SetupTaskGetByKeyAsync(GetWorkspaceTask);
+            int workspaceId = 2;
+            int taskId = 2;
+            string userId = "1";
+            SetupTaskGetByKeyAsync(WithWorkspaceTask);
+            SetupUserWorkspaceAllBySpecAsync(false);
 
             Func<Task> act = () => _taskService.DeleteTaskAsync(workspaceId, taskId, userId);
             await act.Should()
@@ -828,12 +813,15 @@ namespace Provis.UnitTests.Core.Services
         }
 
         [Test]
-        [TestCase(2, 2, "2")]
-        public async Task DeleteTask_ThereIsAccessAndExistingData_ReturnTaskComplated(int workspaceId, int taskId, string userId)
+        public async Task DeleteTask_ThereIsAccessAndExistingData_ReturnTaskComplated()
         {
-            SetupTaskGetByKeyAsync(GetWorkspaceTask);
+            int workspaceId = 2;
+            int taskId = 2;
+            string userId = "2";
+
+            SetupTaskGetByKeyAsync(WithWorkspaceTask);
             SetupMetricsDecrement();
-            SetupHistoryGetBySpecAsync(StatusHistories);
+            SetupHistoryGetBySpecAsync(WithStatusHistories);
             SetupStatusHistoryDeleteRange();
             SetupCommentGetListBySpecAsync(CommentList);
             SetupCommentDeleteRange();
@@ -873,7 +861,7 @@ namespace Provis.UnitTests.Core.Services
         [TestCase(2, 2, "1", "2")]
         public async Task DisjoinTask_UserTaskNotFound_ReturnHttpExeption(int workspaceId, int taskId, string disUserId, string userId)
         {
-            SetupTaskGetFirstBySpecAsync(GetWorkspaceTask);
+            SetupTaskGetFirstBySpecAsync(WithWorkspaceTask);
             SetupUserTaskGetFirstBySpecAsync(null);
 
             Func<Task> act = () => _taskService.DisjoinTaskAsync(workspaceId, taskId, disUserId, userId);
@@ -887,9 +875,9 @@ namespace Provis.UnitTests.Core.Services
         [TestCase(2, 2, "1", "3")]
         public async Task DisjoinTask_UserNotPermission_ReturnHttpExeption(int workspaceId, int taskId, string disUserId, string userId)
         {
-            SetupTaskGetFirstBySpecAsync(GetWorkspaceTask);
+            SetupTaskGetFirstBySpecAsync(WithWorkspaceTask);
             SetupUserTaskGetFirstBySpecAsync(UserTask);
-            SetupUserWorkspaceGetFirstBySpecAsync(GetUserWorkspace);
+            SetupUserWorkspaceGetFirstBySpecAsync(WithUserWorkspace);
 
             Func<Task> act = () => _taskService.DisjoinTaskAsync(workspaceId, taskId, disUserId, userId);
             await act.Should()
@@ -902,9 +890,9 @@ namespace Provis.UnitTests.Core.Services
         [TestCase(2, 2, "1", "2")]
         public async Task DisjoinTask_ThereIsAccessAndExistingData_ReturnTaskComplated(int workspaceId, int taskId, string disUserId, string userId)
         {
-            SetupTaskGetFirstBySpecAsync(GetWorkspaceTask);
+            SetupTaskGetFirstBySpecAsync(WithWorkspaceTask);
             SetupUserTaskGetFirstBySpecAsync(UserTask);
-            SetupUserWorkspaceGetFirstBySpecAsync(GetUserWorkspace);
+            SetupUserWorkspaceGetFirstBySpecAsync(WithUserWorkspace);
             SetupMetricsDecrement();
             SetupUserTaskDeleteAsync();
             SetupUserTaskSaveChangesAsync();
@@ -1208,7 +1196,7 @@ namespace Provis.UnitTests.Core.Services
 
         #endregion
 
-        protected void SetupAttachmentOptions(TaskAttachmentSettings taskAttachmentSettings)
+        protected void SetupAttachmentOptions(AttachmentSettings taskAttachmentSettings)
         {
             _attachmentsSettingsOptionsMock
                 .Setup(x => x.Value)
@@ -1370,8 +1358,6 @@ namespace Provis.UnitTests.Core.Services
         }
 
         #region ArtemDate
-
-        private static User GetUser
         private User WithUser
         {
             get
@@ -1854,7 +1840,7 @@ namespace Provis.UnitTests.Core.Services
             {
                 return new TaskAttachmentsDTO()
                 {
-                    Attachment = FileTestData.GetTestFormFile("name.txt", "content", "txt"),
+                    Attachment = FileTestData.GetTestFormFile("name.txt", "content"),
                     TaskId = 1,
                     WorkspaceId = 2
                 };
