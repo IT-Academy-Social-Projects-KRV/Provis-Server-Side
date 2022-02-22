@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Moq;
 using NUnit.Framework;
-using Provis.Core.DTO.CommentDTO;
 using Provis.Core.DTO.CommentsDTO;
 using Provis.Core.Entities.CommentEntity;
 using Provis.Core.Entities.UserEntity;
@@ -20,6 +19,10 @@ using Ardalis.Specification;
 using Provis.UnitTests.Base;
 using Provis.UnitTests.Resources;
 using System.Net;
+using Provis.Core.Entities.CommentAttachmentEntity;
+using Provis.Core.Interfaces.Services;
+using Microsoft.Extensions.Options;
+using Provis.Core.Helpers;
 
 namespace Provis.UnitTests.Core.Services
 {
@@ -34,7 +37,11 @@ namespace Provis.UnitTests.Core.Services
         protected Mock<IRepository<Workspace>> _workspaceRepositoryMock;
         protected Mock<IRepository<WorkspaceTask>> _taskRepositoryMock;
         protected Mock<IRepository<Comment>> _commentRepositoryMock;
+        protected Mock<IFileService> _fileServiceMock;
         protected Mock<IMapper> _mapperMock;
+        protected Mock<IOptions<ImageSettings>> _imageSettingsMock;
+        protected Mock<IRepository<CommentAttachment>> _commentAttachmentRepositoryMock;
+        protected Mock<IOptions<AttachmentSettings>> _attachmentSettingsMock;
 
         [OneTimeSetUp]
         public void OneTimeSetUp()
@@ -45,7 +52,11 @@ namespace Provis.UnitTests.Core.Services
             _userRepositoryMock = new Mock<IRepository<User>>();
             _taskRepositoryMock = new Mock<IRepository<WorkspaceTask>>();
             _commentRepositoryMock = new Mock<IRepository<Comment>>();
+            _commentAttachmentRepositoryMock = new Mock<IRepository<CommentAttachment>>();
+            _fileServiceMock = new Mock<IFileService>();
+            _imageSettingsMock = new Mock<IOptions<ImageSettings>>();
             _mapperMock = new Mock<IMapper>();
+            _attachmentSettingsMock = new Mock<IOptions<AttachmentSettings>>();
 
             _commentService = new CommentService(
                 _userRepositoryMock.Object,
@@ -54,6 +65,10 @@ namespace Provis.UnitTests.Core.Services
                 _userWorkspaceRepositoryMock.Object,
                 _workspaceRepositoryMock.Object,
                 _userManagerMock.Object,
+                _commentAttachmentRepositoryMock.Object,
+                _fileServiceMock.Object,
+                _attachmentSettingsMock.Object,
+                _imageSettingsMock.Object,
                 _mapperMock.Object);
         }
 
