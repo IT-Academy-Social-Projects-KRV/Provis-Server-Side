@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Provis.IntegrationTest.WebApi.Controllers
 {
-    [TestFixture]
+    //[TestFixture]
     public class UserControllerTests
     {
         protected ApiWebApplicationFactory _factory;
@@ -20,7 +20,7 @@ namespace Provis.IntegrationTest.WebApi.Controllers
 
         protected string _currentUserId;
 
-        [OneTimeSetUp]
+        //[OneTimeSetUp]
         public void OneTimeSetUp()
         {
             _factory = new ApiWebApplicationFactory();
