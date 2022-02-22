@@ -262,6 +262,8 @@ namespace Provis.Core.Services
 
             var roleId = (WorkSpaceRoles)modifier.RoleId;
 
+            var targetCurrentRoleId = target.RoleId;
+
             if (_roleAccess.RolesAccess.ContainsKey(roleId) &&
                 _roleAccess.RolesAccess[roleId]
                     .Any(p => p == (WorkSpaceRoles)target.RoleId) &&
@@ -281,7 +283,7 @@ namespace Provis.Core.Services
                 }
 
                 _metrics.Measure.Counter.Decrement(WorkspaceMetrics.MembersCountByWorkspaceRole,
-                    MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, target.RoleId));
+                    MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, targetCurrentRoleId));
 
                 _metrics.Measure.Counter.Increment(WorkspaceMetrics.MembersCountByWorkspaceRole,
                     MetricTagsConstructor.MembersCountByWorkspaceRole(userChangeRole.WorkspaceId, userChangeRole.RoleId));

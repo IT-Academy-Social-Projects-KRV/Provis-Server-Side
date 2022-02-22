@@ -563,6 +563,8 @@ namespace Provis.Core.Services
             var user = await _userWorkspaceRepository
                     .GetFirstBySpecAsync(userSpecification);
 
+            var currentUserRole = userTaskMember.UserRoleTagId;
+
             if (task.TaskCreatorId == userId ||
                 (WorkSpaceRoles)user.RoleId == WorkSpaceRoles.OwnerId)
             {
@@ -579,7 +581,7 @@ namespace Provis.Core.Services
                 }
 
                 _metrics.Measure.Counter.Decrement(WorkspaceMetrics.TaskRolesCountByWorkspace,
-                    MetricTagsConstructor.TaskRolesCountByWorkspace(changeRoleDTO.WorkspaceId, userTaskMember.UserRoleTagId));
+                    MetricTagsConstructor.TaskRolesCountByWorkspace(changeRoleDTO.WorkspaceId, currentUserRole));
 
                 _metrics.Measure.Counter.Increment(WorkspaceMetrics.TaskRolesCountByWorkspace,
                     MetricTagsConstructor.TaskRolesCountByWorkspace(changeRoleDTO.WorkspaceId, changeRoleDTO.RoleId));
